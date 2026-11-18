@@ -1,0 +1,109 @@
+# ==============================================================================
+# config.yaml: indstillinger for én analyse (én strækning).
+#
+# Udfyld felterne med  <-- UDFYLD.  Resten kan stå, som det er.
+# Gem filen, og kør koer_analyse.bat i samme mappe.
+# Tekst i anførselstegn må gerne indeholde æ, ø og å. Brug mellemrum, ikke tabulator.
+# Alle muligheder og deres standardværdier: program\config_eksempel.yaml i værktøjsmappen.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. PERIODER. Datoer som ÅÅÅÅ-MM-DD. A = før ændringen, B = efter.
+#    Kun én periode? Lad B stå, og sæt PERIODER=A i koer_analyse.bat.
+# ------------------------------------------------------------------------------
+periods:
+  A:
+    name: "Før"
+    start: "2025-01-01"          # <-- UDFYLD: første dag i før-perioden
+    end: "2025-03-31"            # <-- UDFYLD: sidste dag
+  B:
+    name: "Efter"
+    start: "2025-05-01"          # <-- UDFYLD: første dag i efter-perioden
+    end: "2025-07-31"            # <-- UDFYLD: sidste dag
+
+# ------------------------------------------------------------------------------
+# 2. DATA. Læg HAFAS-eksporten (Details.csv og List.csv) i mapperne data\A og data\B.
+#    Stierne nedenfor passer så og skal ikke rettes.
+# ------------------------------------------------------------------------------
+data:
+  Periode_A:
+    details_csv: "data/A/Details.csv"
+    list_csv: "data/A/List.csv"
+  Periode_B:
+    details_csv: "data/B/Details.csv"
+    list_csv: "data/B/List.csv"
+  output: "resultat/result.csv"
+
+# ------------------------------------------------------------------------------
+# 3. STRÆKNINGENS TO ENDER. Find koordinaterne i Google Maps: højreklik på vejen,
+#    klik på tallene øverst (de kopieres), og sæt dem ind som lat, lon.
+# ------------------------------------------------------------------------------
+points:
+  p1: {name: "Start", lat: 55.0000, lon: 8.0000}   # <-- UDFYLD: navn og koordinat, fx et vejkryds
+  p2: {name: "Slut",  lat: 55.0000, lon: 8.0000}   # <-- UDFYLD
+
+# Rækkefølge pr. kørselsretning: retning 1 kører fra p1 til p2, retning 2 fra p2 til p1.
+# Valg 1 i koer_analyse.bat siger, hvis p1 og p2 skal byttes. Tjek også efter prøvekørslen (valg 2)
+# i resultat\proeve\kvalitet.md:
+#  - "flag afstand > 200 m" ved næsten alle ture: p1 og p2 er byttet om. Byt deres koordinater (og navne).
+#  - "stop_ikke_fundet" ved næsten alle ture: stopnavnene under punkt 4 er forkerte eller byttet om.
+point_order:
+  direction_1: [p1, p2]
+  direction_2: [p2, p1]
+
+distances:
+  d1: {name: "Strækningen", from: p1, to: p2}
+
+# ------------------------------------------------------------------------------
+# 4. STOPPESTEDER FØR OG EFTER STRÆKNINGEN, for hver retning for sig.
+#    Udfyld p1 og p2 først. Kør så koer_analyse.bat, og vælg 1: stopnavne.txt viser stoppestederne
+#    pr. retning i køreorden, foreslår start og slut og siger, hvis p1 og p2 skal byttes.
+#    Navnene kan være forskellige i de to retninger og ligge forskelligt (fx på hver side af vejen),
+#    så kopiér dem præcist fra listen for den rigtige retning.
+# ------------------------------------------------------------------------------
+stops:
+  direction_1: {start: "Stop før p1 (By)", end: "Stop efter p2 (By)"}   # <-- UDFYLD
+  direction_2: {start: "Stop før p2 (By)", end: "Stop efter p1 (By)"}   # <-- UDFYLD
+
+# ------------------------------------------------------------------------------
+# 5. ELEMENTER PÅ STRÆKNINGEN: bump, indsnævring eller andet, med koordinat.
+#    Tilføj en linje pr. element. Ingen elementer: skriv  elementer: []
+#    radius_m (kun bump): hvor langt før og efter bumpet den laveste fart og største opbremsning
+#    måles. 30 m passer til et almindeligt enkelt bump. Er bumpet udført anderledes, fx som to
+#    forskudte bump (ét i hver vejbane), så sæt koordinaten midt imellem, og gør radius så stor,
+#    at den dækker begge (halvdelen af afstanden mellem dem + 30 m).
+# ------------------------------------------------------------------------------
+elementer:
+  - {navn: "Bump 1", type: bump, lat: 55.0000, lon: 8.0000, radius_m: 30}   # <-- UDFYLD
+  - {navn: "Indsnævring 1", type: indsnævring, lat: 55.0000, lon: 8.0000}   # <-- UDFYLD eller slet linjen
+
+# Hvilke dage tæller med: hverdage (man-fre) eller alle. Helligdage tælles ikke som hverdage.
+udvalg:
+  dagtype: hverdage
+  helligdage: []                 # fx ["2025-04-17", "2025-04-18", "2025-04-21"]
+
+komfort:
+  fra: p1
+  til: p2
+  bump_vinduer: {}               # lad stå tom: regnes ud fra bumpenes koordinat og radius_m
+
+# ------------------------------------------------------------------------------
+# 6. RAPPORTENS TEKSTER. Skriv titlen, når du har set tallene: titlen er fundet i én sætning.
+#    Ret teksterne, og vælg 4 i koer_analyse.bat for at bygge rapporten igen.
+# ------------------------------------------------------------------------------
+rapport:
+  titel: "<Fundet i én sætning, fx: Køretiden steg X s samtidig med vejændringen>"   # <-- UDFYLD efter første kørsel
+  undertitel: "Vejnavn, linje X, By · bussernes GPS · hverdage før og efter"           # <-- UDFYLD
+  foer_navn: "Før"
+  efter_navn: "Efter"
+  periode_navn: "Perioden"       # bruges kun, når der er én periode
+  afsender: ""                   # <-- UDFYLD: din organisation
+  udtraekdato: ""                # <-- UDFYLD: dato for HAFAS-eksporten, fx "11-11-2026"
+  forbehold: []                  # korte linjer, fx ["Omkørsel 3.-5. marts er ikke med."]
+  kilde: "Kilde: realtidsdata (GPS-positioner). Der tages forbehold for fejl og mangler."
+  kort: false                    # true = kort over strækningen (kræver internet, når rapporten vises)
+  vej:                           # vises i "Om strækningen" øverst i rapporten
+    vejtype: ""                  # <-- UDFYLD, fx "Gennemkørselsvej i boligkvarter"
+    hastighed: ""                # <-- UDFYLD: hastighedsgrænse, fx "50 → 40 km/t" (før → efter)
+    bumptype: ""                 # <-- UDFYLD, fx "Cirkelbump" (se vejledning\kilder\bumptyper\)
+    andre_foranstaltninger: ""   # <-- UDFYLD, fx "2 indsnævringer, anlagt samtidig med bumpene"

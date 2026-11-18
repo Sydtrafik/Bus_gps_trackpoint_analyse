@@ -1,0 +1,160 @@
+# ==============================================================================
+# Udfyldt eksempel: Kvaglundvej (bybus 3A, Esbjerg), vejbump før/efter.
+# Bruges til analyse_v2.2.py, komfort_v1.0.py, zonetid.py og rapport\lav_rapportdata.py.
+#
+# Stier til data er pladsholdere (rådata følger ikke med pakken): ret dem til dine egne
+# eksportfiler. Alle parametre med forklaring: ../config_eksempel.yaml.
+#
+# analyse_v2.2.py kender ikke nøglerne elementer, udvalg, zonetid og rapport og skriver en
+# harmløs advarsel om "ukendte nøgler i config ignoreres". De læses af zonetid.py og rapport\.
+# ==============================================================================
+
+periods:
+  A:
+    name: "Uden bump"
+    start: "2025-06-30"
+    end: "2025-09-25"
+  B:
+    name: "Med bump"
+    start: "2025-10-18"
+    end: "2026-01-04"
+
+data:
+  Periode_A:
+    details_csv: "data_A/Details.csv"        # <-- ret: din HAFAS-eksport, periode A
+    list_csv: "data_A/List.csv"
+  Periode_B:
+    details_csv: "data_B/Details.csv"        # <-- ret: din HAFAS-eksport, periode B
+    list_csv: "data_B/List.csv"
+  output: "output/result.csv"
+
+# Målepunkter. p1 og p5 er strækningens ender. p2-p4 er interpolerede punkter (1/4, 1/2, 3/4)
+# på linjen p1-p5. p6 og p8 er bump 1 og bump 2 (bruges til køretid mellem bumpene).
+points:
+  p1:
+    name: "Niels Lambertsens vej"
+    lat: 55.48040727834349
+    lon: 8.467493876574624
+  p2:
+    name: "kvartpunkt (p2)"
+    lat: 55.481583624073004
+    lon: 8.468856177980026
+  p3:
+    name: "midtpunkt (p3)"
+    lat: 55.482760000000004
+    lon: 8.470219999999998
+  p4:
+    name: "trekvartpunkt (p4)"
+    lat: 55.48393636740211
+    lon: 8.47158382020927
+  p5:
+    name: "Spangsbjerg møllevej"
+    lat: 55.48511271313209
+    lon: 8.47294764041854
+  p6:
+    name: "bump 1 (p6)"
+    lat: 55.481237261237574
+    lon: 8.46843289308137
+  p8:
+    name: "bump 2 (p8)"
+    lat: 55.48214
+    lon: 8.46950
+
+point_order:
+  direction_2: [p1, p2, p3, p4, p5]
+  direction_1: [p5, p4, p3, p2, p1]
+
+distances:
+  d1:
+    name: "Kvaglundvej"
+    from: p1
+    to: p5
+  d2:
+    name: "Spangsbjerg møllevej - midtpunkt"
+    from: p5
+    to: p3
+  d3:
+    name: "Niels Lambertsens vej - midtpunkt"
+    from: p1
+    to: p3
+  d4:
+    name: "bump 1 - bump 2"
+    from: p6
+    to: p8
+
+stops:
+  direction_1:
+    start: "Spangsbjerg Møllevej v Vibevej (Esbjerg)"
+    end: "Strandby Kirkevej v Nørrebrogade (Esbjerg)"
+  direction_2:
+    start: "Strandby Kirkevej v Nørrebrogade (Esbjerg)"
+    end: "Spangsbjerg Møllevej v Vibevej (Esbjerg)"
+
+buffer_rows: 50
+speed_max_kmh: 80
+speed_min_kmh: 0
+summary_exclude_flags: [stoprække]
+
+komfort:
+  fra: p1
+  til: p5
+  korridor_margin_m: 60
+  taerskler_ms2: [0.75, 1.35]
+  bump_vinduer:
+    bump1: [80, 140]      # meter fra p1: bump 1 ligger ved ca. 110 m
+    bump2: [200, 260]     # bump 2 ligger ved ca. 230 m
+
+# ------------------------------------------------------------------------------
+# ELEMENTER på strækningen (zonetid.py og rapport\). type: bump, indsnævring eller andet.
+# ------------------------------------------------------------------------------
+elementer:
+  - {navn: "Bump 1",         type: bump,        lat: 55.48124263463153, lon: 8.46842992702657}
+  - {navn: "Bump 2",         type: bump,        lat: 55.48214,          lon: 8.46950}
+  - {navn: "Indsnævring 1",  type: indsnævring, lat: 55.48336930292096, lon: 8.47095438217969}
+  - {navn: "Indsnævring 2",  type: indsnævring, lat: 55.4848839002126,  lon: 8.472724666818037}
+
+# ------------------------------------------------------------------------------
+# UDVALG: hvilke ture indgår i zonetid.py og rapporten (ud over: tom Log, ingen stoprække-match,
+# komfort status ok).
+# ------------------------------------------------------------------------------
+udvalg:
+  dagtype: hverdage           # hverdage (man-fre) eller alle
+  helligdage: ["2025-12-24", "2025-12-25", "2025-12-26", "2025-12-31", "2026-01-01"]   # tælles ikke som hverdage
+
+# ------------------------------------------------------------------------------
+# ZONETID: ekstra køretid fordelt på elementerne og den øvrige strækning.
+# ------------------------------------------------------------------------------
+zonetid:
+  zonebredde_m: 60            # zone = element +/- dette (overlap deles på midten)
+  foelsomhed_zonebredde_m: [40]   # ekstra zonebredder, kun til følsomhedslinjen i rapporten
+
+# ------------------------------------------------------------------------------
+# RAPPORT: tekster og valg til rapport\lav_rapportdata_v1.2.py (og v1.1). Alt er valgfrit.
+# ------------------------------------------------------------------------------
+rapport:
+  titel: "Køretiden steg 12 s samtidig med, at bumpene kom"
+  undertitel: "Kvaglundvej, linje 3A, Esbjerg · bussernes GPS · hverdage før (sommer 2025) og efter bump (efterår 2025)"
+  straekning_tekst: "626 meter af Kvaglundvej med to bump, to indsnævringer og to stoppesteder. Linje 3A kører begge veje."
+  afsender: "Sydtrafik"
+  udtraekdato: "09-11-2026"
+  foer_navn: "Før"
+  efter_navn: "Efter"
+  koretid_afstand: d1                     # distance-id i config, hvis køretid findes som kolonne i result.csv
+  retninger:
+    "1": "Retning 1 (mod Niels Lambertsens vej)"
+    "2": "Retning 2 (mod Spangsbjerg Møllevej)"
+  stoppesteder:                            # valgfrit: vises som lodrette linjer i fartprofilen
+    - {navn: "Thorsvej",  retning: 1, lat: 55.480559, lon: 8.467605}
+    - {navn: "Thorsvej",  retning: 2, lat: 55.480901, lon: 8.468144}
+    - {navn: "Lærkevej",  retning: 1, lat: 55.482474, lon: 8.469879}
+    - {navn: "Lærkevej",  retning: 2, lat: 55.482222, lon: 8.469708}
+  forbehold:
+    - "Ingen sammenligningsstrækning: tallene viser, hvad der skete samtidig med bumpene."
+    - "Linje 3A kørte ikke strækningen 11/8-5/9 2025; de dage er ikke med."
+  kilde: "Kilde: realtidsdata (GPS-positioner) for linje 3A. Der tages forbehold for fejl og mangler samt for variationer, usikkerheder og revisioner i både aktuelle og historiske data."
+  kort: false                              # true = Leaflet + OpenStreetMap (online-kort, se README)
+  vej:                                     # "Om strækningen" (rapport v1.2); som i nationale_analysekonklusioner.md
+    vejtype: "Gennemkørselsvej i boligkvarter"
+    hastighed: "50 → 40 km/t (sat ned samtidig med bumpene)"
+    bumptype: "Cirkelbump eller modificeret cirkelbump (ikke bekræftet)"
+    andre_foranstaltninger: "2 indsnævringer, anlagt samtidig med bumpene"

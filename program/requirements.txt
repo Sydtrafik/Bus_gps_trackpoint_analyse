@@ -1,0 +1,12 @@
+# Testet på Python 3.13.0 (Windows); 3.10 eller nyere forventes at virke.
+# Testet med pandas 2.2.3, numpy 2.2.5, pyyaml 6.0.2, tqdm 4.67.1.
+# Nedre grænser nedenfor er ikke afprøvet; pandas 3.x er heller ikke afprøvet.
+pandas>=2.0,<3
+numpy>=1.24
+pyyaml>=6.0
+
+# Valgfri: fremdriftsbjælke under kørsel. Uden tqdm skriver værktøjet i stedet en statuslinje med ca. 5 % mellemrum.
+tqdm>=4.60
+
+# Valgfri: kun til at køre testene med pytest (testene kan også køres med ren python).
+# pytest>=7

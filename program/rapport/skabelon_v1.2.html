@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITEL}}</title>
+<style>
+/* ==========================================================================================
+   FARVER OG SKRIFT - ret kun her for at give rapporten din virksomheds udtryk.
+   Alt i rapporten (også graferne og kortet) læser farverne herfra.
+   ========================================================================================== */
+:root {
+  --skrift: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --farve-primaer: #2f3e4e;          /* overskrifter, knapper, tal */
+  /* Kontrast mod hvid (WCAG): tekst mindst 4,5:1, datamærker mindst 3:1. Rapporten advarer i browserens konsol, hvis en farve er for svag. */
+  --farve-foer: #6a8399;             /* før-periode i graferne (3,9:1) */
+  --farve-efter: #2f3e4e;            /* efter-periode i graferne (og perioden, når der kun er én) */
+  --farve-bump: #b5372f;             /* element af typen bump (5,9:1) */
+  --farve-indsnaevring: #b8650f;     /* element af typen indsnævring (4,3:1) */
+  --farve-andet: #5e6c7a;            /* andre elementer (5,4:1) */
+  --farve-stop: #7a7a7a;             /* stoppesteder (4,3:1) */
+  --farve-anden-straekning: #9aa5b1; /* strækninger, der ikke er valgt, på kortet */
+  --farve-klasse-ingen: #5b9a3a;     /* komfort: ingen opbremsning/acceleration over grænsen */
+  --farve-klasse-maerkbar: #e08a1e;  /* komfort: mærkbar */
+  --farve-klasse-kraftig: #b5372f;   /* komfort: kraftig */
+  --farve-baggrund: #f4f5f6;
+  --farve-flade: #ffffff;
+  --farve-streg: #d3d8dd;
+  --farve-tekst: #1c232b;
+  --farve-tekst2: #56616c;
+  --farve-hvid: #ffffff;
+  --farve-obs: #b8650f;              /* OBS-markering (få ture): kant og linje */
+  --farve-obs-flade: #fdf4ea;        /* OBS-boksens baggrund */
+  --farve-obs-tekst: #8a4a08;        /* OBS-tekst */
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; font-family: var(--skrift); color: var(--farve-tekst); background: var(--farve-baggrund); line-height: 1.45; font-size: 16px; }
+header.top { background: var(--farve-flade); border-bottom: 3px solid var(--farve-primaer); padding: 16px 24px; }
+header.top h1 { margin: 0; font-size: 26px; line-height: 1.2; color: var(--farve-primaer); }
+header.top p { margin: 4px 0 0; color: var(--farve-tekst2); font-size: 14px; }
+main { max-width: 1048px; margin: 0 auto; padding: 24px 24px 40px; }
+.grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 32px 24px; }
+.span-12 { grid-column: span 12; } .span-7 { grid-column: span 7; } .span-6 { grid-column: span 6; } .span-5 { grid-column: span 5; }
+button:focus-visible, summary:focus-visible { outline: 2px solid var(--farve-primaer); outline-offset: 2px; }
+.skjult { display: none !important; }
+.omfang { grid-column: span 12; text-align: center; color: var(--farve-tekst2); margin-bottom: -12px; }
+.knapper { grid-column: span 12; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.knapper + .knapper { margin-top: -20px; }
+.knapper.skjult + .knapper { margin-top: 0; }
+.knapper button { font: inherit; font-weight: 700; padding: 10px 18px; min-height: 44px; border: 2px solid var(--farve-primaer); background: var(--farve-flade); color: var(--farve-primaer); border-radius: 6px; cursor: pointer; }
+.knapper button.on, .valg button.on { background: var(--farve-primaer); color: var(--farve-hvid); }
+.tiles { grid-column: span 12; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.tiles.tre { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.tile { position: relative; background: var(--farve-flade); border: 1px solid var(--farve-streg); border-radius: 8px; padding: 20px 16px; text-align: center; min-width: 0; }
+.tile:hover, .tile:focus-within { z-index: 5; }
+.tl { font-weight: 700; line-height: 1.25; }
+.tb { font-size: 36px; line-height: 1.15; font-weight: 700; color: var(--farve-primaer); margin: 8px 0; }
+.enh { font-size: 0.55em; white-space: nowrap; }
+.ts { font-size: 13px; color: var(--farve-tekst2); }
+.info { display: inline-block; margin-left: 4px; width: 18px; height: 18px; line-height: 18px; border-radius: 50%; background: var(--farve-primaer); color: var(--farve-hvid); font-size: 12px; font-weight: 700; text-align: center; cursor: help; vertical-align: 1px; }
+.info::after { content: attr(data-t); display: none; position: absolute; left: 8px; right: 8px; top: calc(100% + 4px); z-index: 2000; padding: 10px 12px; background: var(--farve-primaer); color: var(--farve-hvid); border-radius: 6px; font-size: 13px; font-weight: 500; line-height: 1.4; text-align: left; box-shadow: 0 4px 14px #0004; }
+.info:hover::after, .info:focus::after { display: block; }
+.kort { background: var(--farve-flade); border: 1px solid var(--farve-streg); border-radius: 8px; min-width: 0; }
+.kort-boks { padding: 0; overflow: hidden; position: relative; z-index: 0; }
+#kort { height: 480px; }
+.kort-tekst { display: flex; flex-direction: column; justify-content: center; gap: 8px; }
+.kort-tekst p { margin: 0; }
+.card { background: var(--farve-flade); border: 1px solid var(--farve-streg); border-radius: 8px; padding: 16px; min-width: 0; }
+.card h2 { position: relative; margin: 0 0 8px; font-size: 20px; line-height: 1.25; color: var(--farve-primaer); }
+.graf { height: 340px; } .graf.halv { height: 280px; }
+.valg { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 8px; }
+.valg button { font: inherit; font-weight: 700; padding: 6px 14px; min-height: 36px; border: 2px solid var(--farve-primaer); background: var(--farve-flade); color: var(--farve-primaer); border-radius: 6px; cursor: pointer; }
+.note { margin: 8px 0 0; font-size: 13px; color: var(--farve-tekst2); }
+.tekst { margin: 8px 0 0; }
+.tabel { border-collapse: collapse; width: 100%; max-width: 520px; margin: 4px 0 0; }
+.tabel th, .tabel td { padding: 8px 12px; border-bottom: 1px solid var(--farve-streg); text-align: left; }
+.tabel th { color: var(--farve-tekst2); font-size: 13px; font-weight: 700; }
+.tabel td:last-child, .tabel th:last-child { text-align: right; white-space: nowrap; font-weight: 700; color: var(--farve-primaer); }
+.tabel tr.sum td { border-top: 2px solid var(--farve-primaer); border-bottom: 0; font-weight: 700; }
+h2.sek { grid-column: span 12; margin: 8px 0 -8px; font-size: 24px; color: var(--farve-primaer); }
+.box { grid-column: span 12; padding: 12px 16px; border: 1px solid var(--farve-streg); border-left: 6px solid var(--farve-andet); border-radius: 4px; background: var(--farve-flade); }
+.box ul, .maalt ul { margin: 0; padding-left: 1.2em; } .box li { margin: 2px 0; } .maalt li { margin: 0 0 6px; }
+.maalt { max-width: 80ch; }
+details.fold { grid-column: span 12; }
+details.fold summary { display: inline-block; cursor: pointer; font-weight: 700; padding: 6px 12px; border: 1px solid var(--farve-streg); border-radius: 4px; background: var(--farve-flade); color: var(--farve-primaer); font-size: 14px; }
+details.fold .indhold { padding-top: 12px; }
+footer { max-width: 1048px; margin: 0 auto; padding: 16px 24px 32px; font-size: 12px; color: var(--farve-tekst2); border-top: 1px solid var(--farve-streg); }
+footer p { margin: 0 0 4px; }
+.leaflet-tooltip.etiket { font-weight: 700; font-size: 12px; padding: 1px 5px; }
+header.top p.basis { color: var(--farve-tekst); font-weight: 700; }
+.vaelg { grid-column: span 12; min-width: 0; background: var(--farve-flade); border: 1px solid var(--farve-streg); border-radius: 8px; padding: 12px 16px; }
+.vaelg .raekke { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 8px; }
+.vaelg .raekke > span { min-width: 56px; color: var(--farve-tekst2); font-size: 14px; }
+.vaelg .raekke button { font: inherit; font-size: 14px; padding: 4px 12px; min-height: 36px; border: 1px solid var(--farve-primaer); background: var(--farve-flade); color: var(--farve-primaer); border-radius: 999px; cursor: pointer; }
+.vaelg .raekke button.on { background: var(--farve-primaer); color: var(--farve-hvid); }
+.vaelg select { font: inherit; font-size: 14px; min-height: 36px; padding: 4px 8px; border: 1px solid var(--farve-primaer); border-radius: 6px; background: var(--farve-flade); color: var(--farve-primaer); }
+.vaelg .hint { font-size: 13px; color: var(--farve-tekst2); }
+.vaelg p { margin: 4px 0 0; font-size: 14px; }
+.obs { margin: 8px 0 0; padding: 8px 12px; border-left: 4px solid var(--farve-obs); background: var(--farve-obs-flade); font-size: 14px; }
+.obs:empty { display: none; }
+.obs-t { color: var(--farve-obs-tekst); font-weight: 700; }
+.om dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 16px; margin: 0; }
+.om dt { color: var(--farve-tekst2); font-size: 14px; } .om dd { margin: 0; }
+.tabel-wrap { overflow-x: auto; }
+.tabel-hoej { max-height: 420px; overflow: auto; }
+.tabel.bred { max-width: none; font-size: 14px; }
+.tabel.bred th, .tabel.bred td { padding: 6px 8px; white-space: nowrap; }
+.tabel.bred td:last-child, .tabel.bred th:last-child { font-weight: 400; color: var(--farve-tekst); text-align: left; }
+.tabel.bred td.n, .tabel.bred th.n { text-align: right; font-variant-numeric: tabular-nums; }
+.tabel.bred thead th { position: sticky; top: 0; background: var(--farve-flade); }
+#c-n { cursor: pointer; }
+@media (max-width: 900px) { main { padding: 16px 16px 32px; } header.top { padding: 12px 16px; } .omfang { margin-bottom: 0; } footer { padding: 16px; } }
+@media (max-width: 700px) {
+  .grid { gap: 24px 16px; }
+  .span-7, .span-6, .span-5 { grid-column: span 12; }
+  .tiles, .tiles.tre { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .tile { padding: 12px 8px; } .tb { font-size: 28px; }
+  .graf { height: 300px; } .graf.halv { height: 260px; } #kort { height: 400px; }
+  .knapper button { flex: 1 1 100%; } .knapper + .knapper { margin-top: -8px; }
+  .valg button { flex: 1 1 auto; padding: 6px 8px; }
+  header.top h1 { font-size: 22px; }
+  .om dl { grid-template-columns: minmax(0, 1fr); gap: 0; } .om dd { margin: 0 0 8px; overflow-wrap: anywhere; }
+}
+/*__LEAFLET_CSS__*/
+</style>
+</head>
+<body>
+<header class="top"><h1 id="h-titel"></h1><p id="h-under"></p><p class="basis" id="h-basis"></p></header>
+<main><div class="grid" id="side"></div></main>
+<footer id="fod"></footer>
+<script type="application/json" id="rapportdata">__RAPPORTDATA__</script>
+<script>/*__ECHARTS__*/</script>
+<script>/*__LEAFLET_JS__*/</script>
+<script>
+/* ==========================================================================================
+   Rapportens logik. Læser data fra <script id="rapportdata"> (rapportdata.json) og tegner siden.
+   Ingen eksterne afhængigheder ud over ECHARTS (og Leaflet, kun hvis kort er slået til).
+   To tilstande: før og efter (to perioder) og én periode (niveauer, ingen sammenligning).
+   Flere strækninger: en vælger øverst styrer nøgletal, fartprofil, komfort, tabel og drift.
+   v1.2 (rapportdata fra lav_rapportdata_v1.2.py): synlige valg for dage, rute og time styrer nøgletal, fartprofil,
+   køretid, komfort, datagrundlag, planlagte ture, drift og måned. Ekstra tid pr. element (zonetid) gælder altid
+   standardvalget. Intet skjules pga. få ture: tal under M.obs_n ture er med og markeret OBS.
+   ========================================================================================== */
+(function () {
+'use strict';
+const D = JSON.parse(document.getElementById('rapportdata').textContent);
+const M = D.meta;
+const NOG = D.nogletal, PROF = D.fartprofil, OMF = D.omfang, DRIFT = D.drift, MAAN = D.maaned, ZT = D.zonetid, FORD = D.fordeling, FOELS = D.foelsomhed || [];
+const FRA = D.fravalg || [], TURE = D.ture || [];
+const PER = M.perioder;
+const TO = PER.length === 2;                                   // før og efter?
+const LBL = TO ? { A: M.foer_navn, B: M.efter_navn } : { A: M.periode_navn };
+const SLUT = TO ? 'B' : 'A';
+const ALLE = 'Alle ture';
+const STRK = M.straekninger;
+const FLERE = STRK.length > 1;
+const STD = M.standard_dag, AR = M.alle_ruter, AT = M.alle_timer, OBSN = M.obs_n, OBST = M.obs_n_tur == null ? 10 : M.obs_n_tur;
+const DAGSET = Object.fromEntries(M.dagtyper.map((x) => [x.navn, x.dagtyper]));
+const ORD = { 'Hverdage': ['hverdag', 'hverdage'], 'Weekend og helligdage': ['weekend- eller helligdag', 'weekend- og helligdage'], 'Alle dage': ['dag', 'dage'] };
+const ord = (dag, n) => (ORD[dag] || ['dag', 'dage'])[n];
+const DPM = { 'Hverdage': [20, 23], 'Weekend og helligdage': [8, 11], 'Alle dage': [28, 31] };   // dage pr. måned (interval)
+let DAG = ord(STD, 0), DAGE = ord(STD, 1);                      // følger valget (sættes i draw)
+const DAGE_STD = ord(STD, 1);                                    // standardvalget (titel og zonetid)
+const KNAP3 = [['Opbremsning', 'Opbremsning'], ['Acceleration', 'Acceleration'], ['Samlet', 'Samlet']];
+const KFELT = { Opbremsning: 'Klasse', Acceleration: 'KlasseAcc', Samlet: 'KlasseSam' };
+const KTXT = { Opbremsning: 'mærkbar opbremsning', Acceleration: 'mærkbar acceleration', Samlet: 'mærkbar opbremsning eller acceleration' };
+const MAANEDER = ['jan.', 'feb.', 'mar.', 'apr.', 'maj', 'jun.', 'jul.', 'aug.', 'sep.', 'okt.', 'nov.', 'dec.'];
+const TYPE_TEKST = { bump: 'Bump', indsnaevring: 'Indsnævringer', andet: 'Andre elementer' };
+const ST = { s: STRK[0].id, ret: 'B', stop: 'Uden stop', komfort: 'Opbremsning', dag: STD, rute: AR, time: AT };
+const hh = (t) => String(t).padStart(2, '0');
+const VK = (r) => r.S === ST.s && r.Dag === ST.dag && r.Rute === ST.rute && r.Time === ST.time;            // forudregnede tal for valget
+const iDag = (dt) => { const s = DAGSET[ST.dag]; return !s || s.includes(dt); };
+const ADD = (r, medTime = true) => r.S === ST.s && iDag(r.Dagtype) && (ST.rute === AR || r.Rute === ST.rute) && (!medTime || ST.time === AT || r.Time === ST.time);   // additive tabeller
+const valgTekst = () => `${ST.dag.toLowerCase()}, ${ST.rute === AR ? 'alle ruter' : 'rute ' + ST.rute}, ${ST.time === AT ? 'alle timer' : 'kl. ' + hh(ST.time)}`;
+const obsN = (n) => (n != null && n < OBSN ? ` <span class="obs-t">OBS: ${n} ture</span>` : '');
+
+// ---------- hjælpere ----------
+const nfc = {};
+const g = (x, d = 1) => { if (x === null || x === undefined || !isFinite(x)) return '-'; const k = 'g' + d; nfc[k] = nfc[k] || new Intl.NumberFormat('da-DK', { maximumFractionDigits: d }); return nfc[k].format(x).replace('-', '−'); };
+const gf = (x) => g(Math.round(x * 10) / 10 + 1e-9, 1).replace(/^(\d+)$/, '$1,0');   // altid én decimal
+const dlt = (a, b) => { if (a == null || b == null || !isFinite(a) || !isFinite(b)) return '-'; const x = Math.round((b - a) * 10) / 10; return (x > 0 ? '+' : x < 0 ? '−' : '') + g(Math.abs(x)); };
+const pr = (x) => (x == null || !isFinite(x) ? '-' : String(Math.round(x)));        // heltal, ellers "-"
+const dato = (iso) => (iso && /^\d{4}-\d{2}-\d{2}/.test(iso) ? `${iso.slice(8, 10)}-${iso.slice(5, 7)}-${iso.slice(0, 4)}` : iso || '');   // 27-09-2026
+const mean = (x) => x.reduce((s, v) => s + v, 0) / x.length;
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const el = (id) => document.getElementById(id);
+// ---------- kontrast (WCAG 2.x): beregnes, ikke vurderes med øjet ----------
+const rgb = (c) => {
+  c = (c || '').trim();
+  let m = c.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if (m) { let h = m[1]; if (h.length === 3) h = h.split('').map((x) => x + x).join(''); return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)); }
+  m = c.match(/^rgba?\(\s*(\d+)[ ,]+(\d+)[ ,]+(\d+)/i);
+  return m ? [+m[1], +m[2], +m[3]] : null;
+};
+const lum = (c) => { const v = rgb(c); if (!v) return null; const l = v.map((x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }); return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2]; };
+const kontrast = (a, b) => { const x = lum(a), y = lum(b); if (x === null || y === null) return null; return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+const tekstPaa = (bg) => ((kontrast('#000000', bg) || 0) >= (kontrast('#ffffff', bg) || 0) ? '#000000' : '#ffffff');   // sort eller hvid efter beregning
+function kontrolKontrast() {
+  const v = [];
+  const tjek = (navn, a, b, min, hvad) => { const k = kontrast(css(a), css(b)); if (k !== null && k < min) v.push(`${navn}: ${k.toFixed(2).replace('.', ',')}:1 mod ${b.replace('--farve-', '')} (${hvad}, mindst ${min.toString().replace('.', ',')}:1)`); };
+  [['--farve-tekst', '--farve-flade'], ['--farve-tekst', '--farve-baggrund'], ['--farve-tekst2', '--farve-flade'], ['--farve-tekst2', '--farve-baggrund'],
+    ['--farve-primaer', '--farve-flade'], ['--farve-hvid', '--farve-primaer']].forEach(([a, b]) => tjek(a.replace('--farve-', 'tekstfarve ') + ' på ' + b.replace('--farve-', ''), a, b, 4.5, 'tekst'));
+  ['--farve-foer', '--farve-efter', '--farve-bump', '--farve-indsnaevring', '--farve-andet', '--farve-stop'].forEach((a) => tjek(a, a, '--farve-flade', 3, 'datamærke'));
+  ['--farve-klasse-ingen', '--farve-klasse-maerkbar', '--farve-klasse-kraftig'].forEach((a) => {   // tal på søjlen: tekstfarven vælges efter beregning
+    const k = kontrast(tekstPaa(css(a)), css(a)); if (k !== null && k < 4.5) v.push(`${a}: bedste tekstfarve på søjlen giver kun ${k.toFixed(2).replace('.', ',')}:1 (mindst 4,5:1)`);
+  });
+  v.forEach((t) => console.warn('Kontrast: ' + t));
+  window.RAPPORT_KONTRAST = v;
+  return v;
+}
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const SR = () => STRK.find((x) => x.id === ST.s);
+const NR = (d, grp, per) => NOG.find((x) => VK(x) && x.Retning === d && x.Gruppe === grp && x.Periode === per) || { Ture: 0, minfart: {} };   // få ture: tallene vises og markeres OBS
+const OM = (p) => OMF.find((r) => VK(r) && r.Periode === p) || { Dage: 0, Ture: 0 };
+const typFarve = (t) => css(t === 'bump' ? '--farve-bump' : t === 'indsnaevring' ? '--farve-indsnaevring' : '--farve-andet');
+const grpTekst = (gr) => ({ 'Alle ture': 'alle ture', 'Uden stop': 'ture uden standsning ved stop', 'Med stop': 'ture med standsning ved stop' }[gr]);
+const SLBL = { 'Uden stop': 'Uden standsning ved stop', 'Med stop': 'Med standsning ved stop' };   // synlig tekst; datanøglerne 'Uden stop'/'Med stop' er uændrede
+const KNAVN = { Opbremsning: 'opbremsning', Acceleration: 'acceleration', Samlet: 'opbremsning eller acceleration' };
+const STANDS = `Bussen kommer under ${g(M.stillestand_kmh)} km/t et sted på strækningen, normalt ved et stoppested (men også fx i kø eller for rødt lys).`;
+const lc = (t) => t.toLowerCase();
+const G1 = M.vist_graense_ms2[0], G2 = M.vist_graense_ms2[1];
+const FARTSTEP = g(G1 * 3.6, 1);
+const KOMF = 'Komfort = passagerkomfort i kørslen på hele strækningen (opbremsning og acceleration langs vejen), ikke stødet over selve bumpet.';
+const INFO = `Mindst én opbremsning på over ${g(G1)} m/s² i mindst ${g(M.haendelse_min_s, 0)} sekunder, dvs. farten falder med mere end ${FARTSTEP} km/t hvert sekund. ${KOMF}`;
+const KNOTE = {
+  Opbremsning: `Mærkbar = over ${g(G1)} m/s²: farten falder mere end ${FARTSTEP} km/t hvert sekund. Kraftig = over ${g(G2)} m/s².`,
+  Acceleration: `Mærkbar = over ${g(G1)} m/s²: farten stiger mere end ${FARTSTEP} km/t hvert sekund. Kraftig = over ${g(G2)} m/s².`,
+  Samlet: `Turen har mindst én mærkbar opbremsning eller acceleration (over ${g(G1)} m/s²). Kraftig = over ${g(G2)} m/s².`,
+};
+const BUMPS = () => SR().elementer.filter((e) => e.type === 'bump');
+const retNavn = (id) => (SR().retninger.find((r) => r.id === id) || {}).navn || id;
+const omvendt = (id) => !!(SR().retninger.find((r) => r.id === id) || {}).omvendt;
+
+// ---------- opbygning af siden ----------
+const kort = M.kort.aktiv;
+const stopKnapper = [['Uden stop', SLBL['Uden stop']], [ALLE, 'Alle ture'], ['Med stop', SLBL['Med stop']]];
+const card = (id) => `<div class="tile" id="${id}"></div>`;
+const knapRække = (f, liste, id) => `<div class="knapper" data-f="${f}"${id ? ` id="${id}"` : ''}>${liste.map(([v, l]) => `<button type="button" data-v="${esc(v)}">${esc(l)}</button>`).join('')}</div>`;
+const maaltNoter = () => [
+  `Data: bussernes GPS-punkter og turlisten fra realtidssystemet (HAFAS). Titlen og ekstra tid pr. element gælder ${DAGE_STD}, alle ruter og alle timer. De øvrige tal følger valgene øverst (nu: ${valgTekst()}); se "Hvad bygger tallene på".`,
+  'Dage: hverdage er mandag til fredag uden de helligdage, der står i analysens config; weekend og helligdage er lørdag, søndag og de helligdage. Rute og planlagt tur er fra turlisten. Time er, når bussen passerede strækningens første punkt.',
+  `Fravalgt pga. dårlige data (står med antal og andel ved valgene): ture, hvor et punkt er matchet til en stop-række (bussens planlagte position, ikke GPS), ligger langt fra nærmeste GPS-punkt, eller hvor fart og komfort ikke kunne regnes (fx huller i GPS). Intet andet fjernes: grupper med under ${OBSN} ture vises og er markeret OBS (usikker median).`,
+  'Ved hvert målepunkt bruges det nærmeste GPS-punkt. Køretid er tiden mellem første og sidste punkt.',
+  `Fart og opbremsning er regnet fra GPS-positionen hvert sekund og udglattet over ${g(M.sg_vindue_s, 0)} sekunder. Mærkbar opbremsning = over grænsen i mindst ${g(M.haendelse_min_s, 0)} sekunder.`,
+  `Medianer, hvis ikke andet er skrevet. Uden standsning ved stop = bussen kommer ikke under ${g(M.stillestand_kmh)} km/t på strækningen. Med standsning ved stop = den gør, normalt ved et stoppested.`,
+  'Acceleration og samlet: samme regler som opbremsning. Samlet = mindst én mærkbar opbremsning eller acceleration.',
+  'Komfortmålet er passagerkomfort i kørslen på hele strækningen: opbremsning og acceleration langs vejen, målt fra strækningens start til dens slutning. Det måler ikke stødet op og ned over selve bumpet; GPS hvert sekund kan ikke måle det.',
+  TO ? `Ekstra tid pr. element: strækningen deles i zoner på ±${g(M.zonebredde_m, 0)} m om hvert element og den øvrige strækning. Gennemsnitlig ekstra tid pr. tur (efter − før), ture uden standsning ved stop. Øvre grænse = hele den ekstra tid i zonen. Nedre grænse = det, der er ud over, at farten også er lavere på den øvrige strækning (efter − før × forholdet efter/før dér). Intervallet afhænger derfor af, om den generelle nedsatte fart også gælder ved elementerne. For den øvrige strækning er nedre grænse den rå ekstra tid dér, og øvre grænse den plus den generelle del inde i zonerne. Intervallerne kan ikke lægges sammen.`
+     : `Tid pr. zone: strækningen deles i zoner på ±${g(M.zonebredde_m, 0)} m om hvert element og den øvrige strækning. Gennemsnitlig tid pr. tur i zonen, ture uden standsning ved stop.`,
+].concat(M.maalenoter || []);
+(function bygSiden() {
+  const kortHtml = kort ? `
+<div class="kort kort-boks span-7"><div id="kort" role="img" aria-label="Kort over strækningerne med elementer og stoppesteder"></div></div>
+<div class="kort-tekst span-5"><p>${esc(M.straekning_tekst)}</p></div>` : '';
+  const forbehold = M.forbehold.length ? `<div class="box"><ul>${M.forbehold.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>` : '';
+  const drift = TO ? `
+<div id="drift" style="display:contents"><h2 class="sek">Hvad betyder det i drift</h2>
+<div class="tiles tre">${card('d1')}${card('d2')}${card('d3')}</div>
+<p class="note" id="n-drift" style="grid-column: span 12; margin: -12px 0 0"></p>
+<p class="note" id="n-halv" style="grid-column: span 12; margin: -20px 0 0"></p></div>` : '';
+  const timeValg = `<select id="time-valg" aria-label="Vælg time"><option value="${AT}">Alle timer</option>${[...Array(24).keys()].map((t) => `<option value="${t}">kl. ${hh(t)}</option>`).join('')}</select>`;
+  el('side').innerHTML = `
+${FLERE ? knapRække('s', STRK.map((x) => [x.id, x.navn]), 's-knapper') : ''}
+<div class="card span-12 om" id="om"><h2>Om strækningen</h2><dl id="om-dl"></dl></div>
+<div class="vaelg" id="vaelg">
+  <div class="raekke" data-f="dag"><span>Dage</span>${M.dagtyper.map((x) => `<button type="button" data-v="${esc(x.navn)}">${esc(x.navn)}</button>`).join('')}</div>
+  <div class="raekke" data-f="rute" id="rute-raekke"><span>Rute</span></div>
+  <div class="raekke"><span>Time</span>${timeValg}<span class="hint">eller klik på en time i "Datagrundlag"</span></div>
+  <p id="omfang"></p>
+  <p class="obs" id="obs"></p>
+</div>
+${knapRække('ret', [], 'ret-knapper')}
+${knapRække('stop', stopKnapper)}
+<div class="tiles tre">${card('k1')}${card('k2')}${card('k3')}</div>
+${kortHtml}
+<h2 class="sek">Datagrundlag</h2>
+<div class="card span-12"><h2 id="h-n">Antal ture pr. time</h2><div class="graf halv" id="c-n" role="img" aria-label="Antal ture pr. time i valget"></div><p class="note" id="n-n"></p><p class="note" id="n-stand"></p></div>
+<div class="card span-12"><h2 id="h-ture">Planlagte ture</h2><div class="tabel-wrap tabel-hoej"><table class="tabel bred" id="t-ture"></table></div><p class="note" id="n-ture"></p></div>
+<h2 class="sek">Resultater</h2>
+<div class="card span-12"><h2>Fart langs strækningen</h2><div class="graf" id="c-fart" role="img" aria-label="Medianfart langs strækningen"></div><p class="note" id="n-fart"></p></div>
+<div class="card span-6"><h2>Køretid med og uden standsning ved stop</h2><div class="graf halv" id="c-tid" role="img" aria-label="Median køretid i sekunder, ture med og uden standsning ved stop"></div><p class="note" id="n-tid"></p></div>
+<div class="card span-6"><h2 id="h-brems"></h2><div class="valg" data-g="komfort">${KNAP3.map(([v, l]) => `<button type="button" data-v="${v}">${l}</button>`).join('')}</div><div class="graf halv" id="c-brems" role="img" aria-label="Andel ture efter komfortklasse"></div><p class="note" id="n-klasse"></p><p class="note" id="n-brems"></p></div>
+<div class="card span-12" id="k-zone"><h2 id="h-zone"></h2><table class="tabel" id="t-zone"></table><p class="tekst" id="t-tekst"></p><p class="note" id="n-stop"></p><p class="note" id="n-zone"></p></div>
+${drift}
+<div class="card span-12"><h2>Køretid pr. måned</h2><div class="graf halv" id="c-maaned" role="img" aria-label="Median køretid pr. måned"></div><p class="note" id="n-maaned"></p></div>
+<div class="card span-12"><h2>Hvad bygger tallene på</h2><div class="tabel-wrap"><table class="tabel bred" id="t-basis"></table></div></div>
+${forbehold}
+<details class="fold"><summary>Sådan har vi målt</summary><div class="indhold maalt"><ul id="maalt"></ul></div></details>`;
+  el('h-titel').textContent = M.titel;
+  el('h-under').textContent = M.undertitel;
+  el('h-basis').textContent = `Konklusionen i titlen gælder ${DAGE_STD}, alle ruter og alle timer. Andre dage, ruter og timer kan vælges nedenfor.`;
+  document.title = M.titel;
+  el('fod').innerHTML = `<p>${esc(M.kilde)}</p><p>${M.afsender ? 'Afsender: ' + esc(M.afsender) + ' · ' : ''}${M.udtraekdato ? 'Data udtrukket ' + esc(M.udtraekdato) + ' · ' : ''}Rapport bygget ${esc(dato(M.bygget))}.</p>`;
+})();
+
+// ---------- knapper ----------
+function retKnapper() {
+  const sr = SR();
+  const liste = sr.retninger.length > 1 ? [['B', 'Begge retninger']].concat(sr.retninger.map((r) => [r.id, r.navn])) : [];
+  const c = el('ret-knapper');
+  c.innerHTML = liste.map(([v, l]) => `<button type="button" data-v="${esc(v)}">${esc(l)}</button>`).join('');
+  c.classList.toggle('skjult', liste.length === 0);
+  if (ST.ret !== 'B' && !sr.retninger.some((r) => r.id === ST.ret)) ST.ret = 'B';
+  // rute: vælgeren vises kun, når der er mere end én rute i data
+  const ruter = sr.ruter || [AR];
+  const rr = el('rute-raekke');
+  rr.querySelectorAll('button').forEach((x) => x.remove());
+  ruter.forEach((r) => { const k = document.createElement('button'); k.type = 'button'; k.dataset.v = r; k.textContent = r; rr.appendChild(k); });
+  rr.classList.toggle('skjult', ruter.length <= 2);
+  if (!ruter.includes(ST.rute)) ST.rute = AR;
+  if (ST.time !== AT && !(sr.timer || []).includes(ST.time)) ST.time = AT;
+}
+function vaelgTime(t) { ST.time = (ST.time === t ? AT : t); draw(); }
+document.addEventListener('click', (e) => {
+  const v = e.target.closest('.valg button');
+  if (v) { ST.komfort = v.dataset.v; draw(); return; }
+  const r = e.target.closest('.vaelg .raekke button');
+  if (r) { ST[r.closest('.raekke').dataset.f] = r.dataset.v; draw(); return; }
+  const b = e.target.closest('.knapper button'); if (!b) return;
+  const f = b.closest('.knapper').dataset.f;
+  ST[f] = b.dataset.v;
+  if (f === 's') { retKnapper(); if (window.RAPPORT_KORT_TILPAS) window.RAPPORT_KORT_TILPAS(); }
+  draw();
+});
+el('time-valg').addEventListener('change', (e) => { ST.time = +e.target.value; draw(); });
+
+// ---------- tekst og nøgletal ----------
+const tile = (id, label, big, small, info) => { el(id).innerHTML = `<div class="tl">${esc(label)}${info ? `<span class="info" tabindex="0" role="img" aria-label="${esc(info)}" data-t="${esc(info)}">ⓘ</span>` : ''}</div><div class="tb">${big}</div><div class="ts">${small}</div>`; };
+function drawTiles() {
+  const d = ST.ret, G = ST.stop, sr = SR();
+  const nA = NR(d, G, 'A'), nB = NR(d, G, SLUT);
+  const aA = NR(d, ALLE, 'A'), aB = NR(d, ALLE, SLUT);   // stillestand: aldrig filtreret på stop
+  const harVindue = sr.vinduer.length > 0 && nA.minfart && nB.minfart && sr.vinduer.every((v) => nA.minfart[v] != null && nB.minfart[v] != null);
+  const minf = (n) => (harVindue ? (n.minfart && sr.vinduer.every((v) => n.minfart[v] != null) ? Math.round(mean(sr.vinduer.map((v) => n.minfart[v]))) : null) : n.minfart_straek);
+  const minLabel = harVindue || sr.vinduer.length ? (BUMPS().length ? 'Laveste fart ved bumpene' : 'Laveste fart ved elementerne') : 'Laveste fart på strækningen';
+  const pre = FLERE ? `${sr.navn} · ` : '';
+  const turN = PER.map((p) => `${TO ? lc(LBL[p]) + ' ' : ''}${g(NR(d, G, p).Ture, 0)} ture`).join(', ');
+  const minN = Math.min(...PER.map((p) => NR(d, G, p).Ture || 0));
+  const af = `median · ${grpTekst(G)}<br>${turN}${obsN(minN)}`;   // afgrænsning i selve kortet: statistik, gruppe og antal
+  const per = (p) => { const pd = (M.perioder_datoer || {})[p]; return pd ? `${LBL[p]} ${dato(pd[0])} til ${dato(pd[1])}` : LBL[p]; };
+  const omf = (p) => `${per(p)}: ${OM(p).Dage} ${DAGE}, ${g(OM(p).Ture, 0)} ture`;
+  if (TO) {
+    tile('k1', 'Ekstra køretid på strækningen', dlt(nA.koretid, nB.koretid) + ' s', `${g(nA.koretid)} → ${g(nB.koretid)} s<br>${af}`);
+    tile('k2', minLabel, `ca. ${pr(minf(nB))} <span class="enh">km/t</span>`, `${lc(LBL.A)} ca. ${pr(minf(nA))} km/t<br>${af}`);
+    tile('k3', 'Komfort: ture med mærkbar opbremsning', (nB.andel_opbr == null ? '-' : pr(100 * nB.andel_opbr) + ' %'), `${lc(LBL.A)} ${nA.andel_opbr == null ? '-' : pr(100 * nA.andel_opbr) + ' %'}<br>${grpTekst(G)}<br>${turN}${obsN(minN)}`, INFO);
+    el('omfang').innerHTML = `<b>Valgt: ${esc(pre + valgTekst())}</b> · ${esc(omf('A'))} · ${esc(omf('B'))}`;
+    el('n-fart').textContent = `Gennemsnitsfarten på strækningen: ca. ${g(nA.gnsfart, 0)} → ${g(nB.gnsfart, 0)} km/t (${grpTekst(G)}, ${valgTekst()}). Linje = median. Skygge = midterste halvdel af turene (25-75 %).`;
+  } else {
+    tile('k1', 'Køretid på strækningen', `${g(nA.koretid)} <span class="enh">s</span>`, af);
+    tile('k2', minLabel, `ca. ${pr(minf(nA))} <span class="enh">km/t</span>`, af);
+    tile('k3', 'Komfort: ture med mærkbar opbremsning', (nA.andel_opbr == null ? '-' : pr(100 * nA.andel_opbr) + ' %'), `${grpTekst(G)}<br>${turN}${obsN(minN)}`, INFO);
+    el('omfang').innerHTML = `<b>Valgt: ${esc(pre + valgTekst())}</b> · ${esc(omf('A'))}`;
+    el('n-fart').textContent = `Gennemsnitsfarten på strækningen: ca. ${g(nA.gnsfart, 0)} km/t (${grpTekst(G)}, ${valgTekst()}). Linje = median. Skygge = midterste halvdel af turene (25-75 %).`;
+  }
+  // standsning ved stop: beskriver datagrundlaget (ikke et nøgletal)
+  const st = (p) => { const x = NR(d, ALLE, p); return x.andel_stop == null ? '-' : pr(100 * x.andel_stop) + ' %'; };
+  el('n-stand').textContent = `Ture med standsning ved stop: ${PER.map((p) => `${TO ? lc(LBL[p]) + ' ' : ''}${st(p)}`).join(', ')} af turene i valget. Standsning ved stop = bussen kommer under ${g(M.stillestand_kmh)} km/t et sted på strækningen, normalt ved et stoppested (men også fx i kø eller for rødt lys).`;
+  // fravalgte ture pga. dårlige data (valget, valgt retning)
+  const fr = {}; PER.forEach((p) => { fr[p] = { n: 0, fra: 0, stop: 0, afst: 0, komf: 0 }; });
+  FRA.forEach((r) => { if (!ADD(r) || (d !== 'B' && r.Retning !== d) || !fr[r.Periode]) return; ['n', 'fra', 'stop', 'afst', 'komf'].forEach((k) => { fr[r.Periode][k] += r[k]; }); });
+  const pctT = (a, b) => (b ? g(100 * a / b, 1) : '0');
+  el('obs').innerHTML = PER.some((p) => fr[p].fra) ? 'Fravalgt pga. dårlige data: ' + PER.map((p) => { const f = fr[p]; return `${TO ? lc(LBL[p]) + ' ' : ''}${g(f.fra, 0)} af ${g(f.n, 0)} ture (${pctT(f.fra, f.n)} %)`; }).join(', ')
+    + `. Heraf ${g(PER.reduce((s, p) => s + fr[p].stop, 0), 0)} med et punkt matchet til en stop-række (planlagt position, ikke GPS), ${g(PER.reduce((s, p) => s + fr[p].afst, 0), 0)} langt fra nærmeste GPS-punkt og ${g(PER.reduce((s, p) => s + fr[p].komf, 0), 0)}, hvor fart og komfort ikke kunne regnes; en tur kan have flere.` : '';
+  // antal ture ved køretid- og komfortgraferne
+  const ant = (grp) => PER.map((p) => `${LBL[p]} ${g(NR(d, grp, p).Ture, 0)}`).join(', ');
+  el('n-tid').innerHTML = esc(`Antal ture: uden standsning ved stop ${ant('Uden stop')}; med standsning ved stop ${ant('Med stop')}.`) + obsN(Math.min(...['Uden stop', 'Med stop'].flatMap((k) => PER.map((p) => NR(d, k, p).Ture || 0))));
+}
+function drawOm() {
+  const sr = SR(), v = M.vej || {}, io = 'ikke oplyst i config';
+  const nb = sr.elementer.filter((e) => e.type === 'bump').length, ni = sr.elementer.filter((e) => e.type === 'indsnaevring').length;
+  const andre = sr.elementer.filter((e) => e.type === 'andet').map((e) => e.navn);
+  const ruter = (sr.ruter || []).filter((r) => r !== AR);
+  const rk = [
+    ['Strækning', `${g(sr.laengde_m, 0)} m fra ${sr.start_navn} til ${sr.slut_navn}`],
+    ['Vejtype', v.vejtype || io],
+    ['Hastighedsgrænse', v.hastighed || io],
+    ['Bump', nb ? `${nb}${v.bumptype ? ' · ' + v.bumptype : ' · type ' + io}` : 'ingen i config'],
+    ['Indsnævringer', ni ? String(ni) : 'ingen i config'],
+    ['Andre hastighedsforanstaltninger', [v.andre_foranstaltninger, andre.length ? andre.join(', ') : ''].filter(Boolean).join(' · ') || io],
+    ['Stoppesteder på strækningen', sr.stoppesteder.length ? [...new Set(sr.stoppesteder.map((s) => s.navn))].join(', ') : 'ikke angivet i config (rapport.stoppesteder)'],
+    ['Ruter i data', ruter.join(', ') || '-'],
+  ];
+  el('om-dl').innerHTML = rk.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('');
+}
+function drawDrift() {
+  if (!TO) return;
+  const d = ST.ret, sr = SR();
+  const mine = DRIFT.filter((r) => VK(r));
+  const dr = mine.find((r) => r.Retning === d) || mine.find((r) => r.Retning === 'B') || {};
+  const terms = mine.filter((r) => r.Retning !== 'B' && (d === 'B' || r.Retning === d));
+  const min = dr.Ekstra_min_dag;
+  const dpm = DPM[ST.dag] || [20, 23];
+  const kl = ST.time === AT ? '' : ` kl. ${hh(ST.time)}`;
+  tile('d1', `Ekstra køretid pr. ${DAG}${kl}`, `${g(min, 1)} <span class="enh">min</span>`, terms.map((r) => `${g(r.Ture_dag, 1)} ture × ${g(r.Delta_s, 2)} s`).join(' + ') || '-');
+  tile('d2', `Ekstra køretid pr. måned${kl}`, `${g(min * dpm[0] / 60, 1)}–${g(min * dpm[1] / 60, 1)} <span class="enh">timer</span>`, `ca. ${dpm[0]}–${dpm[1]} ${DAGE} pr. måned`);
+  const tureDag = mine.filter((r) => r.Retning !== 'B').reduce((s, r) => s + r.Ture_dag, 0);   // hele linjen (begge retninger), uanset retnings- og stop-valg
+  const nb = BUMPS().length;
+  if (nb) tile('d3', `Bump-passager pr. ${DAG}${kl}`, g(Math.round(tureDag * nb), 0), `${g(tureDag, 1)} ture × ${nb} bump, ${DAGE}`);
+  else tile('d3', `Ture pr. ${DAG}${kl}`, g(Math.round(tureDag), 0), `${DAGE}, ${lc(LBL.B)}`);
+  el('n-drift').textContent = `Valgt: ${valgTekst()}. Ekstra køretid gælder altid alle ture (med og uden standsning) og er regnet på gennemsnit: (gennemsnitlig køretid ${lc(LBL.B)} − ${lc(LBL.A)}) × ture pr. ${DAG} ${lc(LBL.B)}; ture pr. ${DAG} = ture i valget / ${DAGE} med ture${ST.time === AT ? '' : ' (alle timer)'}. Bump-passager gælder begge retninger og følger ikke retnings- eller stop-valget.`;
+  const zr = (e) => ZT.find((r) => r.S === ST.s && r.Retning === d && r.Element === e);
+  const bz = sr.elementer.filter((e) => e.type === 'bump').map((b) => zr(b.navn)).filter(Boolean);
+  el('n-halv').textContent = bz.length ? `Ved bumpene ca. ${gf(bz.reduce((s, r) => s + r.Lav, 0))}–${gf(bz.reduce((s, r) => s + r.Hoej, 0))} s pr. tur (ekstra tid pr. element: altid ${DAGE_STD}, alle ruter og timer, ture uden standsning ved stop).` : '';
+}
+
+// ---------- grafer ----------
+const ch = (id) => { const e = el(id); return echarts.getInstanceByDom(e) || echarts.init(e, null, { renderer: 'canvas' }); };
+window.addEventListener('resize', () => document.querySelectorAll('.graf').forEach((e) => { const c = echarts.getInstanceByDom(e); if (c) c.resize(); }));
+const base = () => ({ animation: false, textStyle: { fontFamily: css('--skrift') || 'sans-serif' } });
+const tx = () => ({ color: css('--farve-tekst') });
+const legend = (extra) => Object.assign({ top: 0, left: 0, selectedMode: false, icon: 'roundRect', textStyle: { color: css('--farve-tekst'), fontSize: 14 } }, extra);
+const colP = (p) => css(p === 'A' && TO ? '--farve-foer' : '--farve-efter');
+const xOf = (d, m) => (d !== 'B' && omvendt(d) ? SR().bin_max_m - m : m);      // omvendt retning: kørselsretningen fra venstre mod højre
+const posX = (d, s) => xOf(d, Math.min(SR().bin_max_m, Math.floor(s / 10) * 10));
+// stoppesteder pr. kørselsretning: ved valgt retning kun den retnings stolper; ved "begge" alle, med retningen i navnet
+const stopFor = (sr, d) => sr.stoppesteder.filter((s) => s.retning === null || d === 'B' || s.retning === d);
+const stopNavn = (s, d) => (d === 'B' && s.retning !== null ? `${s.navn} (retn. ${s.retning})` : s.navn);
+
+function drawFart() {
+  const d = ST.ret, G = ST.stop, c = ch('c-fart'), sr = SR();
+  const rows = [];                                                   // kompakte lister pr. 10 m -> én række pr. meter
+  PROF.filter((r) => VK(r) && r.Retning === d && r.Gruppe === G).forEach((r) => r.Meter.forEach((m, i) => {
+    if (m >= 0 && m <= sr.bin_max_m) rows.push({ Periode: r.Periode, Meter: m, Median: r.Median[i], P25: r.P25[i], P75: r.P75[i], Ture: r.Ture[i] });
+  }));
+  const cats = [...new Set(rows.map((r) => xOf(d, r.Meter)))].sort((a, b) => a - b);
+  const byP = {}; PER.forEach((p) => { byP[p] = {}; rows.filter((r) => r.Periode === p).forEach((r) => { byP[p][xOf(d, r.Meter)] = r; }); });
+  const small = window.innerWidth < 700;
+  const mk = (x, navn, farve, type, w, pos, fs, fw) => ({ xAxis: String(x), label: { formatter: navn, position: pos, color: css('--farve-tekst'), fontSize: fs, fontWeight: fw }, lineStyle: { color: farve, type, width: w } });
+  const marks = sr.elementer.map((e) => mk(posX(d, e.s_m), small ? e.navn.replace('Indsnævring', 'Ind.') : e.navn, typFarve(e.type), 'dashed', e.type === 'bump' ? 2 : 1.5, 'end', small ? 11 : (e.type === 'bump' ? 14 : 12), e.type === 'bump' ? 'bold' : 'normal'));
+  stopFor(sr, d).forEach((s) => marks.push(mk(posX(d, s.s_m), stopNavn(s, d), css('--farve-stop'), 'dotted', 1, 'insideStartBottom', 11, 'normal')));
+  const series = [];
+  PER.forEach((p) => {
+    series.push({ name: '_b' + p, type: 'line', stack: 'band' + p, data: cats.map((x) => (byP[p][x] ? byP[p][x].P25 : null)), symbol: 'none', lineStyle: { opacity: 0 }, silent: true, areaStyle: { opacity: 0 }, emphasis: { disabled: true } });
+    series.push({ name: '_s' + p, type: 'line', stack: 'band' + p, data: cats.map((x) => (byP[p][x] ? byP[p][x].P75 - byP[p][x].P25 : null)), symbol: 'none', lineStyle: { opacity: 0 }, silent: true, areaStyle: { color: colP(p), opacity: 0.18 }, emphasis: { disabled: true } });
+  });
+  PER.forEach((p, i) => series.push({ name: LBL[p], type: 'line', data: cats.map((x) => (byP[p][x] ? byP[p][x].Median : null)), symbol: 'none', lineStyle: { width: 3.5, color: colP(p) }, itemStyle: { color: colP(p) }, z: 3, emphasis: { disabled: true },
+    endLabel: { show: !small, formatter: LBL[p], color: css('--farve-tekst'), fontWeight: 'bold', fontSize: 13 },
+    markLine: i === 0 ? { silent: true, symbol: 'none', data: marks } : undefined }));
+  const top = Math.max(10, Math.ceil(Math.max(0, ...rows.map((r) => r.P75 || 0)) / 10) * 10);
+  c.setOption(Object.assign(base(), {
+    grid: { left: 8, right: small ? 16 : 96, top: 56, bottom: 40, containLabel: true },
+    legend: small ? legend({ data: PER.map((p) => LBL[p]), itemWidth: 22, itemHeight: 6 }) : { show: false },     // direkte navne ved linjerne (endLabel); legende kun på smal skærm
+    tooltip: { trigger: 'axis', axisPointer: { type: 'line' }, formatter: (ps) => { const x = cats[ps[0].dataIndex]; return `<b>${x} m</b>` + PER.map((p) => { const r = byP[p][x]; return r ? `<div><span style="display:inline-block;width:10px;height:10px;background:${colP(p)};margin-right:4px"></span>${esc(LBL[p])}: ${g(r.Median)} km/t (25–75 %: ${g(r.P25)}–${g(r.P75)}), ${r.Ture} ture${r.Ture < OBSN ? ' (OBS: få ture)' : ''}</div>` : ''; }).join(''); } },
+    xAxis: { type: 'category', data: cats.map(String), boundaryGap: false, name: d === 'B' ? `Meter fra ${sr.start_navn}` : 'Meter fra start af strækningen', nameLocation: 'middle', nameGap: 26, nameTextStyle: tx(), axisLabel: { interval: (i, v) => +v % 100 === 0, color: css('--farve-tekst') }, axisTick: { show: false } },
+    yAxis: { type: 'value', min: 0, max: top, interval: 10, name: 'km/t', nameLocation: 'end', nameTextStyle: Object.assign({ align: 'left' }, tx()), axisLabel: tx(), splitLine: { lineStyle: { color: css('--farve-streg'), opacity: 0.6 } } },
+    series }), true);
+  c.resize();
+}
+
+function drawTid() {
+  const d = ST.ret, c = ch('c-tid');
+  const cats = ['Uden stop', 'Med stop'];
+  c.setOption(Object.assign(base(), {
+    grid: { left: 8, right: 8, top: 36, bottom: 4, containLabel: true },
+    legend: window.innerWidth < 700 ? legend({ data: PER.map((p) => LBL[p]) }) : { show: false },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'none' }, valueFormatter: (x) => g(x) + ' s' },
+    xAxis: { type: 'category', data: cats, axisTick: { show: false }, axisLabel: { color: css('--farve-tekst'), fontSize: 14, formatter: (k) => SLBL[k].replace(' ved', '\nved') } },
+    yAxis: { type: 'value', show: false, min: 0, max: (v) => v.max * 1.15 },
+    series: PER.map((p) => ({ name: LBL[p], type: 'bar', barMaxWidth: 60, data: cats.map((k) => NR(d, k, p).koretid), itemStyle: { color: colP(p) }, emphasis: { disabled: true },
+      label: { show: true, position: 'top', color: css('--farve-tekst'), fontSize: 14, fontWeight: 'bold', formatter: (q) => (q.dataIndex === 0 && window.innerWidth >= 700 ? LBL[p] + ' ' : '') + g(q.value) + ' s' } })) }), true);
+  c.resize();
+}
+
+function drawBrems() {
+  const d = ST.ret, c = ch('c-brems'), fld = KFELT[ST.komfort];
+  const cnt = { A: {}, B: {} }, tot = { A: 0, B: 0 };
+  for (const r of FORD) {
+    if (!ADD(r) || (d !== 'B' && r.Retning !== d)) continue;
+    if (ST.stop !== ALLE && r.Stop !== ST.stop) continue;
+    cnt[r.Periode][r[fld]] = (cnt[r.Periode][r[fld]] || 0) + r.n; tot[r.Periode] += r.n;
+  }
+  const sh = (p) => (tot[p] ? 100 * (1 - (cnt[p].Ingen || 0) / tot[p]) : 0), dd = sh('B') - sh('A');
+  const titel = 'Passagerkomfort: ' + (TO ? (dd > 0.5 ? 'flere' : dd < -0.5 ? 'færre' : 'samme andel') + ' ture med ' + KTXT[ST.komfort]
+    : `${tot.A > 0 ? g(sh('A'), 0) : '-'} % af turene har ${KTXT[ST.komfort]}`);
+  el('h-brems').innerHTML = `${esc(titel)}<span class="info" tabindex="0" role="img" aria-label="${esc(KOMF)}" data-t="${esc(KOMF)}">ⓘ</span>`;
+  // sammenligning med en almindelig standsning ved stop i første periode (samme valg og retning, uafhængigt af stop-valget; skjult ved Med standsning, hvor søjlen viser det samme)
+  let sm = 0, sk = 0, sn = 0;
+  for (const r of FORD) { if (!ADD(r) || r.Periode !== 'A' || r.Stop !== 'Med stop' || (d !== 'B' && r.Retning !== d)) continue; sn += r.n; if (r[fld] !== 'Ingen') sm += r.n; if (r[fld] === 'Kraftig') sk += r.n; }
+  const spm = sn ? 100 * sm / sn : 0;
+  const sml = (ST.stop === 'Med stop' || sn === 0) ? '' : ` Til sammenligning (${LBL.A}): ${spm >= 99 ? 'næsten alle ture' : g(spm, 0) + ' % af turene'} med standsning ved stop havde mærkbar ${KNAVN[ST.komfort]}, og ${g(100 * sk / sn, 0)} % havde kraftig ${KNAVN[ST.komfort]}${sn < OBSN ? ` (OBS: ${sn} ture)` : ''}.`;
+  el('n-brems').textContent = KNOTE[ST.komfort] + sml;
+  const pct = (p, k) => (tot[p] > 0 ? g(100 * (cnt[p][k] || 0) / tot[p], 0) + ' %' : '-');
+  el('n-klasse').innerHTML = esc(PER.map((p) => `${LBL[p]} (${g(tot[p], 0)} ture): ingen ${pct(p, 'Ingen')} · mærkbar ${pct(p, 'Maerkbar')} · kraftig ${pct(p, 'Kraftig')}`).join('. ') + '.') + obsN(Math.min(...PER.map((p) => tot[p])));
+  const klasser = [['Ingen', 'Ingen', '--farve-klasse-ingen', '#000'], ['Maerkbar', 'Mærkbar', '--farve-klasse-maerkbar', '#000'], ['Kraftig', 'Kraftig', '--farve-klasse-kraftig', '#fff']];
+  c.setOption(Object.assign(base(), {
+    grid: { left: 8, right: 16, top: 36, bottom: 4, containLabel: true },
+    legend: legend({ itemWidth: 14 }),
+    tooltip: { trigger: 'axis', axisPointer: { type: 'none' }, valueFormatter: (x) => (x === null ? '-' : g(x) + ' %') },
+    xAxis: { type: 'value', min: 0, max: 100, show: false },
+    yAxis: { type: 'category', data: PER.map((p) => LBL[p]), inverse: true, axisTick: { show: false }, axisLabel: { color: css('--farve-tekst'), fontSize: 14, fontWeight: 'bold' } },
+    series: klasser.map(([k, n, col, fg]) => ({ name: n, type: 'bar', stack: 'k', barMaxWidth: 60, itemStyle: { color: css(col) }, emphasis: { disabled: true },
+      data: PER.map((p) => (tot[p] > 0 ? 100 * (cnt[p][k] || 0) / tot[p] : null)),
+      label: { show: true, color: tekstPaa(css(col)), fontSize: window.innerWidth < 700 ? 11 : 13, fontWeight: 'bold', formatter: (q) => (q.value >= 7 ? g(q.value, 0) + ' %' : '') } })) }), true);
+  c.resize();
+}
+
+function drawTabel() {
+  const d = ST.ret;
+  const rows = ZT.filter((r) => r.S === ST.s && r.Retning === d);
+  el('k-zone').classList.toggle('skjult', rows.length === 0);          // uden zonetid (ingen elementer) vises tabellen ikke
+  if (!rows.length) return;
+  if (TO) {
+    el('h-zone').textContent = 'Ekstra køretid pr. element';          // beskrivende titel (fundet står i linjen under tabellen)
+    const iv = (r) => (r.Element === 'Hele strækningen' ? `${gf(r.Lav)} s` : `${gf(r.Lav)}–${gf(r.Hoej)} s`);
+    el('t-zone').innerHTML = '<thead><tr><th>Element</th><th>Ekstra tid pr. tur</th></tr></thead><tbody>'
+      + rows.map((r) => `<tr${r.Element === 'Hele strækningen' ? ' class="sum"' : ''}><td>${esc(r.Element)}</td><td>${iv(r)}</td></tr>`).join('') + '</tbody>';
+    const dele = [];
+    ['bump', 'indsnaevring', 'andet'].forEach((t) => {
+      const g2 = rows.filter((r) => r.Type === t);
+      if (g2.length) dele.push(`${TYPE_TEKST[t]}: ca. ${gf(Math.min(...g2.map((r) => r.Lav)))}–${gf(Math.max(...g2.map((r) => r.Hoej)))} s hver.`);
+    });
+    el('t-tekst').textContent = dele.length ? dele.join(' ') + ' Resten ligger på den øvrige strækning.' : '';
+    el('n-zone').textContent = `Gælder altid ${DAGE_STD}, alle ruter og alle timer (følger ikke valgene). Intervallerne kan ikke lægges sammen. Gennemsnit pr. tur, zoner ±${g(M.zonebredde_m, 0)} m om hvert element. Køretiden i nøgletallene er medianen, så de to tal er ikke helt ens.`;
+  } else {
+    el('h-zone').textContent = 'Tid pr. zone';
+    el('t-zone').innerHTML = '<thead><tr><th>Zone</th><th>Tid pr. tur</th></tr></thead><tbody>'
+      + rows.map((r) => `<tr${r.Element === 'Hele strækningen' ? ' class="sum"' : ''}><td>${esc(r.Element)}</td><td>${gf(r.Niveau)} s</td></tr>`).join('') + '</tbody>';
+    el('t-tekst').textContent = '';
+    el('n-zone').textContent = `Gælder altid ${DAGE_STD}, alle ruter og alle timer (følger ikke valgene). Gennemsnit, zoner ±${g(M.zonebredde_m, 0)} m om hvert element.`;
+  }
+  el('n-stop').textContent = ST.stop === 'Uden stop' ? '' : 'Beregnet for ture uden standsning ved stop: standsninger inde i zonerne blander sig.';
+}
+
+function drawMaaned() {
+  const d = ST.ret, c = ch('c-maaned');
+  const rows = MAAN.filter((r) => VK(r) && r.Retning === d && r.Median != null);
+  const cats = [...new Set(rows.map((r) => r.Maaned))].sort();
+  const lab = (m) => MAANEDER[+m.slice(5, 7) - 1];
+  const vals = rows.map((r) => r.Median);
+  const lo = vals.length ? Math.max(0, Math.floor(Math.min(...vals) / 10) * 10 - 10) : 0, hi = vals.length ? Math.ceil(Math.max(...vals) / 10) * 10 + 10 : 100;
+  const faa = rows.filter((r) => r.Faa || r.Ture < OBSN);
+  el('n-maaned').innerHTML = esc(`Valgt: ${valgTekst()}, alle ture (med og uden standsning), median.`) + (faa.length ? ` <span class="obs-t">OBS:</span> ${esc(`hul markør = under ${M.obs_dage_maaned} ${DAGE} eller under ${OBSN} ture i måneden (${faa.map((r) => `${lab(r.Maaned)} ${r.Maaned.slice(0, 4)}: ${r.Dage} ${r.Dage === 1 ? DAG : DAGE}, ${r.Ture} ture`).filter((x, i, a) => a.indexOf(x) === i).join('; ')}).`)}` : '');
+  const series = PER.map((p) => ({ name: LBL[p], type: 'line', symbol: 'circle', symbolSize: 10, lineStyle: { width: 3, color: colP(p) }, itemStyle: { color: colP(p) }, connectNulls: false, emphasis: { disabled: true },
+    data: (() => {
+      const rr = cats.map((m) => rows.find((x) => x.Periode === p && x.Maaned === m) || null);
+      let li = -1; rr.forEach((x, i) => { if (x !== null) li = i; });        // sidste punkt får periodens navn (direkte navn i stedet for legende)
+      return rr.map((r, i) => {
+        if (!r) return null;
+        const o = { value: r.Median };
+        if (r.Faa || r.Ture < OBSN) { o.symbol = 'emptyCircle'; }      // få dage/ture: vises, men hul markør
+        if (i === li && window.innerWidth >= 700) o.label = { show: true, position: 'right', color: css('--farve-tekst'), fontSize: 13, fontWeight: 'bold', formatter: `${LBL[p]} ${g(r.Median)} s` };
+        return o;
+      });
+    })(),
+    label: { show: true, position: 'top', color: css('--farve-tekst'), fontSize: 13, fontWeight: 'bold', formatter: (q) => (q.value === null ? '' : g(q.value) + ' s') } }));
+  c.setOption(Object.assign(base(), {
+    grid: { left: 8, right: window.innerWidth < 700 ? 24 : 96, top: 40, bottom: 4, containLabel: true },
+    legend: window.innerWidth < 700 ? legend({ data: PER.map((p) => LBL[p]), icon: 'circle' }) : { show: false },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'line' }, formatter: (ps) => { const m = cats[ps[0].dataIndex]; return `<b>${lab(m)} ${m.slice(0, 4)}</b>` + ps.filter((q) => q.value !== null && q.value !== undefined && q.value !== '-').map((q) => { const r = rows.find((x) => x.Periode === (q.seriesName === LBL.A ? 'A' : 'B') && x.Maaned === m); return `<div>${q.marker}${esc(q.seriesName)}: ${g(q.value)} s (${r ? g(r.Ture, 0) : '?'} ture, ${r ? r.Dage : '?'} ${DAGE})${r && (r.Faa || r.Ture < OBSN) ? ' OBS: få' : ''}</div>`; }).join(''); } },
+    xAxis: { type: 'category', data: cats, axisTick: { show: false }, axisLabel: { color: css('--farve-tekst'), fontSize: 14, formatter: (m) => lab(m) } },
+    yAxis: { type: 'value', min: lo, max: hi, interval: 10, axisLabel: tx(), splitLine: { lineStyle: { color: css('--farve-streg'), opacity: 0.6 } } },
+    series }), true);
+  c.resize();
+}
+
+// ---------- datagrundlag: ture pr. time (klik = vælg time), planlagte ture og hvad tallene bygger på ----------
+function drawN() {
+  const d = ST.ret, G = ST.stop, c = ch('c-n');
+  const n = {}; PER.forEach((p) => { n[p] = Array(24).fill(0); });
+  for (const r of FORD) {                                            // ture i analysen efter valg af dage, rute, retning og standsning (alle timer)
+    if (!ADD(r, false) || (d !== 'B' && r.Retning !== d) || (G !== ALLE && r.Stop !== G) || !n[r.Periode]) continue;
+    n[r.Periode][r.Time] += r.n;
+  }
+  const timer = [...Array(24).keys()];
+  const mark = ST.time === AT ? undefined : { silent: true, itemStyle: { color: css('--farve-streg'), opacity: 0.7 }, data: [[{ xAxis: hh(ST.time) }, { xAxis: hh(ST.time) }]] };
+  c.setOption(Object.assign(base(), {
+    grid: { left: 8, right: 16, top: 36, bottom: 8, containLabel: true },
+    legend: TO ? legend({ data: PER.map((p) => LBL[p]) }) : { show: false },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: (ps) => `<b>kl. ${ps[0].axisValue}</b>` + ps.map((q) => `<div>${q.marker}${esc(q.seriesName)}: ${g(q.value, 0)} ture${q.value > 0 && q.value < OBSN ? ' (OBS: få ture)' : ''}</div>`).join('') + '<div>Klik for at vælge timen</div>' },
+    xAxis: { type: 'category', data: timer.map(hh), axisTick: { show: false }, axisLabel: { color: css('--farve-tekst') } },
+    yAxis: { type: 'value', name: 'Ture', nameTextStyle: tx(), axisLabel: tx(), splitLine: { lineStyle: { color: css('--farve-streg'), opacity: 0.6 } } },
+    series: PER.map((p, i) => ({ name: LBL[p], type: 'bar', data: n[p], itemStyle: { color: colP(p) }, emphasis: { disabled: true }, barGap: '10%',
+      markArea: i === 0 ? mark : undefined,
+      markLine: i === 0 ? { silent: true, symbol: 'none', lineStyle: { color: css('--farve-obs'), type: 'dashed' }, label: { formatter: `${OBSN} ture`, color: css('--farve-obs-tekst') }, data: [{ yAxis: OBSN }] } : undefined })) }), true);
+  c.resize();
+  el('h-n').textContent = `Antal ture pr. time, ${ST.dag.toLowerCase()}${ST.rute === AR ? '' : ', rute ' + ST.rute}`;
+  const faa = timer.filter((t) => PER.some((p) => n[p][t] > 0 && n[p][t] < OBSN)).map(hh);
+  el('n-n').innerHTML = esc(`Ture i tallene (${grpTekst(G)}, ${d === 'B' ? 'begge retninger' : retNavn(d)}). Time = da bussen passerede strækningens første punkt. Klik på en søjle for at vælge timen; klik igen for alle timer.`)
+    + (faa.length ? ` <span class="obs-t">OBS:</span> ${esc(`under ${OBSN} ture (usikker median) kl. ${faa.join(', ')}.`)}` : '');
+}
+function drawTure() {
+  const d = ST.ret, G = ST.stop;
+  let rows = TURE.filter((r) => r.S === ST.s && r.Dag === ST.dag && r.Rute === ST.rute && (d === 'B' || r.Retning === d));
+  if (ST.time !== AT) rows = rows.filter((r) => r.Kl != null && Math.floor(r.Kl / 60) === ST.time);
+  rows = rows.slice().sort((a, b) => (a.Kl == null) - (b.Kl == null) || (a.Kl || 0) - (b.Kl || 0) || a.Tur.localeCompare(b.Tur, 'da', { numeric: true }));
+  const kl = (m) => (m == null ? '–' : `${hh(Math.floor(m / 60))}:${hh(m % 60)}`);
+  const st4 = (x) => (x ? `${g(x[1])} s (${g(x[2])}–${g(x[3])})` : '–');
+  const visRet = d === 'B' && SR().retninger.length > 1;
+  let n_obs = 0;
+  const hoved = `<thead><tr><th>Kl.</th><th>Planlagt tur</th><th>Rute</th>${visRet ? '<th>Retning</th>' : ''}${PER.map((p) => `<th class="n">${esc(LBL[p])}: median (25–75 %)</th><th class="n">Kørsler</th>`).join('')}${TO ? '<th class="n">Ændring</th>' : ''}<th>OBS</th></tr></thead>`;
+  const krop = rows.map((r) => {
+    const x = r.G[G] || {};
+    const faa = PER.some((p) => !x[p] || x[p][0] < OBST); if (faa) n_obs++;
+    const ae = TO && x.A && x.B ? dlt(x.A[1], x.B[1]) + ' s' : '–';
+    return `<tr><td>${kl(r.Kl)}</td><td>${esc(r.Tur)}</td><td>${esc(r.Linje)}</td>${visRet ? `<td>${esc(r.Retning)}</td>` : ''}${PER.map((p) => `<td class="n">${st4(x[p])}</td><td class="n">${x[p] ? x[p][0] : 0}</td>`).join('')}${TO ? `<td class="n">${ae}</td>` : ''}<td class="obs-t">${faa ? 'få kørsler' : ''}</td></tr>`;
+  }).join('');
+  el('t-ture').innerHTML = hoved + '<tbody>' + krop + '</tbody>';
+  el('h-ture').textContent = `Planlagte ture${ST.time === AT ? '' : ' kl. ' + hh(ST.time)}: median køretid`;
+  el('n-ture').textContent = `${rows.length} planlagte ture (${ST.dag.toLowerCase()}, ${ST.rute === AR ? 'alle ruter' : 'rute ' + ST.rute}, ${grpTekst(G)}). Planlagt tur = turnummeret i turlisten, dvs. samme afgang hver dag; klokkeslæt = median over dagene, så enkelte dage kan ligge i nabotimen.${n_obs ? ` "Få kørsler" = under ${OBST} i en periode (${n_obs} ture).` : ''}${ST.time === AT ? ' Vælg en time for at se dens ture.' : ''}`;
+}
+function drawBasis() {
+  const v = `${ST.dag}`, ru = ST.rute === AR ? 'Alle' : ST.rute, ti = ST.time === AT ? 'Alle' : 'kl. ' + hh(ST.time);
+  const stand = { 'Uden stop': 'Uden', 'Alle ture': 'Med og uden', 'Med stop': 'Med' }[ST.stop];
+  const rk = [
+    ['Nøgletal og fart langs strækningen', v, ru, ti, stand, 'median'],
+    ['Køretid med og uden standsning', v, ru, ti, 'Hver for sig', 'median'],
+    ['Komfort (opbremsning og acceleration)', v, ru, ti, stand, 'andel ture'],
+    ['Datagrundlag og planlagte ture', v, ru, ti, stand, 'antal, median'],
+    ['Køretid pr. måned', v, ru, ti, 'Med og uden', 'median'],
+  ];
+  if (TO) rk.push(['Hvad betyder det i drift', v, ru, ti, 'Med og uden', 'gennemsnit']);
+  if (ZT.some((r) => r.S === ST.s)) rk.push([TO ? 'Ekstra køretid pr. element (fast)' : 'Tid pr. zone (fast)', STD, 'Alle', 'Alle', 'Uden', 'gennemsnit']);
+  rk.push(['Titlen (konklusionen)', STD, 'Alle', 'Alle', 'se titlen', '']);
+  el('t-basis').innerHTML = '<thead><tr><th>Afsnit</th><th>Dage</th><th>Rute</th><th>Timer</th><th>Standsning ved stop</th><th>Tal</th></tr></thead><tbody>'
+    + rk.map((r) => `<tr>${r.map((x) => `<td>${esc(x)}</td>`).join('')}</tr>`).join('') + '</tbody>';
+}
+
+// ---------- kort (valgfrit: Leaflet + OpenStreetMap, kræver internet) ----------
+// Viser alle strækninger; den valgte fremhæves. Stoppesteder vises pr. kørselsretning ud fra retningsvalget.
+let kortKort = null, kortLag = null;
+function initKort() {
+  if (!kort) return;
+  if (typeof L === 'undefined') { el('kort').textContent = 'Kortet kunne ikke indlæses.'; return; }
+  kortKort = L.map('kort', { scrollWheelZoom: false });
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-bidragydere' }).addTo(kortKort);
+  kortLag = L.layerGroup().addTo(kortKort);
+  const alle = [];
+  STRK.forEach((s) => { s.linje.forEach((p) => alle.push(p)); s.elementer.forEach((e) => alle.push([e.lat, e.lon])); });
+  kortKort.fitBounds(alle, { padding: [28, 28] });
+  window.RAPPORT_KORT = kortKort;
+  window.RAPPORT_KORT_TILPAS = () => { const s = SR(); const p = s.linje.concat(s.elementer.map((e) => [e.lat, e.lon])); kortKort.fitBounds(p, { padding: [28, 28] }); };
+}
+function tegnKort() {
+  if (!kortKort) return;
+  kortLag.clearLayers();
+  const punkt = (navn, lat, lon, farve, r, dir, fast, op) => {
+    const m = L.circleMarker([lat, lon], { radius: r, weight: 2, color: '#fff', fillColor: farve, fillOpacity: op }).addTo(kortLag);
+    m.bindTooltip(navn, { permanent: fast, direction: dir, className: 'etiket' });
+  };
+  // først de ikke-valgte (nederst), så den valgte
+  [...STRK].sort((a, b) => (a.id === ST.s) - (b.id === ST.s)).forEach((s) => {
+    const valgt = s.id === ST.s;
+    L.polyline(s.linje, { color: valgt ? css('--farve-primaer') : css('--farve-anden-straekning'), weight: valgt ? 6 : 3, opacity: valgt ? 0.9 : 0.7 }).addTo(kortLag).bindTooltip(s.navn);
+    if (valgt) {
+      punkt(s.start_navn, s.linje[0][0], s.linje[0][1], css('--farve-primaer'), 6, 'bottom', true, 1);
+      punkt(s.slut_navn, s.linje[1][0], s.linje[1][1], css('--farve-primaer'), 6, 'top', true, 1);
+    }
+    s.elementer.forEach((e) => punkt(e.navn, e.lat, e.lon, typFarve(e.type), valgt ? (e.type === 'bump' ? 8 : 7) : 5, 'left', valgt, valgt ? 1 : 0.55));
+    stopFor(s, valgt ? ST.ret : 'B').forEach((sp) => punkt(valgt ? stopNavn(sp, ST.ret) : sp.navn, sp.lat, sp.lon, css('--farve-stop'), valgt ? 6 : 4, 'right', valgt, valgt ? 1 : 0.55));
+  });
+}
+
+function draw() {
+  DAG = ord(ST.dag, 0); DAGE = ord(ST.dag, 1);
+  document.querySelectorAll('.knapper button').forEach((b) => { const on = b.dataset.v === ST[b.closest('.knapper').dataset.f]; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  document.querySelectorAll('.valg button').forEach((b) => { const on = b.dataset.v === ST.komfort; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  document.querySelectorAll('.vaelg .raekke button').forEach((b) => { const on = b.dataset.v === ST[b.closest('.raekke').dataset.f]; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  el('time-valg').value = String(ST.time);
+  el('maalt').innerHTML = maaltNoter().map((t) => `<li>${esc(t)}</li>`).join('');
+  drawOm(); drawTiles(); drawN(); drawTure(); drawFart(); drawTid(); drawBrems(); drawTabel(); drawDrift(); drawMaaned(); drawBasis(); tegnKort();
+}
+// klik på en time i datagrundlaget vælger timen (klik igen = alle timer)
+ch('c-n').getZr().on('click', (e) => {
+  const c = ch('c-n'), pt = [e.offsetX, e.offsetY];
+  if (!c.containPixel({ gridIndex: 0 }, pt)) return;
+  const x = c.convertFromPixel({ gridIndex: 0 }, pt);
+  const i = Math.round(Array.isArray(x) ? x[0] : x);
+  if (i >= 0 && i < 24) vaelgTime(i);
+});
+window.RAPPORT = { state: ST, draw, data: D, vaelgTime };
+try { initKort(); } catch (e) { console.error('kort: ' + e.message); }
+kontrolKontrast();
+retKnapper();
+draw();
+window.RAPPORT_KLAR = true;
+})();
+</script>
+</body>
+</html>

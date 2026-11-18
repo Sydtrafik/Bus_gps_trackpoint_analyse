@@ -1,0 +1,7 @@
+# Tekst normaliseres; .bat skal altid have CRLF, ellers virker cmd-filerne ikke.
+* text=auto
+*.bat text eol=crlf
+*.png binary
+*.jpg binary
+# Tredjepartsbiblioteker gemmes byte for byte
+program/rapport/vendor/** -text

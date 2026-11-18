@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITEL}}</title>
+<style>
+/* Farver og skrift: ret her (samme variabler som rapport\skabelon.html). Tekst mindst 4,5:1 mod hvid, datamærker mindst 3:1. */
+:root {
+  --skrift: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --farve-primaer: #2f3e4e;
+  --farve-foer: #6a8399;
+  --farve-efter: #2f3e4e;
+  --farve-baggrund: #f4f5f6;
+  --farve-flade: #ffffff;
+  --farve-streg: #d3d8dd;
+  --farve-tekst: #1c232b;
+  --farve-tekst2: #56616c;
+  --farve-hvid: #ffffff;
+  --farve-obs: #b8650f;          /* OBS-markering (kant) */
+  --farve-obs-flade: #fdf4ea;    /* OBS-boksens baggrund */
+  --farve-obs-tekst: #8a4a08;    /* OBS i tabellen (tekst) */
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; font-family: var(--skrift); color: var(--farve-tekst); background: var(--farve-baggrund); line-height: 1.45; font-size: 16px; }
+main { max-width: 980px; margin: 0 auto; padding: 16px; }
+header { margin: 8px 0 16px; }
+h1 { font-size: 1.5rem; line-height: 1.25; margin: 0 0 6px; color: var(--farve-primaer); }
+.under { color: var(--farve-tekst2); margin: 0; }
+.emne { margin: 0 0 4px; font-size: 1.05rem; font-weight: 600; color: var(--farve-tekst2); }
+.valgt { display: inline-flex; gap: 6px; align-items: center; margin-left: 8px; font-size: .85rem; font-weight: 400; }
+#graf, #graf-n { cursor: pointer; }
+.kort { background: var(--farve-flade); border: 1px solid var(--farve-streg); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.knapper { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; align-items: center; }
+.knapper span { color: var(--farve-tekst2); font-size: .9rem; margin-right: 4px; min-width: 64px; }
+button { font: inherit; font-size: .9rem; border: 1px solid var(--farve-primaer); background: var(--farve-hvid); color: var(--farve-primaer); border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+button[aria-pressed="true"] { background: var(--farve-primaer); color: var(--farve-hvid); }
+.tal { display: flex; flex-wrap: wrap; gap: 12px; margin: 6px 0 4px; }
+.tal div { flex: 1 1 150px; border-left: 4px solid var(--farve-efter); padding: 2px 10px; }
+.tal div.foer { border-color: var(--farve-foer); }
+.tal b { display: block; font-size: 1.6rem; color: var(--farve-primaer); }
+.tal small { color: var(--farve-tekst2); }
+h2 { font-size: 1.1rem; margin: 0 0 8px; color: var(--farve-primaer); }
+#graf { width: 100%; height: 360px; }
+.graf-lille { width: 100%; height: 220px; }
+.fod { color: var(--farve-tekst2); font-size: .85rem; margin: 6px 0 0; }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--farve-streg); white-space: nowrap; }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+.tabel-wrap { overflow-x: auto; }
+.tabel-hoej { max-height: 440px; overflow: auto; }
+thead th { position: sticky; top: 0; background: var(--farve-flade); }
+details summary { cursor: pointer; color: var(--farve-primaer); font-weight: 600; }
+.obs { font-size: .9rem; margin: 10px 0 0; padding: 8px 12px; border-left: 4px solid var(--farve-obs); background: var(--farve-obs-flade); }
+.obs:empty { display: none; }
+td.obs-celle { color: var(--farve-obs-tekst); font-weight: 600; }
+footer { color: var(--farve-tekst2); font-size: .85rem; padding: 0 0 24px; }
+@media (max-width: 520px) { h1 { font-size: 1.25rem; } #graf { height: 300px; } }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <p class="emne" id="emne"></p>
+  <h1>{{TITEL}}</h1>
+  <p class="under" id="undertitel"></p>
+</header>
+
+<section class="kort">
+  <div class="knapper" id="k-ret"><span>Retning</span></div>
+  <div class="knapper" id="k-styk"><span>Stykke</span></div>
+  <div class="knapper" id="k-rute"><span>Rute</span></div>
+  <div class="knapper" id="k-dag"><span>Dage</span></div>
+  <div class="tal" id="tal"></div>
+  <p class="obs" id="obs"></p>
+</section>
+
+<section class="kort">
+  <h2 id="graf-titel">Køretid over døgnet</h2>
+  <div id="graf" role="img" aria-label="Median køretid pr. time med bånd for halvdelen af turene"></div>
+  <p class="fod" id="graf-fod"></p>
+</section>
+
+<section class="kort">
+  <h2>Datagrundlag: antal ture pr. time</h2>
+  <div id="graf-n" class="graf-lille" role="img" aria-label="Antal ture pr. time"></div>
+  <p class="fod" id="n-tekst"></p>
+</section>
+
+<section class="kort">
+  <h2><span id="tur-titel">Pr. planlagt tur</span><span class="valgt" id="valgt"></span></h2>
+  <div class="tabel-wrap tabel-hoej"><table id="ture"></table></div>
+  <p class="fod" id="tur-fod"></p>
+</section>
+
+<section class="kort">
+  <h2>Alle stykker, alle timer</h2>
+  <div class="tabel-wrap"><table id="tabel"></table></div>
+</section>
+
+<section class="kort">
+  <details>
+    <summary>Sådan har vi målt</summary>
+    <p>Kilden er bussernes realtidsdata fra HAFAS (GPS-positioner og turlisten). Punkterne ligger langs bussens vej gennem krydset. For hver tur er køretiden pr. stykke tiden mellem de GPS-pings, der ligger nærmest punkterne (hele sekunder). Time og klokkeslæt er, når bussen passerede strækningens første punkt. Planlagt tur er turnummeret fra turlisten, dvs. den samme afgang hver dag; klokkeslættet ved den er medianen over dagene. Median og bånd for halvdelen af turene (p25-p75).</p>
+    <p>Standard er hverdage, fordi de er det typiske døgn med flest passagerer og mest trafik; weekend og helligdage eller alle dage vælges med knappen "Dage". Helligdage er de datoer, der står i analysens config. Rute vælges med knappen "Rute".</p>
+    <p>Ture med dårlige data er fravalgt, og antal og andel står i OBS øverst: ture, hvor et punkt er matchet til en stop-række (bussens planlagte position, hvis tid ligger efter passagen) eller ligger langt fra GPS. Intet andet fjernes: timer med under <span class="minn-time"></span> ture har en hul markør i grafen, planlagte ture med under <span class="minn-tur"></span> kørsler er markeret "få kørsler", og "Datagrundlag" viser antal ture pr. time. Ture, som analysen kasserede (fx uden GPS på strækningen), står i analysens kvalitetsoversigt.</p>
+    <p>Ingen beregnet ventetid: forskellen mellem timer, ruter og ture viser, hvad trafikken koster.</p>
+  </details>
+</section>
+<footer id="fod"></footer>
+</main>
+
+<script>/*__ECHARTS__*/</script>
+<script>
+const D = __RAPPORTDATA__;
+const P = D.perioder, PN = D.periodenavne, to = P.length > 1;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt = v => (v == null ? "–" : String(v).replace(".", ","));
+const kl = m => m == null ? "–" : String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0");
+const plab = p => to ? (p === P[0] ? "Før" : "Efter") : "Median";
+const farve = p => (to && p === P[0]) ? css("--farve-foer") : css("--farve-efter");
+const diff = (a, b) => (a && b) ? Math.round((b.m - a.m) * 10) / 10 : null;
+const fortegn = d => d == null ? "–" : (d > 0 ? "+" : "") + fmt(d) + " s";
+let ri = 0, si = 0, ui = 0, di = Math.max(0, D.dagtyper.indexOf(D.standard_dag)), vh = null;   // vh = valgt time (krydsfilter)
+const styk = s => `${s.fra} → ${s.til}`;
+document.getElementById("emne").textContent = D.tekst.emne;
+const graf = echarts.init(document.getElementById("graf"));
+const grafN = echarts.init(document.getElementById("graf-n"));
+const pct = (a, b) => b ? (Math.round(1000 * a / b) / 10).toString().replace(".", ",") : "0";
+document.getElementById("undertitel").textContent = D.tekst.undertitel + " · " + P.map(p => PN[p]).join(" og ");
+document.getElementById("fod").textContent = [D.tekst.kilde, D.tekst.afsender].filter(Boolean).join(" · ");
+document.querySelectorAll(".minn-time").forEach(e => e.textContent = D.obs_n_time);
+document.querySelectorAll(".minn-tur").forEach(e => e.textContent = D.obs_n_tur);
+
+function knapper(id, labels, valgt, klik) {
+  const box = document.getElementById(id);
+  box.querySelectorAll("button").forEach(b => b.remove());
+  box.style.display = labels.length > 1 ? "" : "none";
+  labels.forEach((l, i) => { const b = document.createElement("button");
+    b.textContent = l; b.setAttribute("aria-pressed", i === valgt); b.onclick = () => klik(i); box.appendChild(b); });
+}
+
+function tegn() {
+  const R = D.retninger[ri], S = R.stykker[si], ru = R.ruter[ui], dag = D.dagtyper[di], X = S.pr[dag][ru], O = R.obs[dag][ru];
+  knapper("k-ret", D.retninger.map(r => r.navn), ri, i => { ri = i; si = 0; ui = 0; vh = null; tegn(); });
+  knapper("k-styk", R.stykker.map(styk), si, i => { si = i; tegn(); });
+  knapper("k-rute", R.ruter, ui, i => { ui = i; tegn(); });
+  knapper("k-dag", D.dagtyper, di, i => { di = i; tegn(); });
+
+  const obs = [];
+  P.forEach(p => { const o = O[p], pre = to ? `${plab(p)}: ` : "";
+    if (o.fravalgt) obs.push(`${pre}${o.fravalgt} af ${o.n.toLocaleString("da-DK")} ture (${pct(o.fravalgt, o.n)} %) er fravalgt pga. dårlige data: ${o.stop} med et punkt matchet til en stop-række (planlagt position, ikke GPS) og ${o.afstand} med et punkt langt fra nærmeste GPS-ping (en tur kan have begge)`); });
+  const faa = P.map(p => X.timer[p].filter(x => x.n < D.obs_n_time).map(x => String(x.t).padStart(2, "0"))).flat();
+  document.getElementById("obs").innerHTML = obs.length ? "<b>OBS:</b> " + obs.join(". ") + "." : "";
+
+  let t = P.map(p => { const a = X.alle[p]; return a ? `<div class="${to && p === P[0] ? "foer" : ""}"><small>${to ? plab(p) + ": " : ""}${PN[p]} · ${dag.toLowerCase()}</small><b>${fmt(a.m)} s</b><small>median, halvdelen ${fmt(a.p25)}-${fmt(a.p75)} s · ${a.n.toLocaleString("da-DK")} ture</small></div>` : ""; }).join("");
+  if (to) t += `<div><small>Ændring i median</small><b>${fortegn(diff(X.alle[P[0]], X.alle[P[1]]))}</b></div>`;
+  document.getElementById("tal").innerHTML = t;
+
+  const timer = [...Array(24).keys()], series = [], hh = h => String(h).padStart(2, "0");
+  const marker = vh == null ? undefined : { silent: true, itemStyle: { color: css("--farve-streg"), opacity: .6 }, data: [[{ xAxis: hh(vh) }, { xAxis: hh(vh) }]] };
+  P.forEach(p => {
+    const by = Object.fromEntries(X.timer[p].map(x => [x.t, x]));
+    const navn = plab(p);
+    series.push({ name: navn + " p25", type: "line", stack: p, data: timer.map(h => by[h] ? by[h].p25 : null), lineStyle: { opacity: 0 }, symbol: "none", silent: true, tooltip: { show: false } });
+    series.push({ name: navn + " bånd", type: "line", stack: p, data: timer.map(h => by[h] ? by[h].p75 - by[h].p25 : null), lineStyle: { opacity: 0 }, symbol: "none", areaStyle: { color: farve(p), opacity: to ? .12 : .18 }, silent: true, tooltip: { show: false } });
+    series.push({ name: navn, type: "line", data: timer.map(h => by[h] ? { value: [h, by[h].m, by[h].n, by[h].p25, by[h].p75], symbol: by[h].n < D.obs_n_time ? "emptyCircle" : "circle", symbolSize: by[h].n < D.obs_n_time ? 8 : 6 } : { value: [h, null] }), color: farve(p), lineStyle: { width: 3, type: to && p === P[0] ? "dashed" : "solid" }, markArea: p === P[0] ? marker : undefined });
+  });
+  graf.setOption({
+    textStyle: { fontFamily: css("--skrift") }, grid: { left: 48, right: 16, top: 30, bottom: 40 },
+    legend: { data: to ? ["Før", "Efter"] : [], top: 0 },
+    tooltip: { trigger: "axis", formatter: ps => { let s = `Kl. ${String(ps[0].axisValue).padStart(2, "0")}`;
+      ps.filter(x => x.value && x.value[1] != null).forEach(x => { const v = x.value; s += `<br>${x.marker}${x.seriesName}: ${fmt(v[1])} s (${fmt(v[3])}-${fmt(v[4])}), ${v[2]} ture${v[2] < D.obs_n_time ? " (OBS: få ture)" : ""}`; }); return s; } },
+    xAxis: { type: "category", data: timer.map(h => String(h).padStart(2, "0")), name: "Time", nameLocation: "middle", nameGap: 26, axisLabel: { color: css("--farve-tekst2") } },
+    yAxis: { type: "value", name: "Køretid (s)", min: 0, axisLabel: { color: css("--farve-tekst2") }, splitLine: { lineStyle: { color: css("--farve-streg") } } },
+    series }, true);
+  document.getElementById("graf-titel").textContent = `${styk(S)}: median køretid pr. time`;
+  document.getElementById("graf-fod").textContent = `Bånd: halvdelen af turene. Hul markør: under ${D.obs_n_time} ture. Klik på en time for at se dens planlagte ture.`;
+
+  const nSer = P.map(p => { const by = Object.fromEntries(X.timer[p].map(x => [x.t, x.n]));
+    return { name: plab(p), type: "bar", data: timer.map(h => by[h] || 0), color: farve(p), barGap: "10%",
+      markLine: p === P[0] ? { silent: true, symbol: "none", lineStyle: { color: css("--farve-obs"), type: "dashed" }, label: { formatter: `${D.obs_n_time} ture`, color: css("--farve-obs-tekst") }, data: [{ yAxis: D.obs_n_time }] } : undefined, markArea: p === P[0] ? marker : undefined }; });
+  grafN.setOption({ textStyle: { fontFamily: css("--skrift") }, grid: { left: 48, right: 56, top: 24, bottom: 36 },
+    legend: { data: to ? ["Før", "Efter"] : [], top: 0 }, tooltip: { trigger: "axis", formatter: ps => `Kl. ${ps[0].axisValue}` + ps.map(x => `<br>${x.marker}${x.seriesName}: ${x.value} ture`).join("") },
+    xAxis: { type: "category", data: timer.map(h => String(h).padStart(2, "0")), axisLabel: { color: css("--farve-tekst2") } },
+    yAxis: { type: "value", name: "Ture", axisLabel: { color: css("--farve-tekst2") }, splitLine: { lineStyle: { color: css("--farve-streg") } } },
+    series: nSer }, true);
+  const faaT = [...new Set(faa)].sort();
+  document.getElementById("n-tekst").textContent = faaT.length ? `Under ${D.obs_n_time} ture (usikker median): kl. ${faaT.join(", ")}.` : "";
+
+  const vis = vh == null ? X.ture : X.ture.filter(r => r.kl != null && Math.floor(r.kl / 60) === vh);
+  document.getElementById("valgt").innerHTML = vh == null ? "" : `kl. ${hh(vh)} <button type="button" id="ryd">Vis alle timer ✕</button>`;
+  if (vh != null) document.getElementById("ryd").onclick = () => { vh = null; tegn(); };
+  let tb = `<thead><tr><th>Kl.</th><th>Planlagt tur</th><th>Rute</th>${P.map(p => `<th class="n">${plab(p)}</th><th class="n">Kørsler</th>`).join("")}${to ? '<th class="n">Ændring</th>' : ""}<th>OBS</th></tr></thead><tbody>`;
+  let n_obs = 0;
+  vis.forEach(r => { const faaK = P.some(p => r[p] && r[p].n < D.obs_n_tur); if (faaK) n_obs++;
+    tb += `<tr><td>${kl(r.kl)}</td><td>${r.tur}</td><td>${r.rute}</td>${P.map(p => r[p] ? `<td class="n">${fmt(r[p].m)} s (${fmt(r[p].p25)}-${fmt(r[p].p75)})</td><td class="n">${r[p].n}</td>` : '<td class="n">–</td><td class="n">0</td>').join("")}${to ? `<td class="n">${fortegn(diff(r[P[0]], r[P[1]]))}</td>` : ""}<td class="obs-celle">${faaK ? "få kørsler" : ""}</td></tr>`; });
+  document.getElementById("ture").innerHTML = tb + "</tbody>";
+  document.getElementById("tur-titel").textContent = `${styk(S)}: median køretid pr. planlagt tur`;
+  document.getElementById("tur-fod").textContent = `${vis.length} planlagte ture${vh == null ? "" : ` med klokkeslæt kl. ${hh(vh)}`}.${n_obs ? ` "Få kørsler": under ${D.obs_n_tur} i en periode (${n_obs} ture).` : ""}`;
+
+  let ta = `<thead><tr><th>Stykke</th>${P.map(p => `<th class="n">${plab(p)} (p25-p75)</th>`).join("")}${to ? '<th class="n">Ændring</th>' : ""}<th class="n">Ture</th></tr></thead><tbody>`;
+  R.stykker.forEach(s => { const a = s.pr[dag][ru].alle; ta += `<tr><td>${styk(s)}</td>${P.map(p => `<td class="n">${a[p] ? `${fmt(a[p].m)} s (${fmt(a[p].p25)}-${fmt(a[p].p75)})` : "–"}</td>`).join("")}${to ? `<td class="n">${fortegn(diff(a[P[0]], a[P[1]]))}</td>` : ""}<td class="n">${P.map(p => a[p] ? a[p].n.toLocaleString("da-DK") : "0").join(" / ")}</td></tr>`; });
+  document.getElementById("tabel").innerHTML = ta + "</tbody>";
+}
+// Krydsfiltrering: klik på en time i en af graferne viser kun de planlagte ture i den time (klik igen = alle)
+function vaelgTime(h) { vh = (vh === h) ? null : h; tegn(); }
+[graf, grafN].forEach(g => g.getZr().on("click", e => {
+  const pt = [e.offsetX, e.offsetY];
+  if (!g.containPixel({ gridIndex: 0 }, pt)) return;
+  const h = g.convertFromPixel({ gridIndex: 0 }, pt);   // [time-indeks, y]
+  const i = Array.isArray(h) ? h[0] : h;
+  if (i != null && i >= 0 && i < 24) vaelgTime(Math.round(i));
+}));
+tegn();
+window.addEventListener("resize", () => { graf.resize(); grafN.resize(); });
+</script>
+</body>
+</html>

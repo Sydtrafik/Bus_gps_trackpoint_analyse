@@ -1,0 +1,229 @@
+# ==============================================================================
+# config_eksempel.yaml - kommenteret eksempel til analyse_v2.2.py (+ komfort, zonetid, rapport)
+#
+# Alle nøgler med "standard" nedenfor er VALGFRIE: mangler de, bruges standardværdien
+# (= den værdi v1 faktisk brugte) og værdien skrives i loggen ved kørslens start.
+# Kopiér filen, ret punkter/stop/perioder og kør:
+#     python analyse_v2.2.py --config min_config.yaml --list-stops      (find stop-navne)
+#     python analyse_v2.2.py --config min_config.yaml --max-trips 300 --debug   (hurtig prøve)
+#     python analyse_v2.2.py --config min_config.yaml --period A
+# Et udfyldt eksempel med alle sektioner: eksempler/config_kvaglundvej.yaml.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# PERIODER (påkrævet). Format ÅÅÅÅ-MM-DD. Typisk A = før, B = efter.
+# ------------------------------------------------------------------------------
+periods:
+  A:
+    name: "Uden bump"        # bruges som kolonnen 'Periode' i output
+    start: "2025-01-18"
+    end: "2025-09-25"
+  B:
+    name: "Med bump"
+    start: "2025-10-18"
+    end: "2026-02-01"
+
+# ------------------------------------------------------------------------------
+# FILER (påkrævet). Stier kan være absolutte eller relative til DENNE fils mappe.
+# Details.csv = én række pr. GPS-ping/stop. List.csv = én række pr. tur.
+# 'output' er result.csv; de øvrige filer (kvalitet.*, opsummering.csv ...) lægges i samme mappe.
+# ------------------------------------------------------------------------------
+data:
+  Periode_A:
+    details_csv: "data_A/Details.csv"
+    list_csv: "data_A/List.csv"
+  Periode_B:
+    details_csv: "data_B/Details.csv"
+    list_csv: "data_B/List.csv"
+  output: "output/result.csv"
+
+# ------------------------------------------------------------------------------
+# PUNKTER (påkrævet: mindst ét). lat/lon = decimalgrader. 'name' bliver kolonnenavn i output
+# og skal være unikt. Punkter der kun bruges i 'distances' (ikke i point_order) søges i
+# hele turens udsnit uden krav til rækkefølge ("ekstra punkter", fuld scan).
+# ------------------------------------------------------------------------------
+points:
+  p1: {name: "Start", lat: 55.4804, lon: 8.4674}
+  p2: {name: "Slut",  lat: 55.4851, lon: 8.4729}
+
+# ------------------------------------------------------------------------------
+# PUNKT-RÆKKEFØLGE PR. RETNING (påkrævet). Retning = Retningsflag i List.csv (1 eller 2).
+# - ét punkt:  [p1]      -> kun hastighed ved punktet (ingen køretid)
+# - to punkter: [p1, p2] -> køretid + hastighed (kræver en distance nedenfor)
+# - flere punkter: som ovenfor; punkterne matches i denne rækkefølge
+# ------------------------------------------------------------------------------
+point_order:
+  direction_1: [p1, p2]
+  direction_2: [p2, p1]
+
+# ------------------------------------------------------------------------------
+# DISTANCER (valgfri; udelad ved ét punkt). Køretid = |tid(to) - tid(from)| i hele sekunder.
+# ------------------------------------------------------------------------------
+distances:
+  d1: {name: "Strækning", from: p1, to: p2}
+
+# ------------------------------------------------------------------------------
+# GROVFILTER (påkrævet for hver retning): præcise stop-navne fra data (se --list-stops).
+# Turen beskæres til rækkerne mellem start- og slut-stop +/- buffer_rows. Mangler et stop,
+# kasseres turen (stop_ikke_fundet).
+# ------------------------------------------------------------------------------
+stops:
+  direction_1: {start: "Stop før start (By)", end: "Stop efter slut (By)"}
+  direction_2: {start: "Stop efter slut (By)", end: "Stop før start (By)"}
+
+# ==============================================================================
+# PARAMETRE - alle valgfri. Standard = v1's værdi.
+# ==============================================================================
+
+# Antal RÆKKER (ikke meter/sekunder) der beholdes før første / efter sidste punkt-match, og som
+# udvidelse af grovfilteret. NB: v1-koden havde default 30, men 3A-config og README bruger 50.
+# v2 har 50 som standard. Sæt den eksplicit hvis du vil sammenligne med en v1-kørsel uden buffer_rows.
+buffer_rows: 50            # standard 50
+
+# Hastighed mellem to pings over denne grænse -> status 'Hastighed over' (tæller ikke som OK).
+speed_max_kmh: 80          # standard 80
+# Hastighed under denne grænse -> 'Hastighed under' (0 = aldrig, da hastighed ikke er negativ).
+speed_min_kmh: 0           # standard 0
+# Hastighed under denne grænse tæller som 'Stop' (GPS-støj ved stilstand) og er ikke OK.
+stop_speed_kmh: 4          # standard 4 (v1: STOP_SPEED_KMH)
+# Afstand mellem to pings under denne grænse (meter) -> 'Stop' (stillestående).
+stand_still_dist_m: 0.1    # standard 0.1
+# Matchet ping længere væk end dette fra punktet (meter) -> flag 'afstand' + tekst i kolonnen Log.
+# Turen beholdes (kasseres ikke); den kan være på omkørsel eller have GPS-hul.
+max_match_distance_m: 200  # standard 200
+# Hastighed ved punkt = laveste OK-hastighed blandt dette antal pings geografisk nærmest punktet.
+speed_nearest_pings: 5     # standard 5
+# Punkt-søgningen stopper tidligt når afstanden er steget så mange gange (kumulativt, ikke i træk)
+# efter et minimum nærmere end rising_min_dist_m. Samme tal bruges som minimumsafstand i rækker (som v1).
+rising_count: 5            # standard 5 (v1: RISING_THRESHOLD)
+rising_min_dist_m: 15      # standard 15 (v1: RISING_MIN_DIST_M)
+# Kasser turen hvis grovfilteret efterlader færre rækker end dette.
+min_rows_after_coarse_filter: 3   # standard 3
+
+# GPS-pings hedder '<præfiks> N' i kolonnen Stop-navn; resten er stop-rækker (planlagte positioner).
+# En tur uden et eneste ping i udsnittet kasseres (ingen_gps_trackpoints).
+ping_prefix: "Pegeredskab"     # standard
+# Værdi i kolonnen Projektion der markerer estimeret (ikke målt) position.
+projection_value: "X"          # standard
+
+# Dato- og tidskolonner, i prioriteret rækkefølge: den første udfyldte pr. række bruges.
+# Kolonner der ikke findes i filen springes over (der skal være mindst én af hver).
+date_columns:                  # standard (som vist)
+  - "Ankomst-dato (REALTID)"
+  - "Afgangs-dato (REALTID)"
+  - "Ankomst-dato (PLANLAGT)"
+time_columns:                  # standard (som vist)
+  - "Tid (REALTID) (+sekunder)"
+  - "Ankomst-tid (REALTID)"
+  - "Afgangs-tid (REALTID) (+sekunder)"
+  - "Tid (PLANLAGT)"
+
+# Sanity-tjek af punkternes koordinater (advarsel ved tastefejl). Standard dækker Danmark.
+lat_range: [53, 58]            # standard
+lon_range: [7, 14]             # standard
+
+# Antal rækker pr. indlæsningsbid ved læsning af store CSV-filer (hukommelse).
+chunk_size: 300000             # standard
+# --max-trips N læser kun de første N * dette antal rækker af Details.csv (kun til hurtige prøver).
+max_trips_rows_per_trip: 2000  # standard
+
+# opsummering.csv: kun ture med tom Log (dvs. uden afstandsflag) - som v1-praksis. false = alle ture.
+summary_only_empty_log: true   # standard
+percentiles: [5, 25, 50, 75, 95]   # standard
+
+# Eksportér pings i hver turs segment til segmenter.csv (samme som --export-segments).
+export_segments: false         # standard
+
+# ==============================================================================
+# KOMFORT (komfort_v1.0.py) - alle nøgler valgfri; mangler de, bruges standardværdien.
+#     python komfort_v1.0.py --segments <segmenter.csv> --config min_config.yaml --out komfort.csv
+# Input er segmenter.csv fra analyse_v2.2.py (export_segments: true). Punkterne læses fra points: ovenfor.
+# Alle mål beregnes på strækningen fra->til (position s = meter fra 'fra' langs den rette linje).
+# OBS: standardværdierne fra/til (p1/p5) skal rettes, hvis dine punkter hedder noget andet (her p1 og p2).
+# ==============================================================================
+komfort:
+  fra: p1                      # standard p1 - startpunkt for strækningen (nøgle under points:)
+  til: p2                      # standard p5 - slutpunkt (her p2, fordi eksemplet kun har p1 og p2)
+  laengde_m: null              # standard null = afstand fra->til beregnet af punkterne (her ca. 625 m). Sæt kun for at tvinge en værdi.
+  korridor_margin_m: 15        # standard 15 - pings med s fra -margin til L+margin indgår (strækning + luft til SG-udjævning)
+  korridor_sideafstand_m: 15   # standard 15 - pings længere end dette fra linjen (omkørsel, GPS-støj) ignoreres
+  fuld_passage_margin_m: 15    # standard 15 - første ping skal være højst så langt fra start (sidste fra slut); ellers 'ufuldstændig'
+  max_hul_s: 10                # standard 10 - største tilladte hul mellem to pings; ellers 'ufuldstændig'
+  gitter_s: 1.0                # standard 1.0 - tidsgitter (sek.) som positionen interpoleres til før udjævning
+  sg_vindue_s: 5               # standard 5 - Savitzky-Golay-vindue i sekunder (ulige antal gitterpunkter)
+  sg_orden: 2                  # standard 2 - polynomiegrad i SG (mindst 2 for acceleration)
+  kant: interp                 # standard interp - de yderste punkter: 'interp' = asymmetrisk fit, 'drop' = fjern dem (NaN)
+  taerskler_ms2: [0.75, 1.35]  # standard [0.75, 1.35] - grænser for hændelser og klasser (lav < t0 <= mellem < t1 <= høj), SG5-skala
+                               #   (svarer til litteraturklasserne 1,0 og 1,8 m/s2 målt på rå 1 s-differenser)
+  haendelse_min_s: 2           # standard 2 - et hændelsesforløb skal vare mindst så mange sekunder (sammenhængende gitterpunkter)
+  stillestand_kmh: 3.6         # standard 3.6 (= 1 m/s) - min udjævnet fart under dette tæller som stillestand
+  std_ddof: 0                  # standard 0 - 0 = populations-std, 1 = stikprøve-std for std_fart_kmh
+  bump_vinduer:                # standard bump1 [80,140], bump2 [200,260] - s-intervaller (m fra 'fra') hvor min-fart og max opbremsning også måles
+    bump1: [80, 140]           #   (navnene bruges i rapporten som "laveste fart ved elementerne"; skriv {} for ingen)
+    bump2: [200, 260]
+
+# ==============================================================================
+# ELEMENTER, UDVALG, ZONETID og RAPPORT - bruges af zonetid.py og rapport\lav_rapportdata.py.
+# analyse_v2.2.py kender ikke disse nøgler og skriver en harmløs advarsel
+# "ukendte nøgler i config ignoreres: elementer, udvalg, zonetid, rapport".
+# Udfyldt eksempel: eksempler/config_kvaglundvej.yaml.
+# ==============================================================================
+
+# Elementer på strækningen (påkrævet for zonetid.py): navn, type (bump / indsnævring / andet), lat, lon.
+# De skal ligge på strækningen fra->til (højst korridor_sideafstand_m fra linjen).
+# Ved FLERE strækninger lægges elementerne under hver strækning i `straekninger:` (se nedenfor), ikke her.
+elementer:
+  - {navn: "Bump 1",  type: bump, lat: 55.4820, lon: 8.4687}
+  - {navn: "Bump 2",  type: bump, lat: 55.4837, lon: 8.4707}
+
+# FLERE STRÆKNINGER (valgfrit): erstatter `komfort: fra/til` og `elementer:` ovenfor. Hver strækning har id, navn, fra og til
+# (punkt-id'er under points:) og egne elementer; komfort og zonetid regnes pr. strækning, og rapporten får en strækningsvælger.
+# Resten af `komfort:` (tærskler, korridor, bump_vinduer ...) er fælles standard og kan overskrives pr. strækning under `komfort:`.
+# Uden `straekninger:` er config'en én strækning (komfort.fra/til og elementer: øverst), som før.
+# Analysens stops: (start/slut-stop) skal ligge uden for den yderste strækning, så segmenter.csv dækker dem alle.
+# straekninger:
+#   - id: a
+#     navn: "Strækning A"
+#     fra: p1
+#     til: p2
+#     koretid_afstand: d1          # distance (under distances:) der går fra->til; ellers findes den automatisk
+#     elementer:
+#       - {navn: "Bump 1", type: bump, lat: 55.4820, lon: 8.4687}
+#   - id: b
+#     navn: "Strækning B"
+#     fra: p3
+#     til: p4
+#     elementer: []
+
+# Udvalg af ture (ud over: tom Log, ingen stoprække i Flag, komfort status ok).
+udvalg:
+  dagtype: hverdage            # standard hverdage (man-fre) - eller alle
+  helligdage: []               # standard [] - datoer (ÅÅÅÅ-MM-DD), der ikke tæller som hverdage
+
+# Zonetid: zone = element +/- zonebredde; overlap deles på midten.
+zonetid:
+  zonebredde_m: 60                    # standard 60
+  foelsomhed_zonebredde_m: [40]       # standard [40] - ekstra bredder (kun følsomhedslinjen i rapporten)
+
+# Rapport (alt valgfrit; mangler en tekst, bruges en neutral standardtekst). Se rapport/README-afsnittet i README.md.
+rapport:
+  titel: "<Fundet i én sætning, fx: Køretiden steg X s samtidig med vejændringen>"   # standard (pladsholder); byg_rapport.py advarer, hvis den står tilbage
+  undertitel: "Linje X · bussernes GPS · hverdage før og efter"
+  straekning_tekst: ""                # tekst ved siden af kortet (kun med kort: true)
+  periode_navn: "Perioden"          # navn, når der kun er én periode (ingen før/efter)
+  afsender: ""                      # vises i fodnoten (valgfrit)
+  udtraekdato: ""                   # fx "11-11-2026"; vises i fodnoten (ellers kun byggedato)
+  min_ture: 5                        # kun skabelon.html (v1.1): færre ture -> "-". v1.2 viser alle tal og markerer grupper under 20 ture
+  vej: {}                            # "Om strækningen" (v1.2): vejtype, hastighed, bumptype, andre_foranstaltninger (tekst),
+                                     # fx {vejtype: "Gennemkørselsvej i boligkvarter", hastighed: "50 → 40 km/t", bumptype: "Cirkelbump",
+                                     #     andre_foranstaltninger: "2 indsnævringer"}. Mangler et felt, advarer byg_rapport.py.
+  foer_navn: "Før"
+  efter_navn: "Efter"
+  koretid_afstand: d1                 # distance-id (under distances) hvis køretid skal bruges i rapporten; standard den første distance fra komfort.fra til komfort.til
+  retninger:                          # standard: "Retning 1 (mod <punktnavn>)" ud fra data
+    "1": "Retning 1"
+    "2": "Retning 2"
+  stoppesteder: []                    # valgfrit, én position pr. side af vejen (kørselsretning): [{navn: "Stopnavn", retning: 1, lat: 55.48, lon: 8.46}, ...]
+  forbehold: []                       # korte linjer i forbeholdsboksen (fx omkørselsdage, ingen kontrolstrækning)
+  kilde: "Kilde: realtidsdata (GPS-positioner)."
+  kort: false                         # standard false. true = Leaflet + OpenStreetMap-kort (kræver internet ved visning)

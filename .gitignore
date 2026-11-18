@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Analysedata og resultater: må aldrig i repoet (rådata, tur-id'er)
+*.csv
+data/
+resultat/
+trackpoint_analyser/
+rapportdata.json
+zonetid.json
+rapport.html
+kryds_rapport.html
+stopnavne.txt
+config_beregnet.yaml
+*.log
+
+# Editor og system
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
