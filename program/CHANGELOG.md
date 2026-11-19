@@ -9,6 +9,8 @@ Pakkens version står i filen `program\VERSION` (her: nyeste udgivne afsnit nede
 
 ## [Ikke udgivet]
 
+## [1.7.0] - 2026-11-19 - Sydtrafik
+
 - 2026-11-19, Sydtrafik: **LICENSE er nu den rene MIT-tekst**, så GitHub genkender licensen. Forbeholdet om bibliotekerne i `program\rapport\vendor\` står i `README.md` (Licens og forbehold) og `THIRD_PARTY_NOTICES.md`. Filer: `LICENSE`.
 
 - 2026-11-18, Sydtrafik: **afsender er Sydtrafik, ikke en navngiven person.** CHANGELOG-linjer og versionsafsnit skriver organisationen; `nationale_analysekonklusioner.md` og `.html` har kontaktperson "Sydtrafik (GitHub: AFT-syd)". Kontaktperson er GitHub-brugernavn, navn og organisation er valgfrie. Filer: `program\CHANGELOG.md`, `program\README.md` (afsnit 10 og 11), `AGENTS.md` (regel 6), `nationale_analysekonklusioner.md` og `.html`.
