@@ -9,6 +9,8 @@ Pakkens version står i filen `program\VERSION` (her: nyeste udgivne afsnit nede
 
 ## [Ikke udgivet]
 
+- 2026-11-19, Sydtrafik: **forsiden på GitHub og ny `CONTRIBUTING.md`.** `README.md` har nu afsnittet "Hent værktøjet" (zip eller git clone), links til filerne, en tabel i stedet for punktlister med prikker og kodeblokke for mappeindhold og menu, så GitHub ikke slår linjerne sammen (`trackpoint_analyser\<navn>\` mistede også en backslash). `CONTRIBUTING.md` samler, hvordan man deler konklusioner og ændringer, og hvad der ikke må komme med (rådata, tur-id, mail). Hvem-feltet i CHANGELOG er ens alle steder: organisation, evt. navn eller GitHub-brugernavn. Filer: `README.md`, `CONTRIBUTING.md` (ny), `program\README.md` (afsnit 11), `AGENTS.md` (filtabel, regel 7).
+
 ## [1.7.0] - 2026-11-19 - Sydtrafik
 
 - 2026-11-19, Sydtrafik: **LICENSE er nu den rene MIT-tekst**, så GitHub genkender licensen. Forbeholdet om bibliotekerne i `program\rapport\vendor\` står i `README.md` (Licens og forbehold) og `THIRD_PARTY_NOTICES.md`. Filer: `LICENSE`.
