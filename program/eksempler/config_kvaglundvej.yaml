@@ -156,5 +156,5 @@ rapport:
   vej:                                     # "Om strækningen" (rapport v1.2); som i nationale_analysekonklusioner.md
     vejtype: "Gennemkørselsvej i boligkvarter"
     hastighed: "50 → 40 km/t (sat ned samtidig med bumpene)"
-    bumptype: "Cirkelbump eller modificeret cirkelbump (ikke bekræftet)"
+    bumptype: "Sinusbump"
     andre_foranstaltninger: "2 indsnævringer, anlagt samtidig med bumpene"

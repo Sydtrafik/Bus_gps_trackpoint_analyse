@@ -51,6 +51,9 @@ def test_bumptyper_fra_tekst():
     assert navne == ["Cirkelbump", "Modificeret cirkelbump"]
     assert [n for n, _ in K.bumptyper("Trapezbump med modificerede ramper")] == ["Trapezbump med modificerede ramper"]
     assert K.bumptyper("ingen bump") == []
+    # sinusbump får ingen tegning (kun den modificerede har en); den modificerede tæller ikke også som sinusbump
+    assert K.bumptyper("Sinusbump (oplyst)") == [("Sinusbump", [])]
+    assert [n for n, _ in K.bumptyper("Modificeret sinusbump")] == ["Modificeret sinusbump"]
 
 
 def test_laes_md_springer_skabelon_over():
@@ -82,6 +85,7 @@ def test_pakkens_konklusionsfil():
         assert r.returncode == 0, r.stderr
         h = ud.read_text(encoding="utf-8")
         assert "Kvaglundvej, Esbjerg (2025)" in h
-        assert 'alt="Cirkelbump"' in h and 'alt="Modificeret cirkelbump"' in h
-        assert 'alt="Modificeret sinusbump"' not in h.split('id="bump-fane"')[0]   # kun i galleriet
+        foer = h.split('id="bump-fane"')[0]                 # alt før galleriet med alle tegninger
+        assert "Bumptype: Sinusbump" in foer and "Ingen tegning af denne bumptype" in foer   # Kvaglundvej (Anthon 2026-11-19)
+        assert 'alt="Modificeret sinusbump"' not in foer and 'alt="Cirkelbump"' not in foer
         assert "google.com/maps" in h

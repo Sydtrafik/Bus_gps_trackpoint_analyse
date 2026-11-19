@@ -28,6 +28,7 @@ BUMPTYPER = [
     ("trapezbump med modificerede ramper", "Trapezbump med modificerede ramper", ["trapezbump_mod_ramper_40"]),
     ("modificeret cirkelbump", "Modificeret cirkelbump", ["modificeret_cirkelbump_40"]),
     ("modificeret sinusbump", "Modificeret sinusbump", ["modificeret_sinusbump_50"]),
+    ("sinusbump", "Sinusbump", []),        # ingen tegning: vejreglerne har kun modificeret sinusbump (50 km/t)
     ("cirkelbump", "Cirkelbump", ["cirkelbump_40"]),
     ("trapezbump", "Trapezbump", ["trapezbump_40"]),
     ("hævet flade", "Hævet flade", ["haevet_flade_40"]),

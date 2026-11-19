@@ -2,7 +2,7 @@
 
 Konklusioner fra afsluttede analyser med værktøjet i hele landet, så vi kan lære af hinandens fund: hvilke vejændringer der er målt, hvordan, og hvad der kom ud af det.
 
-**Senest opdateret:** 2026-11-17 af Sydtrafik (deling via GitHub i stedet for mail; mailadresser fjernet)
+**Senest opdateret:** 2026-11-19 af Sydtrafik (Kvaglundvej: sinusbump, ikke cirkelbump)
 
 Filen ligger i værktøjets repo på GitHub og er offentlig. Den deles via repoet, ikke pr. mail.
 
@@ -25,7 +25,7 @@ Bumptyper og regler: [kilder/README.md](vejledning/kilder/README.md) har gælden
 
 | Vej, by | Ændring | Periode(r) | Bustype | Køretid (median, uden standsning ved stop) | Komfort (uden standsning ved stop, andel ture) | Kontakt | Opdateret |
 |---|---|---|---|---|---|---|---|
-| Kvaglundvej, Esbjerg | 2 bump (cirkelbump eller modificeret cirkelbump) + 2 indsnævringer, 50 → 40 km/t | 2025: før 30/6–25/9, efter 18/10–4/1 | elbusser (alle) | 54 → 66 s (+12 s) på 626 m | mærkbar opbremsning 16 → 64 %, mærkbar acceleration 18 → 47 % | Sydtrafik | 2026-11-11 |
+| Kvaglundvej, Esbjerg | 2 sinusbump + 2 indsnævringer, 50 → 40 km/t | 2025: før 30/6–25/9, efter 18/10–4/1 | elbusser (alle) | 54 → 66 s (+12 s) på 626 m | mærkbar opbremsning 16 → 64 %, mærkbar acceleration 18 → 47 % | Sydtrafik | 2026-11-19 |
 
 ## Analyser
 
@@ -33,7 +33,7 @@ Bumptyper og regler: [kilder/README.md](vejledning/kilder/README.md) har gælden
 
 | Felt | Værdi |
 |---|---|
-| Opdateret | 2026-11-11 |
+| Opdateret | 2026-11-19 |
 | Vejnavn og strækning | Kvaglundvej, 626 m fra Niels Lambertsens Vej til Spangsbjerg Møllevej |
 | By | Esbjerg |
 | Kort | [Strækningen i Google Maps](https://www.google.com/maps/dir/?api=1&origin=55.48041,8.46749&destination=55.48511,8.47295&travelmode=driving) |
@@ -41,8 +41,8 @@ Bumptyper og regler: [kilder/README.md](vejledning/kilder/README.md) har gælden
 | Linje(r) | Bybus 3A, begge retninger (ca. 129 ture pr. hverdag) |
 | Bustype | Elbusser, alle ture (oplyst af Sydtrafik). Længde ikke oplyst. HAFAS-eksporten har kun busnummer: alle ture med kendt busnummer på nær 25 er kørt af busnummer 8011–8043, og 38 af bussene kørte i begge perioder. |
 | Ændring | 2 bump og 2 indsnævringer anlagt 26/9–17/10 2025; hastighedsgrænsen sat ned fra 50 til 40 km/t |
-| Type bump | Cirkelbump eller modificeret cirkelbump (ikke bekræftet; først antaget sinusbump, men modificerede sinusbump findes i vejreglerne kun til 50 km/t). Se tegninger i `kilder/bumptyper/`. |
-| Sammenligning med vejregler | Den laveste målte busfart ved bumpene (ca. 25 km/t efter) svarer til den passagehastighed for tunge køretøjer, som håndbogsbilaget angiver for cirkelbump og modificerede cirkelbump til 40 km/t (25 km/t). Håndbog Fartdæmpere anbefaler at undgå bump på veje med busser i fast rute. Kilder: `kilder/README.md`. |
+| Type bump | Sinusbump (oplyst af Sydtrafik 2026-11-19; tidligere angivet som cirkelbump eller modificeret cirkelbump). Vejreglernes bilag har ingen almindelig sinusbump, kun modificeret sinusbump til 50 km/t, så pakken har ingen tegning af typen. |
+| Sammenligning med vejregler | Den laveste målte busfart ved bumpene var ca. 25 km/t efter. Håndbogsbilaget angiver ingen passagehastighed for almindelige sinusbump (kun for modificeret sinusbump til 50 km/t: 35 km/t), så den målte fart er ikke sammenlignet med en vejregel for typen. Håndbog Fartdæmpere anbefaler at undgå bump på veje med busser i fast rute. Kilder: `kilder/README.md`. |
 | Antal bump og placering | 2: ved 110 m og 230 m fra Niels Lambertsens Vej |
 | Indsnævring | Ja, 2 (ved 395 m og 597 m), anlagt samtidig med bumpene |
 | Sving | Nej, ret strækning |
