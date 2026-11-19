@@ -9,6 +9,8 @@ Pakkens version står i filen `program\VERSION` (her: nyeste udgivne afsnit nede
 
 ## [Ikke udgivet]
 
+- 2026-11-19, Sydtrafik: **LICENSE er nu den rene MIT-tekst**, så GitHub genkender licensen. Forbeholdet om bibliotekerne i `program\rapport\vendor\` står i `README.md` (Licens og forbehold) og `THIRD_PARTY_NOTICES.md`. Filer: `LICENSE`.
+
 - 2026-11-18, Sydtrafik: **afsender er Sydtrafik, ikke en navngiven person.** CHANGELOG-linjer og versionsafsnit skriver organisationen; `nationale_analysekonklusioner.md` og `.html` har kontaktperson "Sydtrafik (GitHub: AFT-syd)". Kontaktperson er GitHub-brugernavn, navn og organisation er valgfrie. Filer: `program\CHANGELOG.md`, `program\README.md` (afsnit 10 og 11), `AGENTS.md` (regel 6), `nationale_analysekonklusioner.md` og `.html`.
 
 - 2026-11-18, Sydtrafik: **`MANIFEST.txt` og `lav_manifest.py` er fjernet; git er manifestet.** Hashene passede ikke længere, og de ville ændre sig, når git normaliserer linjeskift. README afsnit 11 beskriver nu deling via pull request (eller issue), udgivelse med git-tag `vX.Y.Z` og opdatering med `git pull` eller zip fra GitHub; versionsnummeret sættes kun ved udgivelse. Filer: `program\README.md` (afsnit 11, filtabellen), `AGENTS.md` (filtabel, regel 7), `program\CHANGELOG.md` (reglen øverst).
