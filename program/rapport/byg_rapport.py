@@ -68,9 +68,9 @@ def advarsler(data):
     m = data.get("meta", {})
     ud = []
     titel = (m.get("titel") or "").strip()
-    if not titel or titel.startswith("<Fundet i én sætning"):
-        ud.append("Titlen er stadig standardtitlen (pladsholderen). Skriv fundet i én sætning i config (rapport.titel), "
-                  "fx 'Køretiden steg X s samtidig med vejændringen'. Se formidling_og_grafik.md, afsnit 2.")
+    if not titel or titel.startswith("<Fundet i én sætning") or ("<" in titel and ">" in titel):
+        ud.append("Titlen er stadig en pladsholder. Skriv i config (rapport.titel), hvad og hvor der er målt, fx 'Køretid og fart "
+                  "på Kvaglundvej før og efter bump'. Et fund står først i titlen, når det er verificeret (formidling_og_grafik.md, afsnit 2).")
     if not m.get("forbehold"):
         ud.append("Ingen forbehold er skrevet (rapport.forbehold). Skriv fx om manglende dage eller om, at der ikke er en kontrolstrækning.")
     if "vej" in m:                      # rapportdata v1.2: "Om strækningen" viser vejens oplysninger fra config

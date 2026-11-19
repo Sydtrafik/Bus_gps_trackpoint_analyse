@@ -88,11 +88,11 @@ komfort:
   bump_vinduer: {}               # lad stå tom: regnes ud fra bumpenes koordinat og radius_m
 
 # ------------------------------------------------------------------------------
-# 6. RAPPORTENS TEKSTER. Skriv titlen, når du har set tallene: titlen er fundet i én sætning.
+# 6. RAPPORTENS TEKSTER. Titlen siger, hvad og hvor der er målt. Skriv et fund i titlen først, når det er verificeret.
 #    Ret teksterne, og vælg 4 i koer_analyse.bat for at bygge rapporten igen.
 # ------------------------------------------------------------------------------
 rapport:
-  titel: "<Fundet i én sætning, fx: Køretiden steg X s samtidig med vejændringen>"   # <-- UDFYLD efter første kørsel
+  titel: "Køretid og fart på <vejnavn> før og efter <ændring>"   # <-- UDFYLD: hvad og hvor; et fund først, når det er verificeret
   undertitel: "Vejnavn, linje X, By · bussernes GPS · hverdage før og efter"           # <-- UDFYLD
   foer_navn: "Før"
   efter_navn: "Efter"

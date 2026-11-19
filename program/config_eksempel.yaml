@@ -207,7 +207,7 @@ zonetid:
 
 # Rapport (alt valgfrit; mangler en tekst, bruges en neutral standardtekst). Se rapport/README-afsnittet i README.md.
 rapport:
-  titel: "<Fundet i én sætning, fx: Køretiden steg X s samtidig med vejændringen>"   # standard (pladsholder); byg_rapport.py advarer, hvis den står tilbage
+  titel: "Køretid og fart på <vejnavn> før og efter <ændring>"   # hvad og hvor; et fund først, når det er verificeret. Uden titel: pladsholder, og byg_rapport.py advarer
   undertitel: "Linje X · bussernes GPS · hverdage før og efter"
   straekning_tekst: ""                # tekst ved siden af kortet (kun med kort: true)
   periode_navn: "Perioden"          # navn, når der kun er én periode (ingen før/efter)

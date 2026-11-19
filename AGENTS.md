@@ -116,7 +116,7 @@ python "$V\rapport\byg_rapport.py" --data "$P\ud\rapportdata.json" --out "$P\ud\
 - **Farver og skrift:** CSS-variablerne øverst i `program\rapport\skabelon_v1.2.html` (`:root`; `skabelon.html` til rapportdata v1.1). Kør `byg_rapport.py` igen. Graferne læser de samme variabler.
 - **Tekster:** sektionen `rapport:` i config (titel, undertitel, retningsnavne, stoppesteder, forbehold, kilde, målenoter). Mangler en tekst, bruges en neutral standardtekst.
 - **Kort:** `rapport.kort: true` giver et Leaflet-kort med OpenStreetMap-kortfliser (kræver internet ved visning, kildeangivelse er med). Slået fra som standard.
-- **Læs [formidling_og_grafik.md](vejledning/formidling_og_grafik.md), før du ændrer titler, tekst, farver eller grafer i skabelonen;** guiden er eksempler, ikke love. Titlen skal være fundet i én sætning (standardtitlen er en pladsholder, og `byg_rapport.py` advarer).
+- **Læs [formidling_og_grafik.md](vejledning/formidling_og_grafik.md), før du ændrer titler, tekst, farver eller grafer i skabelonen;** guiden er eksempler, ikke love. Titlen siger, hvad og hvor der er målt; et fund står først i titlen, når det er verificeret (Anthon 2026-11-19). Pladsholdere i titlen giver en advarsel fra `byg_rapport.py`.
 - **Egen skabelon:** kopiér `skabelon_v1.2.html`, behold de fem mærker (`{{TITEL}}`, `__RAPPORTDATA__`, `/*__ECHARTS__*/`, `/*__LEAFLET_JS__*/`, `/*__LEAFLET_CSS__*/`), og kald `byg_rapport.py --skabelon <fil>`.
 - Datafelterne i `rapportdata.json` er beskrevet øverst i `rapport\lav_rapportdata_v1.2.py` (v1.1: `rapport\lav_rapportdata.py`).
 

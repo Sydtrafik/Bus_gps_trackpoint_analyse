@@ -54,7 +54,7 @@ Kører på Windows og kræver Python (testet på 3.13; 3.10 eller nyere forvente
    - `1` stoppesteder: skriver `stopnavne.txt` med stoppestederne for hver retning i køreorden og et forslag til start- og slutstop for hver retning, klar til at kopiere ind i `config.yaml` (punkt 4). Navnene kan være forskellige i de to retninger og ligge forskelligt, så retningerne udfyldes hver for sig. Står der OBS nederst, kører retning 1 fra p2 mod p1: byt p1 og p2, og kør `1` igen.
    - `2` prøvekørsel på 300 ture. Tjek `resultat\proeve\kvalitet.md`: næsten alle ture skal være beholdt uden "flag afstand > 200 m". Står det ved næsten alle, så byt p1 og p2 i config. Står der "stop_ikke_fundet" ved næsten alle, så ret stopnavnene.
    - `3` fuld analyse og rapport (10-30 min). Rapporten åbner af sig selv. Køretiden pr. tur står i `resultat\turtabel.csv` (åbn i Excel eller Power BI) og pr. time i `resultat\overblik.md`.
-   - `4` byg rapporten igen, efter du har skrevet titlen (fundet i én sætning) og teksterne i config.
+   - `4` byg rapporten igen, efter du har skrevet titlen (hvad og hvor; et fund først, når det er verificeret) og teksterne i config.
 5. **Læs rapporten** og forbeholdene i [metode_og_rapportering.md](../vejledning/metode_og_rapportering.md), og tilføj dine fund i [nationale_analysekonklusioner.md](../nationale_analysekonklusioner.md) (trin 10).
 
 Kun én periode: sæt `PERIODER=A` øverst i `koer_analyse.bat`. Flyttes værktøjsmappen, så ret `VAERKTOEJ` samme sted. Flere strækninger i én analyse og alle andre muligheder kræver den fulde config: se `config_eksempel.yaml` og afsnit 4.
@@ -288,7 +288,7 @@ Kræver `turtabel.csv` fra trin 6b (dagtype, rute, planlagt turnummer og time pr
 
 Den har desuden en strækningsvælger (ved flere strækninger), retningsknapper, stop-filter (uden standsning ved stop som standard), tre nøgletal med afgrænsning og antal ture, fartprofil med p25-p75-bånd og markerede elementer, køretid med og uden standsning ved stop, komfort (opbremsning, acceleration, samlet, med en sammenligning med ture med standsning ved stop), en lille tabel over ekstra tid pr. element, drift, køretid pr. måned, forbehold og et foldet afsnit "Sådan har vi målt". Med kun én periode viser rapporten niveauer i stedet for før og efter, og sammenligningerne (ekstra tid, intervaltabel, drift) er skjult.
 
-**Rapporttype:** rapporten er en **præsentationsrapport med få fund og lidt interaktion**, ikke en datarapport: få valgknapper, ingen tabeller med rådata, titler der siger, hvad grafen viser, og fundet i en beregnet linje. Vælg budskabet først ([formidling_og_grafik.md](../vejledning/formidling_og_grafik.md), afsnit 1). `byg_rapport.py` advarer, hvis titlen stadig er standardtitlen (en pladsholder, der beder om fundet i én sætning).
+**Rapporttype:** rapporten er en **præsentationsrapport med få fund og lidt interaktion**, ikke en datarapport: få valgknapper, ingen tabeller med rådata, titler der siger, hvad grafen viser, og fundet i en beregnet linje. Vælg budskabet først ([formidling_og_grafik.md](../vejledning/formidling_og_grafik.md), afsnit 1). Titlen siger, hvad og hvor der er målt; et fund (fx "Køretiden steg 12 s") står først i titlen, når tallene er verificeret (AGENTS.md, "Sådan verificerer du"). `byg_rapport.py` advarer, hvis titlen stadig er en pladsholder.
 
 **Tilpas rapporten:**
 - **Farver og skrift:** CSS-variablerne øverst i `rapport\skabelon.html` (`:root`). Kør `byg_rapport.py` igen. Graferne og kortet læser de samme variabler. Tekst skal have mindst 4,5:1 kontrast mod baggrunden og datamærker mindst 3:1 ([formidling_og_grafik.md](../vejledning/formidling_og_grafik.md), afsnit 8); rapporten skriver en advarsel i browserens konsol, hvis en farve er for svag.
@@ -472,7 +472,7 @@ zonetid:
   zonebredde_m: 60              # zone = element ± dette; overlap deles på midten
   foelsomhed_zonebredde_m: [40] # ekstra bredder, kun følsomhedslinjen i rapporten
 rapport:                        # alt valgfrit
-  titel: "..."             # fundet i én sætning; ellers advarer byg_rapport.py
+  titel: "..."             # hvad og hvor; et fund først, når det er verificeret; pladsholder -> byg_rapport.py advarer
   periode_navn: "Perioden"  # navn, når der kun er én periode
   afsender: "..."           # vises i fodnoten
   udtraekdato: "11-11-2026" # vises i fodnoten (ellers kun byggedato)

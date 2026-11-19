@@ -316,9 +316,14 @@ def test_advarsel_om_standardtitel_og_forbehold():
         d = _doc(tmp, rapport={"kort": False})
     assert d["meta"]["titel"] == R.STANDARD_TITEL
     a = B.advarsler(d)
-    assert any("standardtitlen" in t for t in a) and any("forbehold" in t for t in a), a
+    assert any("pladsholder" in t for t in a) and any("forbehold" in t for t in a), a
     with tempfile.TemporaryDirectory() as tmp:
         d = _doc(tmp)
+    assert B.advarsler(d) == []
+    # skabelonens nye pladsholder (hvad og hvor) giver også en advarsel; en udfyldt beskrivende titel gør ikke
+    d["meta"]["titel"] = "Køretid og fart på <vejnavn> før og efter <ændring>"
+    assert any("pladsholder" in t for t in B.advarsler(d))
+    d["meta"]["titel"] = "Køretid og fart på Kvaglundvej før og efter bump"
     assert B.advarsler(d) == []
 
 

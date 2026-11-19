@@ -23,6 +23,7 @@ Byg først en prærapport, udled pointer, vælg de vigtigste, og byg så modtage
 
 ## 2. Titler, der siger fundet
 
+- **Først når fundet er verificeret.** Indtil tallene er kontrolleret ([AGENTS.md](../AGENTS.md), "Sådan verificerer du"), siger titlen kun, hvad og hvor der er målt ("Køretid og fart på Kvaglundvej før og efter bump"). Rapportens titel gælder standardvalget (fx hverdage), og det står under titlen.
 - Brug **"Køretiden steg 12 s"**, ikke "Køretid", på pointe-sider i analyse- og præsentationsrapporter.
 - Hvor et filter (retning, med/uden standsning ved stop) ændrer billedet, bliver en fast titel med et fund forkert ved filterskift. Brug en **beskrivende titel**, og lad pointen stå i en linje ved grafen, helst beregnet ud fra de viste tal.
 - Ingen mærkater som "Usikkert" på grafer. Konklusionen står i teksten.
@@ -57,6 +58,7 @@ Byg først en prærapport, udled pointer, vælg de vigtigste, og byg så modtage
 ## 6. Direkte navne og legende
 
 - Ved op til ca. 5 serier i en statisk graf: **navnet direkte ved linjen eller søjlen**, ikke i en forklaring ved siden af.
+- **Undtagelse: før og efter.** Navnene ved linjeenden lægger sig oven i hinanden, når linjerne ender tæt. Skabelonen viser derfor før og efter som en legende **over grafen**, uden for selve grafen, og tallet ved søjlen uden periodenavn. Før er grå og efter farvet, så efter står frem.
 - En legende kan **ikke klikkes**, medmindre det at skjule en serie hjælper læseren. Et klikbart signal lover en funktion.
 - Samme kategori har samme farve i alle grafer, tabeller og knapper.
 

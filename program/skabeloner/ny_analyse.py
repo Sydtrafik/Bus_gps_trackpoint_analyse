@@ -35,7 +35,7 @@ SAADAN = """Sådan laver du analysen
      2 = prøvekørsel: tjek resultat\\proeve\\kvalitet.md
      3 = fuld analyse og rapport
 4. Se resultat\\rapport.html. Køretid pr. tur: resultat\\turtabel.csv (Excel/Power BI); pr. time: resultat\\overblik.md.
-   Skriv titlen (fundet i én sætning) og teksterne i config.yaml, og vælg 4 for at bygge rapporten igen.
+   Skriv titlen (hvad og hvor; et fund først, når det er verificeret) og teksterne i config.yaml, og vælg 4 for at bygge rapporten igen.
 5. Tilføj dine fund i nationale_analysekonklusioner.md i værktøjsmappen, og del dem via repoet på GitHub (pull request eller issue).
 
 Kun én periode: sæt PERIODER=A øverst i koer_analyse.bat.

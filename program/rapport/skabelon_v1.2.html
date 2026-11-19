@@ -13,8 +13,8 @@
   --skrift: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   --farve-primaer: #2f3e4e;          /* overskrifter, knapper, tal */
   /* Kontrast mod hvid (WCAG): tekst mindst 4,5:1, datamærker mindst 3:1. Rapporten advarer i browserens konsol, hvis en farve er for svag. */
-  --farve-foer: #6a8399;             /* før-periode i graferne (3,9:1) */
-  --farve-efter: #2f3e4e;            /* efter-periode i graferne (og perioden, når der kun er én) */
+  --farve-foer: #8a8f96;             /* før-periode i graferne: grå (3,3:1), så efter står frem */
+  --farve-efter: #1f5f9e;            /* efter-periode i graferne: blå (6,6:1) (og perioden, når der kun er én) */
   --farve-bump: #b5372f;             /* element af typen bump (5,9:1) */
   --farve-indsnaevring: #b8650f;     /* element af typen indsnævring (4,3:1) */
   --farve-andet: #5e6c7a;            /* andre elementer (5,4:1) */
@@ -82,6 +82,16 @@ h2.sek { grid-column: span 12; margin: 8px 0 -8px; font-size: 24px; color: var(-
 .box { grid-column: span 12; padding: 12px 16px; border: 1px solid var(--farve-streg); border-left: 6px solid var(--farve-andet); border-radius: 4px; background: var(--farve-flade); }
 .box ul, .maalt ul { margin: 0; padding-left: 1.2em; } .box li { margin: 2px 0; } .maalt li { margin: 0 0 6px; }
 .maalt { max-width: 80ch; }
+.maalt h3 { margin: 16px 0 6px; font-size: 16px; color: var(--farve-primaer); } .maalt h3:first-child { margin-top: 0; }
+.noter { margin: 8px 0 0; padding-left: 1.2em; font-size: 13px; color: var(--farve-tekst2); }
+.noter li { margin: 2px 0; } .noter b { color: var(--farve-tekst); }
+.vaelg .noter { font-size: 14px; }
+.maalt .noter { margin: 0; font-size: 15px; color: var(--farve-tekst); } .maalt .noter li { margin: 0 0 6px; }
+.legende { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0 0 8px; font-size: 14px; color: var(--farve-tekst); }
+.legende:empty { display: none; }
+.legende span { display: inline-flex; align-items: center; gap: 6px; }
+.legende i { display: inline-block; width: 18px; height: 10px; border-radius: 2px; }
+.legende i.linje { height: 4px; } .legende i.baand { opacity: 0.25; height: 12px; }
 details.fold { grid-column: span 12; }
 details.fold summary { display: inline-block; cursor: pointer; font-weight: 700; padding: 6px 12px; border: 1px solid var(--farve-streg); border-radius: 4px; background: var(--farve-flade); color: var(--farve-primaer); font-size: 14px; }
 details.fold .indhold { padding-top: 12px; }
@@ -236,18 +246,42 @@ const kort = M.kort.aktiv;
 const stopKnapper = [['Uden stop', SLBL['Uden stop']], [ALLE, 'Alle ture'], ['Med stop', SLBL['Med stop']]];
 const card = (id) => `<div class="tile" id="${id}"></div>`;
 const knapRække = (f, liste, id) => `<div class="knapper" data-f="${f}"${id ? ` id="${id}"` : ''}>${liste.map(([v, l]) => `<button type="button" data-v="${esc(v)}">${esc(l)}</button>`).join('')}</div>`;
+// noter som punktliste: [fed indledning, tekst] eller tekst; tomme springes over (tekst escapes her)
+const noterHtml = (punkter) => { const p = punkter.filter(Boolean); return p.length ? `<ul class="noter">${p.map((x) => (Array.isArray(x) ? `<li><b>${esc(x[0])}</b> ${esc(x[1])}${x[2] || ''}</li>` : `<li>${esc(x)}</li>`)).join('')}</ul>` : ''; };
+// legende over grafen (uden for selve grafen): [[navn, farve, form]] med form 'blok', 'linje' eller 'baand'
+const legendeHtml = (id, items) => { el(id).innerHTML = items.map(([n, f, form]) => `<span><i class="${form || 'blok'}" style="background:${f}"></i>${esc(n)}</span>`).join(''); };
+const periodeLegende = (id, form) => legendeHtml(id, TO ? PER.map((p) => [LBL[p], colP(p), form]) : []);
+// "Sådan har vi målt": afsnit med overskrift og punkter [fed indledning, tekst]
 const maaltNoter = () => [
-  `Data: bussernes GPS-punkter og turlisten fra realtidssystemet (HAFAS). Titlen og ekstra tid pr. element gælder ${DAGE_STD}, alle ruter og alle timer. De øvrige tal følger valgene øverst (nu: ${valgTekst()}); se "Hvad bygger tallene på".`,
-  'Dage: hverdage er mandag til fredag uden de helligdage, der står i analysens config; weekend og helligdage er lørdag, søndag og de helligdage. Rute og planlagt tur er fra turlisten. Time er, når bussen passerede strækningens første punkt.',
-  `Fravalgt pga. dårlige data (står med antal og andel ved valgene): ture, hvor et punkt er matchet til en stop-række (bussens planlagte position, ikke GPS), ligger langt fra nærmeste GPS-punkt, eller hvor fart og komfort ikke kunne regnes (fx huller i GPS). Intet andet fjernes: grupper med under ${OBSN} ture vises og er markeret OBS (usikker median).`,
-  'Ved hvert målepunkt bruges det nærmeste GPS-punkt. Køretid er tiden mellem første og sidste punkt.',
-  `Fart og opbremsning er regnet fra GPS-positionen hvert sekund og udglattet over ${g(M.sg_vindue_s, 0)} sekunder. Mærkbar opbremsning = over grænsen i mindst ${g(M.haendelse_min_s, 0)} sekunder.`,
-  `Medianer, hvis ikke andet er skrevet. Uden standsning ved stop = bussen kommer ikke under ${g(M.stillestand_kmh)} km/t på strækningen. Med standsning ved stop = den gør, normalt ved et stoppested.`,
-  'Acceleration og samlet: samme regler som opbremsning. Samlet = mindst én mærkbar opbremsning eller acceleration.',
-  'Komfortmålet er passagerkomfort i kørslen på hele strækningen: opbremsning og acceleration langs vejen, målt fra strækningens start til dens slutning. Det måler ikke stødet op og ned over selve bumpet; GPS hvert sekund kan ikke måle det.',
-  TO ? `Ekstra tid pr. element: strækningen deles i zoner på ±${g(M.zonebredde_m, 0)} m om hvert element og den øvrige strækning. Gennemsnitlig ekstra tid pr. tur (efter − før), ture uden standsning ved stop. Øvre grænse = hele den ekstra tid i zonen. Nedre grænse = det, der er ud over, at farten også er lavere på den øvrige strækning (efter − før × forholdet efter/før dér). Intervallet afhænger derfor af, om den generelle nedsatte fart også gælder ved elementerne. For den øvrige strækning er nedre grænse den rå ekstra tid dér, og øvre grænse den plus den generelle del inde i zonerne. Intervallerne kan ikke lægges sammen.`
-     : `Tid pr. zone: strækningen deles i zoner på ±${g(M.zonebredde_m, 0)} m om hvert element og den øvrige strækning. Gennemsnitlig tid pr. tur i zonen, ture uden standsning ved stop.`,
-].concat(M.maalenoter || []);
+  ['Data og udvalg', [
+    ['Kilde:', 'bussernes GPS-punkter og turlisten fra realtidssystemet (HAFAS).'],
+    ['Standardvalg:', `${DAGE_STD}, alle ruter og alle timer. Titlen og ekstra tid pr. element gælder altid det; de øvrige tal følger valgene øverst (se "Hvad bygger tallene på").`],
+    ['Dage:', 'hverdage er mandag til fredag uden de helligdage, der står i analysens config. Weekend og helligdage er lørdag, søndag og de helligdage.'],
+    ['Rute og planlagt tur:', 'fra turlisten. En planlagt tur er turnummeret, dvs. den samme afgang hver dag.'],
+    ['Time:', 'når bussen passerede strækningens første punkt.'],
+    ['Fravalgt pga. dårlige data:', 'ture, hvor et punkt er matchet til en stop-række (bussens planlagte position, ikke GPS), ligger langt fra nærmeste GPS-punkt, eller hvor fart og komfort ikke kunne regnes (fx huller i GPS).'],
+    ['Få ture:', `intet skjules. Grupper med under ${OBSN} ture og måneder med under ${M.obs_dage_maaned} dage vises og er markeret OBS (usikker median).`],
+  ]],
+  ['Køretid og fart', [
+    ['Køretid:', 'tiden mellem første og sidste målepunkt. Ved hvert målepunkt bruges det nærmeste GPS-punkt.'],
+    ['Fart:', `regnet fra GPS-positionen hvert sekund og udglattet over ${g(M.sg_vindue_s, 0)} sekunder.`],
+    ['Median:', 'tallene er medianer, hvis ikke andet er skrevet.'],
+    ['Standsning ved stop:', `bussen kommer under ${g(M.stillestand_kmh)} km/t et sted på strækningen, normalt ved et stoppested (men også fx i kø eller for rødt lys). "Uden standsning" = det gør den ikke.`],
+  ]],
+  ['Komfort', [
+    ['Hvad:', 'passagerkomfort i kørslen på hele strækningen: opbremsning og acceleration langs vejen. Det måler ikke stødet op og ned over selve bumpet; GPS hvert sekund kan ikke måle det.'],
+    ['Mærkbar opbremsning:', `over ${g(G1)} m/s² i mindst ${g(M.haendelse_min_s, 0)} sekunder. Kraftig: over ${g(G2)} m/s².`],
+    ['Acceleration og samlet:', 'samme regler. Samlet = mindst én mærkbar opbremsning eller acceleration.'],
+  ]],
+  [TO ? 'Ekstra tid pr. element' : 'Tid pr. zone', TO ? [
+    ['Zoner:', `strækningen deles i zoner på ±${g(M.zonebredde_m, 0)} m om hvert element og den øvrige strækning. Gennemsnitlig ekstra tid pr. tur (efter − før), ture uden standsning ved stop.`],
+    ['Øvre grænse:', 'hele den ekstra tid i zonen.'],
+    ['Nedre grænse:', 'det, der er ud over, at farten også er lavere på den øvrige strækning (efter − før × forholdet efter/før dér). For den øvrige strækning er nedre grænse den rå ekstra tid dér, og øvre grænse den plus den generelle del inde i zonerne.'],
+    ['Intervallerne', 'kan ikke lægges sammen.'],
+  ] : [
+    ['Zoner:', `strækningen deles i zoner på ±${g(M.zonebredde_m, 0)} m om hvert element og den øvrige strækning. Gennemsnitlig tid pr. tur i zonen, ture uden standsning ved stop.`],
+  ]],
+].concat((M.maalenoter || []).length ? [['Øvrigt', M.maalenoter]] : []);
 (function bygSiden() {
   const kortHtml = kort ? `
 <div class="kort kort-boks span-7"><div id="kort" role="img" aria-label="Kort over strækningerne med elementer og stoppesteder"></div></div>
@@ -256,7 +290,7 @@ const maaltNoter = () => [
   const drift = TO ? `
 <div id="drift" style="display:contents"><h2 class="sek">Hvad betyder det i drift</h2>
 <div class="tiles tre">${card('d1')}${card('d2')}${card('d3')}</div>
-<p class="note" id="n-drift" style="grid-column: span 12; margin: -12px 0 0"></p>
+<div id="n-drift" style="grid-column: span 12; margin: -16px 0 0"></div>
 <p class="note" id="n-halv" style="grid-column: span 12; margin: -20px 0 0"></p></div>` : '';
   const timeValg = `<select id="time-valg" aria-label="Vælg time"><option value="${AT}">Alle timer</option>${[...Array(24).keys()].map((t) => `<option value="${t}">kl. ${hh(t)}</option>`).join('')}</select>`;
   el('side').innerHTML = `
@@ -266,29 +300,29 @@ ${FLERE ? knapRække('s', STRK.map((x) => [x.id, x.navn]), 's-knapper') : ''}
   <div class="raekke" data-f="dag"><span>Dage</span>${M.dagtyper.map((x) => `<button type="button" data-v="${esc(x.navn)}">${esc(x.navn)}</button>`).join('')}</div>
   <div class="raekke" data-f="rute" id="rute-raekke"><span>Rute</span></div>
   <div class="raekke"><span>Time</span>${timeValg}<span class="hint">eller klik på en time i "Datagrundlag"</span></div>
-  <p id="omfang"></p>
-  <p class="obs" id="obs"></p>
+  <div id="omfang"></div>
+  <div class="obs" id="obs"></div>
 </div>
 ${knapRække('ret', [], 'ret-knapper')}
 ${knapRække('stop', stopKnapper)}
 <div class="tiles tre">${card('k1')}${card('k2')}${card('k3')}</div>
 ${kortHtml}
 <h2 class="sek">Datagrundlag</h2>
-<div class="card span-12"><h2 id="h-n">Antal ture pr. time</h2><div class="graf halv" id="c-n" role="img" aria-label="Antal ture pr. time i valget"></div><p class="note" id="n-n"></p><p class="note" id="n-stand"></p></div>
-<div class="card span-12"><h2 id="h-ture">Planlagte ture</h2><div class="tabel-wrap tabel-hoej"><table class="tabel bred" id="t-ture"></table></div><p class="note" id="n-ture"></p></div>
+<div class="card span-12"><h2 id="h-n">Antal ture pr. time</h2><div class="legende" id="lg-n"></div><div class="graf halv" id="c-n" role="img" aria-label="Antal ture pr. time i valget"></div><div id="n-n"></div></div>
+<div class="card span-12"><h2 id="h-ture">Planlagte ture</h2><div class="tabel-wrap tabel-hoej"><table class="tabel bred" id="t-ture"></table></div><div id="n-ture"></div></div>
 <h2 class="sek">Resultater</h2>
-<div class="card span-12"><h2>Fart langs strækningen</h2><div class="graf" id="c-fart" role="img" aria-label="Medianfart langs strækningen"></div><p class="note" id="n-fart"></p></div>
-<div class="card span-6"><h2>Køretid med og uden standsning ved stop</h2><div class="graf halv" id="c-tid" role="img" aria-label="Median køretid i sekunder, ture med og uden standsning ved stop"></div><p class="note" id="n-tid"></p></div>
+<div class="card span-12"><h2>Fart langs strækningen (km/t)</h2><div class="legende" id="lg-fart"></div><div class="graf" id="c-fart" role="img" aria-label="Medianfart langs strækningen"></div><div id="n-fart"></div></div>
+<div class="card span-6"><h2>Køretid med og uden standsning ved stop</h2><div class="legende" id="lg-tid"></div><div class="graf halv" id="c-tid" role="img" aria-label="Median køretid i sekunder, ture med og uden standsning ved stop"></div><div id="n-tid"></div></div>
 <div class="card span-6"><h2 id="h-brems"></h2><div class="valg" data-g="komfort">${KNAP3.map(([v, l]) => `<button type="button" data-v="${v}">${l}</button>`).join('')}</div><div class="graf halv" id="c-brems" role="img" aria-label="Andel ture efter komfortklasse"></div><p class="note" id="n-klasse"></p><p class="note" id="n-brems"></p></div>
 <div class="card span-12" id="k-zone"><h2 id="h-zone"></h2><table class="tabel" id="t-zone"></table><p class="tekst" id="t-tekst"></p><p class="note" id="n-stop"></p><p class="note" id="n-zone"></p></div>
 ${drift}
-<div class="card span-12"><h2>Køretid pr. måned</h2><div class="graf halv" id="c-maaned" role="img" aria-label="Median køretid pr. måned"></div><p class="note" id="n-maaned"></p></div>
+<div class="card span-12"><h2>Køretid pr. måned</h2><div class="legende" id="lg-maaned"></div><div class="graf halv" id="c-maaned" role="img" aria-label="Median køretid pr. måned"></div><div id="n-maaned"></div></div>
 <div class="card span-12"><h2>Hvad bygger tallene på</h2><div class="tabel-wrap"><table class="tabel bred" id="t-basis"></table></div></div>
 ${forbehold}
-<details class="fold"><summary>Sådan har vi målt</summary><div class="indhold maalt"><ul id="maalt"></ul></div></details>`;
+<details class="fold"><summary>Sådan har vi målt</summary><div class="indhold maalt" id="maalt"></div></details>`;
   el('h-titel').textContent = M.titel;
   el('h-under').textContent = M.undertitel;
-  el('h-basis').textContent = `Konklusionen i titlen gælder ${DAGE_STD}, alle ruter og alle timer. Andre dage, ruter og timer kan vælges nedenfor.`;
+  el('h-basis').textContent = `Titlen gælder ${DAGE_STD}, alle ruter og alle timer. Andre dage, ruter og timer vælges nedenfor.`;
   document.title = M.titel;
   el('fod').innerHTML = `<p>${esc(M.kilde)}</p><p>${M.afsender ? 'Afsender: ' + esc(M.afsender) + ' · ' : ''}${M.udtraekdato ? 'Data udtrukket ' + esc(M.udtraekdato) + ' · ' : ''}Rapport bygget ${esc(dato(M.bygget))}.</p>`;
 })();
@@ -343,27 +377,24 @@ function drawTiles() {
     tile('k1', 'Ekstra køretid på strækningen', dlt(nA.koretid, nB.koretid) + ' s', `${g(nA.koretid)} → ${g(nB.koretid)} s<br>${af}`);
     tile('k2', minLabel, `ca. ${pr(minf(nB))} <span class="enh">km/t</span>`, `${lc(LBL.A)} ca. ${pr(minf(nA))} km/t<br>${af}`);
     tile('k3', 'Komfort: ture med mærkbar opbremsning', (nB.andel_opbr == null ? '-' : pr(100 * nB.andel_opbr) + ' %'), `${lc(LBL.A)} ${nA.andel_opbr == null ? '-' : pr(100 * nA.andel_opbr) + ' %'}<br>${grpTekst(G)}<br>${turN}${obsN(minN)}`, INFO);
-    el('omfang').innerHTML = `<b>Valgt: ${esc(pre + valgTekst())}</b> · ${esc(omf('A'))} · ${esc(omf('B'))}`;
-    el('n-fart').textContent = `Gennemsnitsfarten på strækningen: ca. ${g(nA.gnsfart, 0)} → ${g(nB.gnsfart, 0)} km/t (${grpTekst(G)}, ${valgTekst()}). Linje = median. Skygge = midterste halvdel af turene (25-75 %).`;
+    el('n-fart').innerHTML = noterHtml([['Gennemsnitsfart på strækningen:', `ca. ${g(nA.gnsfart, 0)} → ${g(nB.gnsfart, 0)} km/t (${grpTekst(G)}).`]]);
   } else {
     tile('k1', 'Køretid på strækningen', `${g(nA.koretid)} <span class="enh">s</span>`, af);
     tile('k2', minLabel, `ca. ${pr(minf(nA))} <span class="enh">km/t</span>`, af);
     tile('k3', 'Komfort: ture med mærkbar opbremsning', (nA.andel_opbr == null ? '-' : pr(100 * nA.andel_opbr) + ' %'), `${grpTekst(G)}<br>${turN}${obsN(minN)}`, INFO);
-    el('omfang').innerHTML = `<b>Valgt: ${esc(pre + valgTekst())}</b> · ${esc(omf('A'))}`;
-    el('n-fart').textContent = `Gennemsnitsfarten på strækningen: ca. ${g(nA.gnsfart, 0)} km/t (${grpTekst(G)}, ${valgTekst()}). Linje = median. Skygge = midterste halvdel af turene (25-75 %).`;
+    el('n-fart').innerHTML = noterHtml([['Gennemsnitsfart på strækningen:', `ca. ${g(nA.gnsfart, 0)} km/t (${grpTekst(G)}).`]]);
   }
-  // standsning ved stop: beskriver datagrundlaget (ikke et nøgletal)
-  const st = (p) => { const x = NR(d, ALLE, p); return x.andel_stop == null ? '-' : pr(100 * x.andel_stop) + ' %'; };
-  el('n-stand').textContent = `Ture med standsning ved stop: ${PER.map((p) => `${TO ? lc(LBL[p]) + ' ' : ''}${st(p)}`).join(', ')} af turene i valget. Standsning ved stop = bussen kommer under ${g(M.stillestand_kmh)} km/t et sted på strækningen, normalt ved et stoppested (men også fx i kø eller for rødt lys).`;
-  // fravalgte ture pga. dårlige data (valget, valgt retning)
-  const fr = {}; PER.forEach((p) => { fr[p] = { n: 0, fra: 0, stop: 0, afst: 0, komf: 0 }; });
-  FRA.forEach((r) => { if (!ADD(r) || (d !== 'B' && r.Retning !== d) || !fr[r.Periode]) return; ['n', 'fra', 'stop', 'afst', 'komf'].forEach((k) => { fr[r.Periode][k] += r[k]; }); });
+  // valget og perioderne: én linje hver
+  el('omfang').innerHTML = noterHtml([['Valgt:', pre + valgTekst()]].concat(PER.map((p) => [per(p) + ':', `${OM(p).Dage} ${DAGE}, ${g(OM(p).Ture, 0)} ture`])));
+  // fravalgte ture pga. dårlige data (valget, valgt retning); årsagerne står i "Sådan har vi målt"
+  const fr = {}; PER.forEach((p) => { fr[p] = { n: 0, fra: 0 }; });
+  FRA.forEach((r) => { if (!ADD(r) || (d !== 'B' && r.Retning !== d) || !fr[r.Periode]) return; fr[r.Periode].n += r.n; fr[r.Periode].fra += r.fra; });
   const pctT = (a, b) => (b ? g(100 * a / b, 1) : '0');
-  el('obs').innerHTML = PER.some((p) => fr[p].fra) ? 'Fravalgt pga. dårlige data: ' + PER.map((p) => { const f = fr[p]; return `${TO ? lc(LBL[p]) + ' ' : ''}${g(f.fra, 0)} af ${g(f.n, 0)} ture (${pctT(f.fra, f.n)} %)`; }).join(', ')
-    + `. Heraf ${g(PER.reduce((s, p) => s + fr[p].stop, 0), 0)} med et punkt matchet til en stop-række (planlagt position, ikke GPS), ${g(PER.reduce((s, p) => s + fr[p].afst, 0), 0)} langt fra nærmeste GPS-punkt og ${g(PER.reduce((s, p) => s + fr[p].komf, 0), 0)}, hvor fart og komfort ikke kunne regnes; en tur kan have flere.` : '';
-  // antal ture ved køretid- og komfortgraferne
-  const ant = (grp) => PER.map((p) => `${LBL[p]} ${g(NR(d, grp, p).Ture, 0)}`).join(', ');
-  el('n-tid').innerHTML = esc(`Antal ture: uden standsning ved stop ${ant('Uden stop')}; med standsning ved stop ${ant('Med stop')}.`) + obsN(Math.min(...['Uden stop', 'Med stop'].flatMap((k) => PER.map((p) => NR(d, k, p).Ture || 0))));
+  el('obs').innerHTML = PER.some((p) => fr[p].fra) ? `<b>Fravalgt pga. dårlige data:</b> ${esc(PER.map((p) => `${TO ? lc(LBL[p]) + ' ' : ''}${g(fr[p].fra, 0)} af ${g(fr[p].n, 0)} ture (${pctT(fr[p].fra, fr[p].n)} %)`).join(', '))}. Hvilke ture: se "Sådan har vi målt".` : '';
+  // antal ture ved køretidsgrafen
+  const ant = (grp) => PER.map((p) => `${TO ? lc(LBL[p]) + ' ' : ''}${g(NR(d, grp, p).Ture, 0)}`).join(', ');
+  el('n-tid').innerHTML = noterHtml([['Antal ture uden standsning:', ant('Uden stop')], ['Antal ture med standsning:', ant('Med stop')]])
+    + obsN(Math.min(...['Uden stop', 'Med stop'].flatMap((k) => PER.map((p) => NR(d, k, p).Ture || 0))));
 }
 function drawOm() {
   const sr = SR(), v = M.vej || {}, io = 'ikke oplyst i config';
@@ -397,7 +428,10 @@ function drawDrift() {
   const nb = BUMPS().length;
   if (nb) tile('d3', `Bump-passager pr. ${DAG}${kl}`, g(Math.round(tureDag * nb), 0), `${g(tureDag, 1)} ture × ${nb} bump, ${DAGE}`);
   else tile('d3', `Ture pr. ${DAG}${kl}`, g(Math.round(tureDag), 0), `${DAGE}, ${lc(LBL.B)}`);
-  el('n-drift').textContent = `Valgt: ${valgTekst()}. Ekstra køretid gælder altid alle ture (med og uden standsning) og er regnet på gennemsnit: (gennemsnitlig køretid ${lc(LBL.B)} − ${lc(LBL.A)}) × ture pr. ${DAG} ${lc(LBL.B)}; ture pr. ${DAG} = ture i valget / ${DAGE} med ture${ST.time === AT ? '' : ' (alle timer)'}. Bump-passager gælder begge retninger og følger ikke retnings- eller stop-valget.`;
+  el('n-drift').innerHTML = noterHtml([
+    ['Ekstra køretid:', `(gennemsnitlig køretid ${lc(LBL.B)} − ${lc(LBL.A)}) × ture pr. ${DAG} ${lc(LBL.B)}, alle ture (med og uden standsning).`],
+    ['Bump-passager:', 'begge retninger; følger ikke retnings- og stop-valget.'],
+  ]);
   const zr = (e) => ZT.find((r) => r.S === ST.s && r.Retning === d && r.Element === e);
   const bz = sr.elementer.filter((e) => e.type === 'bump').map((b) => zr(b.navn)).filter(Boolean);
   el('n-halv').textContent = bz.length ? `Ved bumpene ca. ${gf(bz.reduce((s, r) => s + r.Lav, 0))}–${gf(bz.reduce((s, r) => s + r.Hoej, 0))} s pr. tur (ekstra tid pr. element: altid ${DAGE_STD}, alle ruter og timer, ture uden standsning ved stop).` : '';
@@ -434,15 +468,16 @@ function drawFart() {
     series.push({ name: '_s' + p, type: 'line', stack: 'band' + p, data: cats.map((x) => (byP[p][x] ? byP[p][x].P75 - byP[p][x].P25 : null)), symbol: 'none', lineStyle: { opacity: 0 }, silent: true, areaStyle: { color: colP(p), opacity: 0.18 }, emphasis: { disabled: true } });
   });
   PER.forEach((p, i) => series.push({ name: LBL[p], type: 'line', data: cats.map((x) => (byP[p][x] ? byP[p][x].Median : null)), symbol: 'none', lineStyle: { width: 3.5, color: colP(p) }, itemStyle: { color: colP(p) }, z: 3, emphasis: { disabled: true },
-    endLabel: { show: !small, formatter: LBL[p], color: css('--farve-tekst'), fontWeight: 'bold', fontSize: 13 },
     markLine: i === 0 ? { silent: true, symbol: 'none', data: marks } : undefined }));
   const top = Math.max(10, Math.ceil(Math.max(0, ...rows.map((r) => r.P75 || 0)) / 10) * 10);
+  // legende over grafen (Anthon 2026-11-19: navne ved linjeenden lagde sig oven i hinanden)
+  legendeHtml('lg-fart', PER.map((p) => [TO ? `${LBL[p]} (median)` : 'Median', colP(p), 'linje']).concat([['Skygge: midterste halvdel af turene (25-75 %)', css('--farve-tekst2'), 'baand']]));
   c.setOption(Object.assign(base(), {
-    grid: { left: 8, right: small ? 16 : 96, top: 56, bottom: 40, containLabel: true },
-    legend: small ? legend({ data: PER.map((p) => LBL[p]), itemWidth: 22, itemHeight: 6 }) : { show: false },     // direkte navne ved linjerne (endLabel); legende kun på smal skærm
+    grid: { left: 8, right: 16, top: 28, bottom: 40, containLabel: true },
+    legend: { show: false },
     tooltip: { trigger: 'axis', axisPointer: { type: 'line' }, formatter: (ps) => { const x = cats[ps[0].dataIndex]; return `<b>${x} m</b>` + PER.map((p) => { const r = byP[p][x]; return r ? `<div><span style="display:inline-block;width:10px;height:10px;background:${colP(p)};margin-right:4px"></span>${esc(LBL[p])}: ${g(r.Median)} km/t (25–75 %: ${g(r.P25)}–${g(r.P75)}), ${r.Ture} ture${r.Ture < OBSN ? ' (OBS: få ture)' : ''}</div>` : ''; }).join(''); } },
     xAxis: { type: 'category', data: cats.map(String), boundaryGap: false, name: d === 'B' ? `Meter fra ${sr.start_navn}` : 'Meter fra start af strækningen', nameLocation: 'middle', nameGap: 26, nameTextStyle: tx(), axisLabel: { interval: (i, v) => +v % 100 === 0, color: css('--farve-tekst') }, axisTick: { show: false } },
-    yAxis: { type: 'value', min: 0, max: top, interval: 10, name: 'km/t', nameLocation: 'end', nameTextStyle: Object.assign({ align: 'left' }, tx()), axisLabel: tx(), splitLine: { lineStyle: { color: css('--farve-streg'), opacity: 0.6 } } },
+    yAxis: { type: 'value', min: 0, max: top, interval: 10, axisLabel: tx(), splitLine: { lineStyle: { color: css('--farve-streg'), opacity: 0.6 } } },
     series }), true);
   c.resize();
 }
@@ -450,14 +485,15 @@ function drawFart() {
 function drawTid() {
   const d = ST.ret, c = ch('c-tid');
   const cats = ['Uden stop', 'Med stop'];
+  periodeLegende('lg-tid', 'blok');
   c.setOption(Object.assign(base(), {
-    grid: { left: 8, right: 8, top: 36, bottom: 4, containLabel: true },
-    legend: window.innerWidth < 700 ? legend({ data: PER.map((p) => LBL[p]) }) : { show: false },
+    grid: { left: 8, right: 8, top: 28, bottom: 4, containLabel: true },
+    legend: { show: false },
     tooltip: { trigger: 'axis', axisPointer: { type: 'none' }, valueFormatter: (x) => g(x) + ' s' },
     xAxis: { type: 'category', data: cats, axisTick: { show: false }, axisLabel: { color: css('--farve-tekst'), fontSize: 14, formatter: (k) => SLBL[k].replace(' ved', '\nved') } },
     yAxis: { type: 'value', show: false, min: 0, max: (v) => v.max * 1.15 },
     series: PER.map((p) => ({ name: LBL[p], type: 'bar', barMaxWidth: 60, data: cats.map((k) => NR(d, k, p).koretid), itemStyle: { color: colP(p) }, emphasis: { disabled: true },
-      label: { show: true, position: 'top', color: css('--farve-tekst'), fontSize: 14, fontWeight: 'bold', formatter: (q) => (q.dataIndex === 0 && window.innerWidth >= 700 ? LBL[p] + ' ' : '') + g(q.value) + ' s' } })) }), true);
+      label: { show: true, position: 'top', color: css('--farve-tekst'), fontSize: 14, fontWeight: 'bold', formatter: (q) => g(q.value) + ' s' } })) }), true);
   c.resize();
 }
 
@@ -529,23 +565,22 @@ function drawMaaned() {
   const vals = rows.map((r) => r.Median);
   const lo = vals.length ? Math.max(0, Math.floor(Math.min(...vals) / 10) * 10 - 10) : 0, hi = vals.length ? Math.ceil(Math.max(...vals) / 10) * 10 + 10 : 100;
   const faa = rows.filter((r) => r.Faa || r.Ture < OBSN);
-  el('n-maaned').innerHTML = esc(`Valgt: ${valgTekst()}, alle ture (med og uden standsning), median.`) + (faa.length ? ` <span class="obs-t">OBS:</span> ${esc(`hul markør = under ${M.obs_dage_maaned} ${DAGE} eller under ${OBSN} ture i måneden (${faa.map((r) => `${lab(r.Maaned)} ${r.Maaned.slice(0, 4)}: ${r.Dage} ${r.Dage === 1 ? DAG : DAGE}, ${r.Ture} ture`).filter((x, i, a) => a.indexOf(x) === i).join('; ')}).`)}` : '');
+  const faaTekst = faa.map((r) => `${lab(r.Maaned)} ${r.Maaned.slice(0, 4)}: ${r.Dage} ${r.Dage === 1 ? DAG : DAGE}, ${r.Ture} ture`).filter((x, i, a) => a.indexOf(x) === i).join('; ');
+  el('n-maaned').innerHTML = noterHtml([
+    ['Median', 'af alle ture (med og uden standsning).'],
+    faa.length ? ['OBS: hul markør', `= under ${M.obs_dage_maaned} ${DAGE} eller under ${OBSN} ture i måneden (${faaTekst}).`] : null,
+  ]);
+  legendeHtml('lg-maaned', TO ? PER.map((p) => [LBL[p], colP(p), 'linje']) : []);
   const series = PER.map((p) => ({ name: LBL[p], type: 'line', symbol: 'circle', symbolSize: 10, lineStyle: { width: 3, color: colP(p) }, itemStyle: { color: colP(p) }, connectNulls: false, emphasis: { disabled: true },
-    data: (() => {
-      const rr = cats.map((m) => rows.find((x) => x.Periode === p && x.Maaned === m) || null);
-      let li = -1; rr.forEach((x, i) => { if (x !== null) li = i; });        // sidste punkt får periodens navn (direkte navn i stedet for legende)
-      return rr.map((r, i) => {
-        if (!r) return null;
-        const o = { value: r.Median };
-        if (r.Faa || r.Ture < OBSN) { o.symbol = 'emptyCircle'; }      // få dage/ture: vises, men hul markør
-        if (i === li && window.innerWidth >= 700) o.label = { show: true, position: 'right', color: css('--farve-tekst'), fontSize: 13, fontWeight: 'bold', formatter: `${LBL[p]} ${g(r.Median)} s` };
-        return o;
-      });
-    })(),
+    data: cats.map((m) => {
+      const r = rows.find((x) => x.Periode === p && x.Maaned === m);
+      if (!r) return null;
+      return (r.Faa || r.Ture < OBSN) ? { value: r.Median, symbol: 'emptyCircle' } : { value: r.Median };   // få dage/ture: vises, men hul markør
+    }),
     label: { show: true, position: 'top', color: css('--farve-tekst'), fontSize: 13, fontWeight: 'bold', formatter: (q) => (q.value === null ? '' : g(q.value) + ' s') } }));
   c.setOption(Object.assign(base(), {
-    grid: { left: 8, right: window.innerWidth < 700 ? 24 : 96, top: 40, bottom: 4, containLabel: true },
-    legend: window.innerWidth < 700 ? legend({ data: PER.map((p) => LBL[p]), icon: 'circle' }) : { show: false },
+    grid: { left: 8, right: 24, top: 32, bottom: 4, containLabel: true },
+    legend: { show: false },
     tooltip: { trigger: 'axis', axisPointer: { type: 'line' }, formatter: (ps) => { const m = cats[ps[0].dataIndex]; return `<b>${lab(m)} ${m.slice(0, 4)}</b>` + ps.filter((q) => q.value !== null && q.value !== undefined && q.value !== '-').map((q) => { const r = rows.find((x) => x.Periode === (q.seriesName === LBL.A ? 'A' : 'B') && x.Maaned === m); return `<div>${q.marker}${esc(q.seriesName)}: ${g(q.value)} s (${r ? g(r.Ture, 0) : '?'} ture, ${r ? r.Dage : '?'} ${DAGE})${r && (r.Faa || r.Ture < OBSN) ? ' OBS: få' : ''}</div>`; }).join(''); } },
     xAxis: { type: 'category', data: cats, axisTick: { show: false }, axisLabel: { color: css('--farve-tekst'), fontSize: 14, formatter: (m) => lab(m) } },
     yAxis: { type: 'value', min: lo, max: hi, interval: 10, axisLabel: tx(), splitLine: { lineStyle: { color: css('--farve-streg'), opacity: 0.6 } } },
@@ -563,20 +598,25 @@ function drawN() {
   }
   const timer = [...Array(24).keys()];
   const mark = ST.time === AT ? undefined : { silent: true, itemStyle: { color: css('--farve-streg'), opacity: 0.7 }, data: [[{ xAxis: hh(ST.time) }, { xAxis: hh(ST.time) }]] };
+  periodeLegende('lg-n', 'blok');                                    // legende over grafen, ikke oven i aksen (Anthon 2026-11-19)
   c.setOption(Object.assign(base(), {
-    grid: { left: 8, right: 16, top: 36, bottom: 8, containLabel: true },
-    legend: TO ? legend({ data: PER.map((p) => LBL[p]) }) : { show: false },
+    grid: { left: 8, right: 16, top: 16, bottom: 8, containLabel: true },
+    legend: { show: false },
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: (ps) => `<b>kl. ${ps[0].axisValue}</b>` + ps.map((q) => `<div>${q.marker}${esc(q.seriesName)}: ${g(q.value, 0)} ture${q.value > 0 && q.value < OBSN ? ' (OBS: få ture)' : ''}</div>`).join('') + '<div>Klik for at vælge timen</div>' },
     xAxis: { type: 'category', data: timer.map(hh), axisTick: { show: false }, axisLabel: { color: css('--farve-tekst') } },
-    yAxis: { type: 'value', name: 'Ture', nameTextStyle: tx(), axisLabel: tx(), splitLine: { lineStyle: { color: css('--farve-streg'), opacity: 0.6 } } },
+    yAxis: { type: 'value', axisLabel: tx(), splitLine: { lineStyle: { color: css('--farve-streg'), opacity: 0.6 } } },
     series: PER.map((p, i) => ({ name: LBL[p], type: 'bar', data: n[p], itemStyle: { color: colP(p) }, emphasis: { disabled: true }, barGap: '10%',
       markArea: i === 0 ? mark : undefined,
       markLine: i === 0 ? { silent: true, symbol: 'none', lineStyle: { color: css('--farve-obs'), type: 'dashed' }, label: { formatter: `${OBSN} ture`, color: css('--farve-obs-tekst') }, data: [{ yAxis: OBSN }] } : undefined })) }), true);
   c.resize();
   el('h-n').textContent = `Antal ture pr. time, ${ST.dag.toLowerCase()}${ST.rute === AR ? '' : ', rute ' + ST.rute}`;
   const faa = timer.filter((t) => PER.some((p) => n[p][t] > 0 && n[p][t] < OBSN)).map(hh);
-  el('n-n').innerHTML = esc(`Ture i tallene (${grpTekst(G)}, ${d === 'B' ? 'begge retninger' : retNavn(d)}). Time = da bussen passerede strækningens første punkt. Klik på en søjle for at vælge timen; klik igen for alle timer.`)
-    + (faa.length ? ` <span class="obs-t">OBS:</span> ${esc(`under ${OBSN} ture (usikker median) kl. ${faa.join(', ')}.`)}` : '');
+  const st = (p) => { const x = NR(d, ALLE, p); return x.andel_stop == null ? '-' : pr(100 * x.andel_stop) + ' %'; };
+  el('n-n').innerHTML = noterHtml([
+    ['Klik på en søjle', 'for at vælge timen. Klik igen for alle timer.'],
+    faa.length ? ['OBS:', `under ${OBSN} ture (usikker median) kl. ${faa.join(', ')}.`] : null,
+    ['Standsning ved stop:', `${PER.map((p) => `${TO ? lc(LBL[p]) + ' ' : ''}${st(p)}`).join(', ')} af turene.`],
+  ]);
 }
 function drawTure() {
   const d = ST.ret, G = ST.stop;
@@ -596,7 +636,11 @@ function drawTure() {
   }).join('');
   el('t-ture').innerHTML = hoved + '<tbody>' + krop + '</tbody>';
   el('h-ture').textContent = `Planlagte ture${ST.time === AT ? '' : ' kl. ' + hh(ST.time)}: median køretid`;
-  el('n-ture').textContent = `${rows.length} planlagte ture (${ST.dag.toLowerCase()}, ${ST.rute === AR ? 'alle ruter' : 'rute ' + ST.rute}, ${grpTekst(G)}). Planlagt tur = turnummeret i turlisten, dvs. samme afgang hver dag; klokkeslæt = median over dagene, så enkelte dage kan ligge i nabotimen.${n_obs ? ` "Få kørsler" = under ${OBST} i en periode (${n_obs} ture).` : ''}${ST.time === AT ? ' Vælg en time for at se dens ture.' : ''}`;
+  el('n-ture').innerHTML = noterHtml([
+    [`${rows.length} planlagte ture`, `(${grpTekst(G)}).${ST.time === AT ? ' Vælg en time for at se dens ture.' : ''}`],
+    ['Kl.:', 'median over dagene, så enkelte dage kan ligge i nabotimen.'],
+    n_obs ? ['Få kørsler:', `under ${OBST} i en periode (${n_obs} ture).`] : null,
+  ]);
 }
 function drawBasis() {
   const v = `${ST.dag}`, ru = ST.rute === AR ? 'Alle' : ST.rute, ti = ST.time === AT ? 'Alle' : 'kl. ' + hh(ST.time);
@@ -656,7 +700,7 @@ function draw() {
   document.querySelectorAll('.valg button').forEach((b) => { const on = b.dataset.v === ST.komfort; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
   document.querySelectorAll('.vaelg .raekke button').forEach((b) => { const on = b.dataset.v === ST[b.closest('.raekke').dataset.f]; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
   el('time-valg').value = String(ST.time);
-  el('maalt').innerHTML = maaltNoter().map((t) => `<li>${esc(t)}</li>`).join('');
+  el('maalt').innerHTML = maaltNoter().map(([h, pk]) => `<h3>${esc(h)}</h3>${noterHtml(pk)}`).join('');
   drawOm(); drawTiles(); drawN(); drawTure(); drawFart(); drawTid(); drawBrems(); drawTabel(); drawDrift(); drawMaaned(); drawBasis(); tegnKort();
 }
 // klik på en time i datagrundlaget vælger timen (klik igen = alle timer)

@@ -116,7 +116,7 @@ I HAFAS' detaljefil har stop-rækker (planlagte positioner) et tidsstempel, der 
 
 - **Kun målte fakta.** Hver påstand skal kunne findes i data. Ord uden tal skal være præcise ("steg", "faldt"); upræcise ord ("ca.", "omkring") kun ved tal.
 - **"Samtidig med", ikke "fordi".** Uden kontrolstrækning kan årsag ikke påvises.
-- **Få ord.** Titel, der siger fundet, hvor intet filter ændrer billedet; beskrivende titel og beregnet pointe ved filtrerede grafer (se [formidling_og_grafik.md](formidling_og_grafik.md)); ingen forklarende afsnit i hovedteksten.
+- **Få ord.** Titel, der siger fundet, hvor intet filter ændrer billedet, og først når fundet er verificeret; beskrivende titel og beregnet pointe ved filtrerede grafer (se [formidling_og_grafik.md](formidling_og_grafik.md)); ingen forklarende afsnit i hovedteksten.
 - **Én pointe pr. element og pr. graf.**
 - **Komfort = passagerkomfort i kørslen på hele strækningen** (opbremsning og acceleration langs vejen), aldrig "stød". Overskrifter ved komforttal nævner komfort; forklaringen står i ⓘ og her, ikke i noten under grafen.
 - **Intervaller kan ikke lægges sammen**; skriv det ved tabellen.
