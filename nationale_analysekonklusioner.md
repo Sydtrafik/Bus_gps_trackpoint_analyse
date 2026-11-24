@@ -60,7 +60,7 @@ Bumptyper og regler: [kilder/README.md](vejledning/kilder/README.md) har gælden
 | Forbehold | Ingen sammenligningsstrækning: tallene viser, hvad der skete samtidig med bumpene. Bump, indsnævringer og den lavere hastighedsgrænse kom på samme tid, så tallene kan ikke skille deres virkning ad; ekstra tid pr. element fordeler tiden på steder langs vejen, ikke på årsager. |
 | Rapport | Præsentationsrapport (HTML), lavet til et oplæg 11/11 2026. |
 | Værktøjsversion | analyse_v2.1, komfort_v1.1, zonetid 1.1 |
-| Kontaktperson | Sydtrafik (GitHub: AFT-syd) |
+| Kontaktperson | Sydtrafik (GitHub: Anfuth) |
 
 ---
 
