@@ -1,0 +1,43 @@
+name: Fejl
+description: Værktøjet stopper, giver en fejl eller et resultat, der ikke kan passe.
+title: "Fejl: "
+labels: ["fejl"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Issuet er offentligt. Indsæt ingen rådata (Details.csv, List.csv, turtabel.csv), tur-id'er, mailadresser eller telefonnumre.
+  - type: textarea
+    id: hvad
+    attributes:
+      label: Hvad gjorde du?
+      description: Fx valg 3 i koer_analyse.bat, eller kommandoen du kørte.
+    validations:
+      required: true
+  - type: textarea
+    id: skete
+    attributes:
+      label: Hvad skete der?
+      description: Kopiér fejlteksten fra vinduet, eller beskriv resultatet, og hvad du havde forventet.
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Værktøjets version
+      description: Står i program\VERSION, fx 1.8.0.
+    validations:
+      required: true
+  - type: input
+    id: miljoe
+    attributes:
+      label: Windows og Python
+      description: Fx Windows 11, Python 3.13 (skriv python --version i en kommandoprompt).
+  - type: checkboxes
+    id: data
+    attributes:
+      label: Data
+      options:
+        - label: Issuet indeholder ingen rådata, tur-id'er, mail eller telefonnumre.
+          required: true

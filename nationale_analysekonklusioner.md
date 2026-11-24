@@ -79,7 +79,7 @@ Bumptyper og regler: [kilder/README.md](vejledning/kilder/README.md) har gælden
 | Linje(r) | <linje, retninger, ture pr. hverdag> |
 | Bustype | <drivmiddel (diesel, el, biogas/HVO) og længde (midibus, solobus 12-13 m, ledbus 18 m); samme bustyper før og efter? HAFAS-eksporten har kun busnummer (List.csv, kolonnen "Busnummer"), så slå numrene op i vognparken. Skriv "ikke oplyst", hvis du ikke kan finde det.> |
 | Ændring | <hvad blev ændret, og hvornår (anlægsperiode)> |
-| Type bump | <betegnelse fra håndbogsbilaget: cirkelbump, modificeret cirkelbump, modificeret sinusbump, trapezbump, trapezbump med modificerede ramper, hævet flade, pudebump, kuppelafrundet, præfabrikeret, pukkelbump (ældre type); "ingen bump". Skriv "ikke bekræftet", hvis typen er antaget. Tegninger: kilder/bumptyper/> |
+| Type bump | <betegnelse fra håndbogsbilaget: cirkelbump, modificeret cirkelbump, sinusbump, modificeret sinusbump, trapezbump, trapezbump med modificerede ramper, hævet flade, pudebump, kuppelafrundet, præfabrikeret, pukkelbump (ældre type); "ingen bump". Skriv "ikke bekræftet", hvis typen er antaget. Tegninger: kilder/bumptyper/> |
 | Sammenligning med vejregler | <målt busfart ved bumpet mod passagehastigheden for bumptypen; relevante anbefalinger. Kilder: vejledning/kilder/README.md> |
 | Antal bump og placering | <antal; meter fra strækningens start> |
 | Indsnævring | <ja/nej, antal, placering; nye eller eksisterende> |

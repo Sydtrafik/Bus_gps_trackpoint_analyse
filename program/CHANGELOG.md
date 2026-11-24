@@ -9,6 +9,7 @@ Pakkens version står i filen `program\VERSION` (her: nyeste udgivne afsnit nede
 
 ## [Ikke udgivet]
 
+- 2026-11-24, Sydtrafik: **GitHub: skabeloner, tests og automatisk udgivelse.** Skabeloner til issues ("Fejl", "Ny analysekonklusion" med konklusionsfilens felter) og pull requests (tjekliste). `.github\workflows\tests.yml` kører testene på Windows med Python 3.10 og 3.13 ved hver push og pull request. `.github\workflows\udgiv.yml` laver tag og GitHub Release, når `program\VERSION` er ny på `main`, og fejler, hvis `[Ikke udgivet]` ikke er tom på `main`. `AGENTS.md` har afsnittet "Vedligeholdelse af repoet" (pull requests, udgivelse, issues), og regel 7 peger på workflowen. Konklusionsskabelonen nævner sinusbump. Filer: `.github\` (ny), `AGENTS.md`, `nationale_analysekonklusioner.md`, `program\CHANGELOG.md`.
 ## [1.8.0] - 2026-11-24 - Sydtrafik
 
 - 2026-11-24, Sydtrafik: **alt på `main` udgives med det samme**, så zip-filen under Releases altid er den nyeste udgave: nyt versionsafsnit, `program\VERSION`, git-tag og GitHub Release ved hver push til `main`; `[Ikke udgivet]` bruges kun i en pull request. Filer: `program\README.md` (afsnit 11, punkt 4 og 6), `AGENTS.md` (regel 7), `CONTRIBUTING.md`, `program\CHANGELOG.md` (reglen øverst).

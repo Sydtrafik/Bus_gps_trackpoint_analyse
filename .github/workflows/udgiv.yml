@@ -1,0 +1,45 @@
+name: Udgiv
+
+# Ved hver push til main: [Ikke udgivet] skal være tom, og er program/VERSION ny,
+# laves tag vX.Y.Z og en GitHub Release med versionens linjer fra CHANGELOG.
+# Så er zip-filen under Releases altid den nyeste udgave.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  udgiv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Tjek at [Ikke udgivet] er tom
+        run: |
+          antal=$(awk '/^## \[Ikke udgivet\]/{f=1;next} f&&/^## \[/{exit} f&&/^- /{c++} END{print c+0}' program/CHANGELOG.md)
+          if [ "$antal" -gt 0 ]; then
+            echo "::error file=program/CHANGELOG.md::main har $antal linje(r) under [Ikke udgivet]. Udgiv dem som ny version (AGENTS.md, Vedligeholdelse af repoet)."
+            exit 1
+          fi
+
+      - name: Lav tag og release, hvis VERSION er ny
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(tr -d ' \r\n' < program/VERSION)
+          if git rev-parse -q --verify "refs/tags/v$version" >/dev/null; then
+            echo "v$version findes allerede; intet at udgive."
+            exit 0
+          fi
+          awk -v h="## [$version]" 'index($0,h)==1{f=1;next} f&&/^## \[/{exit} f' program/CHANGELOG.md > noter.md
+          if ! grep -q '^- ' noter.md; then
+            echo "::error file=program/CHANGELOG.md::Ingen linjer under ## [$version] i CHANGELOG."
+            exit 1
+          fi
+          printf '\n**Hent:** download zip-filen nedenfor, pak den ud, og følg README.\n' >> noter.md
+          gh release create "v$version" --target "$GITHUB_SHA" --title "$version" --notes-file noter.md --latest
