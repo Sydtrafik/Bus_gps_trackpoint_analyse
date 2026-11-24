@@ -9,6 +9,10 @@ Pakkens version står i filen `program\VERSION` (her: nyeste udgivne afsnit nede
 
 ## [Ikke udgivet]
 
+## [1.9.2] - 2026-11-24 - Sydtrafik
+
+- 2026-11-24, Sydtrafik: **README skrevet om, så en ny bruger kommer i gang.** Kortere indledning, der ikke låser værktøjet til før og efter; skærmbillede af rapporten; "Kom i gang" med installation af Python (hak i "Add python.exe to PATH"), hentning fra Releases og analysens trin; afsnit om data fra andre systemer end HAFAS (samme kolonner, ikke afprøvet); "Spørgsmål, fejl og bidrag". `eksempler\skabelon_screenshot.png` er lavet igen med den nuværende rapportskabelon (Kvaglundvej, neutral titel). Skærmbilledet af en rapport for én periode er fjernet, fordi det viste den gamle skabelon. Python-versionerne i `program\README.md` og `requirements.txt` siger nu, at testene kører med 3.10 og 3.13. Filer: `README.md`, `program\README.md`, `program\requirements.txt`, `program\eksempler\skabelon_screenshot.png`, `program\eksempler\skabelon_screenshot_en_periode.png` (slettet).
+
 ## [1.9.1] - 2026-11-24 - Sydtrafik
 
 - 2026-11-24, Sydtrafik: **repoet er flyttet til Sydtrafiks organisation på GitHub:** `https://github.com/Sydtrafik/Bus_gps_trackpoint_analyse`. Historikken og versionstags følger med. Filer: `README.md` (`git clone`-linjen).

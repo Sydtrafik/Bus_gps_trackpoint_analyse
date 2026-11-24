@@ -95,7 +95,7 @@ Nøjagtighed og svagheder: afsnit 8.
 
 ## 2. Krav
 
-- Windows. Testet på Python 3.13.0 (Windows 11); 3.10 eller nyere forventes at virke (syntaksen er tjekket mod 3.10, kørslen er ikke). Linux og macOS er ikke afprøvet (`.bat`-filerne er kun til Windows).
+- Windows. Testene kører med Python 3.10 og 3.13 på Windows ved hver ændring (GitHub Actions, `.github\workflows\tests.yml`); analyserne er kørt med 3.13. Linux og macOS er ikke afprøvet (`.bat`-filerne er kun til Windows).
 - `pandas`, `numpy`, `pyyaml`. Testet med pandas 2.2.3, numpy 2.2.5, pyyaml 6.0.2. `tqdm` er valgfri (fremdriftsbjælke). `pytest` er valgfri (testene kan køres uden).
 - Installation: `python -m pip install -r requirements.txt` (fil i denne mappe).
 - Rapporten kræver ingen ekstra pakker (ECharts og Leaflet ligger i `rapport\vendor\`). `playwright` er valgfri og bruges kun af browsertesten i `tests\test_rapport.py`.
@@ -316,7 +316,6 @@ Værktøjet kan også bruges til at se, hvordan kørslen er i ét område uden s
 
 **Omskriv før/efter-teksterne.** Tager du en før/efter-config (fx Kvaglundvej-eksemplet) og kører kun A, så skal disse nøgler under `rapport:` skrives om, for de taler om en ændring: `titel`, `undertitel`, `straekning_tekst` og `forbehold`. Navngiv også elementerne, så de passer til perioden: rapporten skriver "Laveste fart ved bumpene" og bruger elementernes navne ("Bump 1"), også når perioden er før bumpene kom. Skal elementerne være med i en før-periode, så kald dem fx "Kommende bump 1", eller brug `type: andet`. Afprøvet på Kvaglundvej, periode A alene (samme tal som A-delen af før/efter-rapporten).
 
-![Rapport for én periode (Kvaglundvej, periode A alene)](eksempler/skabelon_screenshot_en_periode.png)
 
 ### Flere strækninger
 

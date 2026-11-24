@@ -1,33 +1,85 @@
 # Trackpoint-værktøjet
 
-Værktøjet måler bussers køretid, fart og passagerkomfort på en strækning før og efter en
-vejændring (bump, indsnævring m.m.) ud fra bussernes GPS fra HAFAS, og laver en rapport som én
-HTML-fil, du kan sende videre. Det kører på Windows og kræver Python (testet på 3.13; 3.10 eller
-nyere forventes at virke), men du skriver ingen kommandoer.
+Værktøjet måler bussers køretid, fart og passagerkomfort på en strækning ud fra bussernes
+GPS-positioner og laver en rapport som én HTML-fil, du kan sende videre. Det kører på Windows,
+og du skriver ingen kommandoer: du udfylder en fil og dobbeltklikker.
 
-Det kan bruges til:
+![Rapport for Kvaglundvej, Esbjerg: køretid, fart og komfort før og efter bump](program/eksempler/skabelon_screenshot.png)
 
-- Før og efter en vejændring: hvad ændrede bump, indsnævringer m.m. ved køretid, fart og komfort.
-- Én periode, uden før-måling: hvordan bussen påvirkes, og hvordan der køres på en strækning i dag
-  (fart, opbremsning, acceleration, hvor bussen standser). Sæt `PERIODER=A` i `koer_analyse.bat`.
-- Køretid gennem et trafikeret kryds, for én retning, med flere punkter (før køen, stoplinjen,
-  i krydset, efter krydset): køretid pr. stykke. Det kræver den fulde config og en agent eller
-  Python-erfaring. Giver en rapport med køretid pr. stykke over døgnet, pr. rute og pr. planlagt
-  tur. Se [program/README.md](program/README.md), "Kryds".
+## Det kan bruges til
 
-Køretiden findes også pr. tur i `resultat\turtabel.csv` (dato, ugedag, time, retning, rute,
-planlagt turnummer, køretid og tidspunkt ved hvert punkt) og pr. time i `resultat\overblik.md`.
-Alt kommer fra HAFAS-eksporten; der slås ikke op i andre kilder.
+- **Før og efter en ændring** på vejen, fx bump, indsnævringer eller en ny hastighedsgrænse.
+- **Én periode:** hvordan der køres på en strækning i dag (fart, opbremsning, acceleration, hvor
+  bussen standser).
+- **Køretid gennem et kryds**, stykke for stykke (før køen, stoplinjen, i krydset, efter krydset).
+  Det kræver den fulde config; se [program/README.md](program/README.md), "Kryds".
+
+**Data:** værktøjet er udviklet og afprøvet med eksport fra HAFAS (`Details.csv` og `List.csv`).
+GPS-data fra andre systemer skal først have de samme kolonner
+([eksportvejledningen](vejledning/eksportvejledning_HAFAS.md), afsnit 4); det er ikke afprøvet.
 
 
-## Hent værktøjet
+## Kom i gang
 
-- **Uden git:** tryk på den grønne knap **Code** øverst på siden, og vælg **Download ZIP**. Pak
-  zip-filen ud i en mappe, du selv kan skrive i. Mappens sti må ikke indeholde `%`.
+### 1. Installér Python (én gang)
+
+Hent Python 3.10 eller nyere fra [python.org](https://www.python.org/downloads/), og sæt hak i
+**"Add python.exe to PATH"** under installationen. Værktøjet er testet med Python 3.10 og 3.13.
+
+### 2. Hent værktøjet
+
+- **Uden git:** gå til [Releases](https://github.com/Sydtrafik/Bus_gps_trackpoint_analyse/releases/latest),
+  og hent **Source code (zip)**. Pak zip-filen ud i en mappe, du selv kan skrive i. Mappens sti
+  må ikke indeholde `%`.
 - **Med git:** `git clone https://github.com/Sydtrafik/Bus_gps_trackpoint_analyse.git`
 
-Python skal være installeret; krav og pakker står i [program/README.md](program/README.md), afsnit 2.
-Valg 0 i `koer_analyse.bat` installerer pakkerne.
+Kommer der en ny version, erstatter du hele værktøjsmappen. Dine analyser ligger ved siden af
+den og røres ikke.
+
+### 3. Lav en analyse
+
+0. **I god tid:** eksportér før-perioden fra HAFAS, før ændringen sker. HAFAS gemmer kun ca.
+   3 måneder. Se [eksportvejledningen](vejledning/eksportvejledning_HAFAS.md).
+1. **Dobbeltklik på `ny_analyse.bat`**, og skriv et navn (fx Kvaglundvej Esbjerg). Den opretter
+   `trackpoint_analyser\<navn>\` ved siden af værktøjsmappen:
+
+   ```
+   data\A\                          HAFAS-eksporten for før-perioden (Details.csv og List.csv)
+   data\B\                          HAFAS-eksporten for efter-perioden
+   config.yaml                      indstillinger, du udfylder
+   koer_analyse.bat                 kører analysen
+   Vejledning - trin for trin.txt   de samme trin som her
+   resultat\                        tal og rapport
+   ```
+
+2. **Åbn `config.yaml`** i Notesblok, og udfyld felterne mærket `<-- UDFYLD`: perioder,
+   strækningens to ender (koordinater fra Google Maps) og bump eller indsnævringer.
+3. **Dobbeltklik på `koer_analyse.bat`**, og vælg:
+
+   ```
+   0  første gang: installér pakker og test (ca. 1 min)
+   1  stoppesteder pr. retning, med forslag til, hvad du skriver i config.yaml
+   2  prøvekørsel på 300 ture: tjek, at næsten alle ture er beholdt
+   3  fuld analyse og rapport (10-30 min)
+   4  byg rapporten igen, når du har rettet titel og tekster i config.yaml
+   ```
+
+4. **Læs rapporten** i `resultat\rapport.html`. Køretiden pr. tur står også i
+   `resultat\turtabel.csv` og pr. time i `resultat\overblik.md`. Forbehold og hvordan tallene er
+   regnet: [metode_og_rapportering.md](vejledning/metode_og_rapportering.md).
+5. **Del dine fund** i `nationale_analysekonklusioner.md` med en pull request eller et issue
+   (se [CONTRIBUTING.md](CONTRIBUTING.md)). Filen er offentlig, så skriv ingen mailadresser.
+
+
+## Hvad skal jeg læse, og hvornår
+
+| Når | Læs |
+|---|---|
+| Før ændringen sker | [eksportvejledning_HAFAS.md](vejledning/eksportvejledning_HAFAS.md) |
+| Før du deler en rapport | [metode_og_rapportering.md](vejledning/metode_og_rapportering.md): hvad tallene betyder, forbehold |
+| Når du skriver rapportens tekst | [formidling_og_grafik.md](vejledning/formidling_og_grafik.md) |
+| Når analysen skal bruges i en sag om vejregler | [vejledning/kilder/README.md](vejledning/kilder/README.md) |
+| Flere strækninger, kryds, fejlfinding | [program/README.md](program/README.md) (teknisk reference) |
 
 
 ## Hvad ligger her
@@ -36,66 +88,21 @@ Valg 0 i `koer_analyse.bat` installerer pakkerne.
 |---|---|
 | `ny_analyse.bat` | Start her: opretter en mappe til din analyse |
 | [nationale_analysekonklusioner.md](nationale_analysekonklusioner.md) | Konklusioner fra analyser i hele landet; tilføj dine |
-| `nationale_analysekonklusioner.html` | Samme konklusioner til at læse: tabel med filtre og tegning af bumptypen (laves af `koer_analyse.bat`, valg 5). Åbn den lokalt i en browser; GitHub viser kun kildekoden. |
-| [vejledning/](vejledning) | Læs efter behov (se nedenfor) |
-| [program/](program) | Selve programmet; rør ikke |
+| `nationale_analysekonklusioner.html` | De samme konklusioner med filtre og tegning af bumptypen. Åbn den lokalt i en browser; GitHub viser kun kildekoden. |
+| [vejledning/](vejledning) | Vejledninger (se ovenfor) |
+| [program/](program) | Selve programmet; ret ikke i det |
 | [AGENTS.md](AGENTS.md), `CLAUDE.md` | Til en AI-agent (fx Claude Code), hvis du bruger en |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Sådan deler du en ændring eller dine konklusioner |
 | [LICENSE](LICENSE), [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) | Licens (MIT) og licenser for de medfølgende biblioteker |
 
-Ret ikke i filerne her, undtagen `nationale_analysekonklusioner.md`. Dit eget arbejde og dine data
-ligger i din analysemappe, ved siden af værktøjsmappen. Kommer der en ny version af værktøjet,
-erstatter du hele værktøjsmappen; dine analyser røres ikke.
+Version: [program/VERSION](program/VERSION). Ændringer: [program/CHANGELOG.md](program/CHANGELOG.md).
 
 
-## Sådan laver du en analyse
+## Spørgsmål, fejl og bidrag
 
-0. I god tid: eksportér før-perioden fra HAFAS, FØR ændringen sker. HAFAS gemmer kun ca. 3 måneder.
-   Vejledning: [vejledning/eksportvejledning_HAFAS.md](vejledning/eksportvejledning_HAFAS.md)
-
-1. Dobbeltklik på `ny_analyse.bat`, og skriv et navn (fx Kvaglundvej Esbjerg). Den opretter
-   `trackpoint_analyser\<navn>\` ved siden af værktøjsmappen med:
-
-   ```
-   data\A\                          her lægger du HAFAS-eksporten for før-perioden (Details.csv og List.csv)
-   data\B\                          her lægger du HAFAS-eksporten for efter-perioden
-   config.yaml                      indstillinger, du udfylder
-   koer_analyse.bat                 kører analysen
-   Vejledning - trin for trin.txt   de samme trin som her
-   resultat\                        tal og rapport
-   ```
-
-2. Åbn `config.yaml` i Notesblok, og udfyld felterne mærket `<-- UDFYLD`: perioder, strækningens
-   to ender (koordinater fra Google Maps) og bump/indsnævringer.
-
-3. Dobbeltklik på `koer_analyse.bat`, og vælg:
-
-   ```
-   0  første gang: installér og test (ca. 1 min)
-   1  stoppesteder pr. retning, med forslag til, hvad du skriver i config.yaml
-   2  prøvekørsel på 300 ture: tjek, at næsten alle ture er beholdt
-   3  fuld analyse og rapport (10-30 min), også køretid pr. tur og pr. time
-   4  byg rapporten igen, når du har skrevet titlen og teksterne i config.yaml
-   ```
-
-4. Læs rapporten. Forbehold og hvordan tallene er regnet:
-   [vejledning/metode_og_rapportering.md](vejledning/metode_og_rapportering.md)
-
-5. Tilføj dine fund i `nationale_analysekonklusioner.md`, og del dem via repoet på GitHub
-   (pull request, eller et issue med din blok; se [CONTRIBUTING.md](CONTRIBUTING.md)). Ingen
-   mailadresser i filen; den er offentlig.
-
-
-## Hvad skal jeg læse, og hvornår
-
-- Før ændringen sker: [vejledning/eksportvejledning_HAFAS.md](vejledning/eksportvejledning_HAFAS.md)
-- Før du deler en rapport: [vejledning/metode_og_rapportering.md](vejledning/metode_og_rapportering.md)
-  (hvad tallene betyder, forbehold)
-- Skriver du selv rapportens tekst: [vejledning/formidling_og_grafik.md](vejledning/formidling_og_grafik.md)
-- Skal analysen bruges i en konkret sag om vejregler: [vejledning/kilder/README.md](vejledning/kilder/README.md)
-- Teknisk reference, flere strækninger og fejlfinding: [program/README.md](program/README.md)
-
-Version: se [program/VERSION](program/VERSION). Ændringer: [program/CHANGELOG.md](program/CHANGELOG.md).
+Opret et [issue](https://github.com/Sydtrafik/Bus_gps_trackpoint_analyse/issues/new/choose): vælg
+"Fejl" eller "Ny analysekonklusion". Ændringer af værktøjet sendes som pull request; se
+[CONTRIBUTING.md](CONTRIBUTING.md). Repoet vedligeholdes af Sydtrafik.
 
 
 ## Licens og forbehold

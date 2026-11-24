@@ -1,4 +1,4 @@
-# Testet på Python 3.13.0 (Windows); 3.10 eller nyere forventes at virke.
+# Testene kører med Python 3.10 og 3.13 på Windows (GitHub Actions).
 # Testet med pandas 2.2.3, numpy 2.2.5, pyyaml 6.0.2, tqdm 4.67.1.
 # Nedre grænser nedenfor er ikke afprøvet; pandas 3.x er heller ikke afprøvet.
 pandas>=2.0,<3
