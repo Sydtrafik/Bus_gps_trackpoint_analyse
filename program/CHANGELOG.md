@@ -9,6 +9,10 @@ Pakkens version står i filen `program\VERSION` (her: nyeste udgivne afsnit nede
 
 ## [Ikke udgivet]
 
+## [1.9.1] - 2026-11-24 - Sydtrafik
+
+- 2026-11-24, Sydtrafik: **repoet er flyttet til Sydtrafiks organisation på GitHub:** `https://github.com/Sydtrafik/Bus_gps_trackpoint_analyse`. Historikken og versionstags følger med. Filer: `README.md` (`git clone`-linjen).
+
 ## [1.9.0] - 2026-11-24 - Sydtrafik
 
 - 2026-11-24, Sydtrafik: **GitHub-brugeren hedder nu Anfuth** (før AFT-syd). Repoets adresse er `https://github.com/Anfuth/bus-gps-trackpoint-analyse` (GitHub viderestiller den gamle). Rettet: `git clone`-linjen i `README.md` og kontaktpersonen i `nationale_analysekonklusioner.md` og `.html`. Filer: `README.md`, `nationale_analysekonklusioner.md`, `nationale_analysekonklusioner.html`.

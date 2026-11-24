@@ -24,7 +24,7 @@ Alt kommer fra HAFAS-eksporten; der slås ikke op i andre kilder.
 
 - **Uden git:** tryk på den grønne knap **Code** øverst på siden, og vælg **Download ZIP**. Pak
   zip-filen ud i en mappe, du selv kan skrive i. Mappens sti må ikke indeholde `%`.
-- **Med git:** `git clone https://github.com/Anfuth/bus-gps-trackpoint-analyse.git`
+- **Med git:** `git clone https://github.com/Sydtrafik/Bus_gps_trackpoint_analyse.git`
 
 Python skal være installeret; krav og pakker står i [program/README.md](program/README.md), afsnit 2.
 Valg 0 i `koer_analyse.bat` installerer pakkerne.
