@@ -19,7 +19,7 @@ fremgangsmåde står i [program/README.md](program/README.md), afsnit 11. Kort:
 3. Kør testene ([program/README.md](program/README.md), afsnit 9), og lav en pull request. Bruger
    du ikke git, så opret et issue, der beskriver ændringen.
 
-Versionsnummer og git-tag sættes af vedligeholderen ved udgivelse, ikke i en pull request.
+Versionsnummer, git-tag og GitHub Release sættes af vedligeholderen, ikke i en pull request. Alt, der kommer på `main`, udgives med det samme, så zip-filen under Releases altid er den nyeste udgave.
 
 ## Det må ikke komme med
 
