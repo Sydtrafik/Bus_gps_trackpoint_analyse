@@ -15,7 +15,7 @@ linjer: "3A, begge retninger (ca. 129 ture pr. hverdag)"
 bustype: "Elbusser (alle ture); længde ikke oplyst"
 aendring: "2 bump + 2 indsnævringer, 50 → 40 km/t (anlagt 26/9-17/10 2025)"
 fartdaempere:
-  - {type: "modificeret cirkelbump", antal: 2, bekraeftet: false}   # vejen er 40 km/t; typen er ikke opmålt
+  - {type: "modificeret cirkelbump", antal: 2, antaget: true}   # vejen er 40 km/t; typen er antaget, ikke opmålt
   - {type: "indsnævring", antal: 2}
 hastighed_kmt: {foer: 50, efter: 40}
 

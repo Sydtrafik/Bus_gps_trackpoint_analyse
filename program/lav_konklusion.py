@@ -117,15 +117,20 @@ def fra_rapportdata(doc, sid=None):
                      + [{"navn": str(s.get("slut_navn") or "Slut"), "lat": round(lb, 6), "lon": round(lob, 6)}])
     # elementer -> fartdæmpere (gættet ud fra config; tjekkes af personen)
     vej = m.get("vej") or {}
+    # bumptype "Modificeret cirkelbump (antaget)" -> type uden parentes + antaget: true
+    bt = str(vej.get("bumptype") or "bump")
+    bt_antaget = "antaget" in bt.lower()
+    bt = re.sub(r"\s*\([^)]*\)", "", bt).strip().lower() or "bump"
     antal = {}
     for e in s.get("elementer") or []:
         t = str(e["type"]).lower()
         if t == "bump":
-            t = str(vej.get("bumptype") or "bump").lower()
+            t = bt
         elif t.startswith("indsn"):
             t = "indsnævring"
         antal[t] = antal.get(t, 0) + 1
-    ud["fartdaempere"] = sorted(({"type": t, "antal": n} for t, n in antal.items()), key=lambda x: x["type"] == "indsnævring")
+    ud["fartdaempere"] = sorted(({"type": t, "antal": n, **({"antaget": True} if t == bt and bt_antaget else {})}
+                                 for t, n in antal.items()), key=lambda x: x["type"] == "indsnævring")
     kom["fartdaempere"] = "tjek: fra elementer i config og rapport.vej.bumptype; brug bumptypens navn fra vejreglerne"
     ud["vejtype"] = vej.get("vejtype") or UDFYLD
     if vej.get("vejtype"):
@@ -252,7 +257,7 @@ def skriv_yaml(ud, kom):
                "kort, fx 2 modificerede cirkelbump + 2 indsnævringer, 50 → 40 km/t"),
          "# Fartdæmpere: bumptype med navnet fra vejreglerne (cirkelbump, modificeret cirkelbump, modificeret sinusbump, pudebump,",
          "# trapezbump, hævet flade ...), indsnævring, chikane o.l. Tom liste [] = ingen. Første bumptype giver tegningen.",
-         "# Er typen ikke bekræftet, så tilføj  bekraeftet: false  (fx {type: \"modificeret cirkelbump\", antal: 2, bekraeftet: false}).",
+         "# Er typen antaget (ikke opmålt), så tilføj  antaget: true  (fx {type: \"modificeret cirkelbump\", antal: 2, antaget: true}).",
          ("fartdaempere:" + (f"   # {kom['fartdaempere']}" if kom.get("fartdaempere") else "")
           if ud["fartdaempere"] else "fartdaempere: []   # ingen fartdæmpere i config; tilføj dem, hvis der er nogen"),
     ]

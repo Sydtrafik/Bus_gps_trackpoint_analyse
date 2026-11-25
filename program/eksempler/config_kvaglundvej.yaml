@@ -154,7 +154,7 @@ rapport:
   kilde: "Kilde: realtidsdata (GPS-positioner) for linje 3A. Der tages forbehold for fejl og mangler samt for variationer, usikkerheder og revisioner i både aktuelle og historiske data."
   kort: false                              # true = Leaflet + OpenStreetMap (online-kort, se README)
   vej:                                     # "Om strækningen" (rapport v1.2); som i analyser/kvaglundvej_esbjerg_2025.yaml
-    vejtype: "Gennemkørselsvej i boligkvarter"
+    vejtype: "Almindelig vej i boligområde"
     hastighed: "50 → 40 km/t (sat ned samtidig med bumpene)"
-    bumptype: "Sinusbump"
+    bumptype: "Modificeret cirkelbump (antaget)"   # vejen er 40 km/t; typen er ikke opmålt
     andre_foranstaltninger: "2 indsnævringer, anlagt samtidig med bumpene"

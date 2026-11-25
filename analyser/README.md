@@ -26,7 +26,7 @@ En fil med samme navn og en anden kontakt overskrives ikke: ret ikke andres anal
 | `parkering_paa_vejen` | Må der parkeres på kørebanen: `ja`, `nej` eller `ukendt` | person |
 | `linjer`, `bustype` | Linje(r) og retninger; drivmiddel og længde ("ikke oplyst", hvis ukendt) | person |
 | `aendring` | Kort tekst, fx "2 modificerede cirkelbump + 2 indsnævringer, 50 → 40 km/t" | person |
-| `fartdaempere` | Liste af `{type, antal}`. Type = bumptypens navn fra vejreglerne (cirkelbump, modificeret cirkelbump, modificeret sinusbump, trapezbump, pudebump, hævet flade ...) eller fx indsnævring, chikane. Første bumptype med en tegning giver tegningen. Er typen ikke opmålt, så skriv `bekraeftet: false`. `[]` = ingen. Vejreglerne har ingen almindelig sinusbump, kun modificeret sinusbump (kun til 50 km/t) | person (forslag fra config) |
+| `fartdaempere` | Liste af `{type, antal}`. Type = bumptypens navn fra vejreglerne (cirkelbump, modificeret cirkelbump, modificeret sinusbump, trapezbump, pudebump, hævet flade ...) eller fx indsnævring, chikane. Første bumptype med en tegning giver tegningen. Er typen antaget (ikke opmålt), så skriv `antaget: true`. `[]` = ingen. Vejreglerne har ingen almindelig sinusbump, kun modificeret sinusbump (kun til 50 km/t) | person (forslag fra config) |
 | `hastighed_kmt` | Hastighedsgrænsen pr. periode, tal uden enhed | person (forslag fra config) |
 | `laengde_m`, `kort` | Den målte strækning i meter og Google Maps-link | script |
 | `punkter` | Punkter til kortet: `{navn, lat, lon}` og ved kryds `beskrivelse` (hvor punktet ligger, fx "stoplinjen"). Strækning: start, fartdæmperne og slut | script (kryds: beskrivelse fra person) |

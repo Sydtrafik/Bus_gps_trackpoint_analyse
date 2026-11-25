@@ -12,7 +12,7 @@ Afsluttede trackpoint-analyser i hele landet, så vi kan lære af hinandens fund
 
 | Vej, by | Type | År | Målt strækning | Fartdæmpere | Hastighedsgrænse (km/t) | Køretid (s) | Ændring | Laveste fart ved fartdæmper (km/t) | Mærkbar opbremsning (%) | Mærkbar acceleration (%) | Ture målt |
 |---|---|---|--:|---|---|---|--:|---|---|---|---|
-| [Kvaglundvej, Esbjerg](analyser/kvaglundvej_esbjerg_2025.yaml) | Før/efter | 2025 | 626 m | 2 modificeret cirkelbump (ikke bekræftet), 2 indsnævringer | 50 → 40 | 54 → 66 | +12 s | 42 → 25 | 16 → 64 | 18 → 47 | 2.516 → 4.095 |
+| [Kvaglundvej, Esbjerg](analyser/kvaglundvej_esbjerg_2025.yaml) | Før/efter | 2025 | 626 m | 2 modificeret cirkelbump (antaget), 2 indsnævringer | 50 → 40 | 54 → 66 | +12 s | 42 → 25 | 16 → 64 | 18 → 47 | 2.516 → 4.095 |
 
 ## Kvaglundvej, Esbjerg (2025)
 

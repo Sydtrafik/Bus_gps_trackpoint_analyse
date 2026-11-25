@@ -103,7 +103,7 @@ rapport:
   kilde: "Kilde: realtidsdata (GPS-positioner). Der tages forbehold for fejl og mangler."
   kort: false                    # true = kort over strækningen (kræver internet, når rapporten vises)
   vej:                           # vises i "Om strækningen" øverst i rapporten
-    vejtype: ""                  # <-- UDFYLD, fx "Gennemkørselsvej i boligkvarter"
+    vejtype: ""                  # <-- UDFYLD, fx "Almindelig vej i boligområde"
     hastighed: ""                # <-- UDFYLD: hastighedsgrænse, fx "50 → 40 km/t" (før → efter)
-    bumptype: ""                 # <-- UDFYLD, fx "Cirkelbump" (se vejledning\kilder\bumptyper\)
+    bumptype: ""                 # <-- UDFYLD, fx "Cirkelbump" (se vejledning\kilder\bumptyper\); "(antaget)" efter typen, hvis den ikke er opmålt
     andre_foranstaltninger: ""   # <-- UDFYLD, fx "2 indsnævringer, anlagt samtidig med bumpene"

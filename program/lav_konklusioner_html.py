@@ -8,12 +8,12 @@ og skriver to filer i værktøjsmappens rod:
     indlejret), kan åbnes direkte i en browser.
   - nationale_analysekonklusioner.md: samme tal som tabel, så GitHub viser en læsbar oversigt.
 Begge filer laves; ret dem aldrig i hånden.
-Uses: pyyaml (som resten af værktøjet). Ingen beregning ud over forskelle (efter minus før, pr. 100 m).
+Uses: pyyaml (som resten af værktøjet). Ingen beregning ud over forskelle (efter minus før).
     python program\\lav_konklusioner_html.py                       # analyser\\ -> rodens .html og .md
     python program\\lav_konklusioner_html.py --tilfoej <konklusion.yaml>   # tjek, kopiér til analyser\\, lav begge
     python program\\lav_konklusioner_html.py --tjek                 # tjek kun filerne (bruges af testene)
 Debugging points: fejl i en fil stopper kørslen med fil og felt i beskeden. Tegningen findes ud fra
-fartdaempere[].type (fx "sinusbump", "cirkelbump"); typer uden tegning vises som tekst.
+fartdaempere[].type (fx "modificeret cirkelbump", "cirkelbump"); typer uden tegning vises som tekst.
 """
 import argparse
 import base64
@@ -131,13 +131,15 @@ def _tjek_felt(navn, art, v, perioder, fejl):
                 f(f"{k}.dage skal være et heltal")
     elif art == "fartdaempere":
         if not isinstance(v, list):
-            f("skal være en liste (- {type: sinusbump, antal: 2})")
+            f("skal være en liste (- {type: modificeret cirkelbump, antal: 2})")
             return
         for x in v:
             if not isinstance(x, dict) or not isinstance(x.get("type"), str) or not isinstance(x.get("antal"), int):
                 f("skal have type (tekst) og antal (heltal) for hver fartdæmper")
-            elif not isinstance(x.get("bekraeftet", True), bool):
-                f("bekraeftet skal være true eller false")
+            elif set(x) - {"type", "antal", "antaget"}:
+                f(f"ukendt nøgle {', '.join(sorted(set(x) - {'type', 'antal', 'antaget'}))} (kun type, antal og antaget)")
+            elif not isinstance(x.get("antaget", False), bool):
+                f("antaget skal være true eller false")
     elif art == "janej":
         if v not in JANEJ:
             f(f"skal være ja, nej eller ukendt (står: {v!r})")
@@ -270,7 +272,7 @@ def raekke(navn, d):
         "ture": par("ture"), "bustype": str(d.get("bustype") or ""),
         "vejtype": str(d.get("vejtype") or ""), "omraade": str(d.get("omraade") or ""),
         "buslommer": str(d.get("buslommer") or ""), "parkering": str(d.get("parkering_paa_vejen") or ""),
-        "daempere": [{"type": str(x["type"]), "antal": x["antal"], "bekraeftet": x.get("bekraeftet", True)} for x in fd],
+        "daempere": [{"type": str(x["type"]), "antal": x["antal"], "antaget": x.get("antaget", False)} for x in fd],
     }
 
 
@@ -286,7 +288,7 @@ def _flertal(ord_, n):
 
 
 def daemper_tekst(fd):
-    return ", ".join(f"{x['antal']} {_flertal(x['type'], x['antal'])}" + ("" if x.get("bekraeftet", True) else " (ikke bekræftet)")
+    return ", ".join(f"{x['antal']} {_flertal(x['type'], x['antal'])}" + (" (antaget)" if x.get("antaget") else "")
                      for x in fd) or "ingen"
 
 
@@ -423,7 +425,7 @@ def byg_html(analyser, mappe, i_dag):
             if navn:
                 break
         x["bumpNavn"] = navn or ""
-        x["bumpUsikker"] = bool(navn) and not next((fd["bekraeftet"] for fd in x["daempere"] if bumptype(fd["type"])[0] == navn), True)
+        x["bumpAntaget"] = bool(navn) and next((fd["antaget"] for fd in x["daempere"] if bumptype(fd["type"])[0] == navn), False)
         x["mini"] = None
         x["tegning"] = None
         for f in filer:
@@ -710,7 +712,7 @@ function kortHtml(r) {
   const vej = [r.vejtype, r.omraade].filter(Boolean).map(esc).join(', ');
   const fakta = `<ul class="fakta">${li('Vej og område', vej)}${li('Buslommer', esc(r.buslommer))}${li('Parkering på vejen', esc(r.parkering))}`
     + `${li('Fartdæmpere', esc(r.daemperTekst))}${li('Linje', esc(r.linjer))}${li('Perioder', per)}</ul>`;
-  const tegn = r.tegning ? `<figure><img src="${D.tegn[r.tegning]}" alt="Standardprofil: ${esc(r.bumpNavn)}"><figcaption><strong>${esc(r.bumpNavn)}</strong>: vejreglernes standardprofil, ikke opmålt${r.bumpUsikker ? '. Typen er ikke bekræftet' : ''}.</figcaption></figure>`
+  const tegn = r.tegning ? `<figure><img src="${D.tegn[r.tegning]}" alt="Standardprofil: ${esc(r.bumpNavn)}"><figcaption><strong>${esc(r.bumpNavn)}</strong>: vejreglernes standardprofil, ikke opmålt${r.bumpAntaget ? '. Typen er antaget' : ''}.</figcaption></figure>`
     : (r.bumpNavn ? `<p class="note">Ingen tegning af ${esc(r.bumpNavn.toLowerCase())}: typen findes ikke i vejreglernes bilag.</p>` : '');
   const kort = r.punkter.length ? `<div class="kortboks" id="m-${esc(r.id)}" role="img" aria-label="Kort over punkterne"></div>` : '';
   const link = /^https?:\/\//.test(r.kort) ? `<a class="knap" href="${esc(r.kort)}" target="_blank" rel="noopener">Åbn i Google Maps</a>` : '';

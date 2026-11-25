@@ -77,7 +77,8 @@ def test_kendte_negative_afvises_med_felt():
     assert "'aar' skal være et heltal" in _fejl(aar="2025")
     assert "'buslommer' skal være ja, nej eller ukendt" in _fejl(buslommer="måske")
     assert "'punkter' skal have navn" in _fejl(punkter=[{"navn": "A", "lat": "55"}])
-    assert "bekraeftet skal være true eller false" in _fejl(fartdaempere=[{"type": "x", "antal": 1, "bekraeftet": "nej"}])
+    assert "antaget skal være true eller false" in _fejl(fartdaempere=[{"type": "x", "antal": 1, "antaget": "ja"}])
+    assert "ukendt nøgle bekraeftet" in _fejl(fartdaempere=[{"type": "x", "antal": 1, "bekraeftet": False}])   # gammelt navn
 
 
 def test_ugyldig_fil_stopper_kørslen():
@@ -92,7 +93,7 @@ def test_ugyldig_fil_stopper_kørslen():
 def test_udledte_tal_og_flertal():
     x = K.raekke("a", copy.deepcopy(GOD))
     assert x["delta"] == 10 and x["opbr"] == [10.5, 50.25] and x["parkering"] == "ja"
-    assert K.daemper_tekst([{"type": "modificeret cirkelbump", "antal": 2, "bekraeftet": False}]) == "2 modificeret cirkelbump (ikke bekræftet)"
+    assert K.daemper_tekst([{"type": "modificeret cirkelbump", "antal": 2, "antaget": True}]) == "2 modificeret cirkelbump (antaget)"
     assert K.mini_tegning("pudebump_40", K.BUMPMAPPE) is not None      # pudebump får cirkelbumpets længdeprofil
     assert K.daemper_tekst([{"type": "sinusbump", "antal": 2}, {"type": "indsnævring", "antal": 2}]) == "2 sinusbump, 2 indsnævringer"
     assert K.bumptype("modificeret sinusbump")[0] == "Modificeret sinusbump"
