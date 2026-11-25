@@ -390,7 +390,7 @@ def byg_md(analyser, i_dag):
         if d.get("gnsfart_kmt"):
             ud.append(f"- **Gennemsnitsfart (km/t):** {_fe(x['gnsfart'])}")
         if d.get("ekstra_tid_pr_element_s"):
-            ud.append("- **Ekstra tid pr. element (s, interval; kan ikke lægges sammen):** " + "; ".join(
+            ud.append("- **Ekstra køretid pr. element (s pr. tur, mindst–højst; tallene overlapper og kan ikke lægges sammen):** " + "; ".join(
                 f"{e['element']} {_f(e['lav'], 1)}–{_f(e['hoej'], 1)}" if e["lav"] != e["hoej"] else f"{e['element']} {_f(e['lav'], 1)}"
                 for e in d["ekstra_tid_pr_element_s"]))
         if d.get("punkter"):
@@ -578,8 +578,11 @@ figcaption { font-size:.82rem; color:var(--muted); margin-top:4px; }
 .tid { display:grid; grid-template-columns:minmax(110px, max-content) 7.5em 1fr; gap:4px 12px; align-items:center; font-size:.9rem; }
 .tid .v { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .tid .spor { position:relative; height:10px; background:var(--head); border-radius:2px; }
-.tid .spor span { position:absolute; top:0; bottom:0; background:var(--efter); border-radius:2px; }
-.tid .sum { font-weight:600; padding-top:4px; }
+.tid .spor span { position:absolute; top:0; bottom:0; background:var(--efter); }
+.tid .spor .hoejst { opacity:.35; } .tid .spor .mindst { border-radius:2px 0 0 2px; }
+.tid .hoved { font-size:.8rem; color:var(--muted); }
+.tid .akse { display:flex; justify-content:space-between; font-size:.8rem; color:var(--muted); border-bottom:1px solid var(--line); }
+.tidtotal { margin:.2rem 0 .5rem; }
 .stykker { display:grid; grid-template-columns:minmax(90px, max-content) 1fr; gap:6px 12px; align-items:center; font-size:.9rem; }
 .stykker .linje { display:flex; align-items:center; gap:6px; margin:1px 0; }
 .stykker .b { height:10px; border-radius:2px; } .stykker .bf { background:var(--foer); } .stykker .be { background:var(--efter); }
@@ -587,7 +590,7 @@ figcaption { font-size:.82rem; color:var(--muted); margin-top:4px; }
 .knap { display:inline-block; padding:5px 10px; border:1px solid var(--accent); border-radius:6px; text-decoration:none; font-size:.9rem; }
 .galleri-boks { margin:24px 0; } .galleri-boks summary { cursor:pointer; font-weight:600; }
 .galleri { display:flex; flex-wrap:wrap; gap:12px; margin-top:12px; } .galleri figure { flex:1 1 280px; }
-@media (max-width:640px) { .filtre label { flex:1 1 140px; } h1 { font-size:1.35rem; } .tid { grid-template-columns:1fr 7em; } .tid .spor { grid-column:1 / -1; } }
+@media (max-width:640px) { .filtre label { flex:1 1 140px; } h1 { font-size:1.35rem; } .tid { grid-template-columns:1fr 7em; } .tid .spor, .tid .akse { grid-column:1 / -1; } .tid .hoved { display:none; } }
 """
 
 JS = r"""
@@ -690,13 +693,19 @@ function graf() {
 // ---------- kort pr. analyse: det, tabellen ikke viser
 const li = (l, v) => v ? `<li><strong>${l}:</strong> ${v}</li>` : '';
 function tidHtml(r) {
-  const dele = r.elementer.filter((e) => e.lav !== e.hoej), hel = r.elementer.filter((e) => e.lav === e.hoej);
+  const dele = r.elementer.filter((e) => e.lav !== e.hoej), hel = r.elementer.find((e) => e.lav === e.hoej);
   const mx = Math.max(0.1, ...dele.map((e) => e.hoej)), mn = Math.min(0, ...dele.map((e) => e.lav));
   const P = (v) => (v - mn) / (mx - mn) * 100;
-  return `<h3>Ekstra tid pr. element (s)</h3><div class="tid">`
-    + dele.map((e) => `<span>${esc(e.element)}</span><span class="v">${fmt(e.lav, 1)} til ${fmt(e.hoej, 1)}</span><span class="spor"><span style="left:${P(e.lav)}%;width:${Math.max(1, P(e.hoej) - P(e.lav))}%"></span></span>`).join('')
-    + hel.map((e) => `<span class="sum">${esc(e.element)}</span><span class="v sum">${sgn(e.lav, 1)}</span><span class="sum"></span>`).join('')
-    + `</div><p class="note">Gennemsnit pr. tur uden standsning ved stop. Intervallerne kan ikke lægges sammen.</p>`;
+  // mørk = mindst (0 til lav), lys = måske (lav til høj)
+  const bjaelke = (e) => (e.lav > 0 ? `<span class="mindst" style="left:${P(0)}%;width:${P(e.lav) - P(0)}%"></span>` : '')
+    + `<span class="hoejst" style="left:${P(e.lav)}%;width:${Math.max(1, P(e.hoej) - P(e.lav))}%"></span>`;
+  return `<h3>Hvor kom den ekstra køretid fra?</h3>`
+    + (hel ? `<p class="tidtotal">${esc(hel.element)}: <strong>${sgn(hel.lav, 1)} s</strong> pr. tur. Sådan fordeler det sig:</p>` : '')
+    + `<div class="tid"><span class="hoved"></span><span class="v hoved">mindst – højst</span><span class="akse"><span>${fmt(mn, 0)} s</span><span>${fmt(mx, 1)} s</span></span>`
+    + dele.map((e) => `<span>${esc(e.element)}</span><span class="v">${fmt(e.lav, 1)} – ${fmt(e.hoej, 1)} s</span><span class="spor">${bjaelke(e)}</span>`).join('')
+    + `</div><ul class="noter"><li><strong>Mørk del (mindst):</strong> ekstra tid ved elementet ud over, at bussen også kørte langsommere på resten af strækningen.</li>`
+    + `<li><strong>Lys del (højst):</strong> al ekstra tid i zonen om elementet. Den sande værdi ligger et sted imellem.</li>`
+    + `<li><strong>Tallene overlapper</strong> og kan derfor ikke lægges sammen til hele strækningens tal. Gennemsnit pr. tur uden standsning ved stop.</li></ul>`;
 }
 function stykkerHtml(r) {
   const navn = Object.fromEntries(r.punkter.map((p) => [p.navn, p.beskrivelse]));

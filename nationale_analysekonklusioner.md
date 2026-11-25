@@ -23,7 +23,7 @@ Afsluttede trackpoint-analyser i hele landet, så vi kan lære af hinandens fund
 - **Bustype:** Elbusser (alle ture); længde ikke oplyst
 - **Perioder:** før 2025-06-30 til 2025-09-25 (44 hverdage); efter 2025-10-18 til 2026-01-04 (51 hverdage)
 - **Gennemsnitsfart (km/t):** 42 → 34
-- **Ekstra tid pr. element (s, interval; kan ikke lægges sammen):** Indsnævring 2 0,1–0,8; Indsnævring 1 0,4–1,4; Bump 2 2,9–4,0; Bump 1 2,5–3,6; Øvrig strækning 1,6–5,4; Hele strækningen 11,3
+- **Ekstra køretid pr. element (s pr. tur, mindst–højst; tallene overlapper og kan ikke lægges sammen):** Indsnævring 2 0,1–0,8; Indsnævring 1 0,4–1,4; Bump 2 2,9–4,0; Bump 1 2,5–3,6; Øvrig strækning 1,6–5,4; Hele strækningen 11,3
 - **Punkter:** Spangsbjerg Møllevej; Indsnævring 2; Indsnævring 1; Bump 2; Bump 1; Niels Lambertsens Vej
 - **Vejregler:** Er bumpene modificerede cirkelbump til 40 km/t, er vejreglernes passagehastighed for busser 25 km/t; den laveste målte fart ved bumpene var ca. 25 km/t efter. Håndbog Fartdæmpere anbefaler at undgå bump på veje med busser i fast rute.
 - **Forbehold:** Ingen sammenligningsstrækning: tallene viser, hvad der skete samtidig med bumpene.
