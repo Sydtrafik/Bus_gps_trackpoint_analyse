@@ -127,7 +127,7 @@ Værktøjsmappens rod har kun det, brugeren selv rører. Alt andet ligger i `vej
 | `program\` | `komfort_v1.0.py` | Komfort-beregningen for én strækning. Den er verificeret og rettes ikke (afsnit 11), derfor er v1.1 en tynd indpakning om den og ikke en erstatning; begge skal være der. |
 | `program\` | `turtabel.py` | Turtabel-trin: én række pr. tur (køretid pr. stykke, tidspunkt pr. punkt, time, ugedag, rute) og et overblik pr. time og periode. Ændrer ingen beregning. |
 | `program\` | `zonetid.py` | Zonetid-trin: ekstra køretid fordelt på elementer og øvrig strækning, med interval. |
-| `program\` | `lav_konklusion.py`, `lav_konklusioner_html.py` | Konklusionsfil med rapportens nøgletal (fra `rapportdata.json` eller kryds-`overblik.csv`) og oversigten over alle filer i `analyser\` (`nationale_analysekonklusioner.md`/`.html`); trin 10. |
+| `program\` | `lav_konklusion.py`, `lav_konklusioner_html.py`, `lav_vejkort.py` | Konklusionsfil med rapportens nøgletal (fra `rapportdata.json` eller kryds-`overblik.csv`), vejkort pr. analyse fra OpenStreetMap (`analyser\kort\`) og oversigten over alle filer i `analyser\` (`nationale_analysekonklusioner.md`/`.html`); trin 10. |
 | `program\` | `rapport\lav_rapportdata_v1.2.py` | Samler `result.csv`, `komfort.csv`, `segmenter.csv`, `turtabel.csv`, `zonetid.json` og config til én `rapportdata.json`, også pr. dagtype, rute og time. Bruges af `koer_analyse.bat`. |
 | `program\` | `rapport\lav_rapportdata.py` | Forrige version (v1.1, uden valg for dage, rute og time); samme tal i standardvalget. Bliver i pakken (afsnit 11) og bruges af analysemapper med en ældre `koer_analyse.bat`. |
 | `program\` | `rapport\lav_kryds_rapport.py`, `rapport\kryds_skabelon.html` | Kryds-rapport: køretid pr. stykke over døgnet, pr. rute og pr. planlagt tur, ud fra `turtabel.csv`. Én selvstændig HTML-fil. |
@@ -138,7 +138,7 @@ Værktøjsmappens rod har kun det, brugeren selv rører. Alt andet ligger i `vej
 | `program\` | `VERSION` | Pakkens version (afsnit 11). |
 | `program\` | `requirements.txt` | Python-pakker. |
 | `program\` | `CHANGELOG.md` | Hvad v2.0, v2.1, v2.2, komfort_v1.0 og pakken ændrer. |
-| `program\` | `tests\` | Syntetiske tests (`test_v2.py`, `test_komfort.py`, `test_komfort_v11.py`, `test_zonetid.py`, `test_turtabel.py`, `test_kryds_rapport.py`, `test_rapport.py`, `test_rapport_v12.py`, `test_ny_analyse.py`, `test_forbered.py`, `test_konklusioner_html.py`, `test_lav_konklusion.py`). |
+| `program\` | `tests\` | Syntetiske tests (`test_v2.py`, `test_komfort.py`, `test_komfort_v11.py`, `test_zonetid.py`, `test_turtabel.py`, `test_kryds_rapport.py`, `test_rapport.py`, `test_rapport_v12.py`, `test_ny_analyse.py`, `test_forbered.py`, `test_konklusioner_html.py`, `test_lav_konklusion.py`, `test_vejkort.py`). |
 
 ## 4. Kom i gang, trin for trin
 
@@ -307,8 +307,8 @@ De nationale analysekonklusioner er en fælles samling af konklusioner fra afslu
 
 1. **Lav din konklusionsfil:** valg 6 i `koer_analyse.bat`, eller `python program\lav_konklusion.py --rapportdata <resultat\rapportdata.json> --out <resultat\konklusion.yaml>`. Tallene er rapportens nøgletal (standardvalget: dagtypen fra `udvalg` i config, alle ruter og timer, begge retninger, ture uden standsning ved stop, median), plus laveste fart ved fartdæmperne, mærkbar opbremsning og acceleration og ekstra tid pr. element. Kryds: `--overblik <resultat\overblik.csv> --config <config.yaml>` i stedet for `--rapportdata`. Analysen har flere strækninger: vælg én med `--straekning <id>`.
 2. **Udfyld** felterne med `UDFYLD`: vej, by, område, buslommer og parkering på vejen (ja, nej eller ukendt), ved kryds hvor hvert punkt ligger, linjer, bustype (drivmiddel og længde; HAFAS-eksporten har kun busnummeret i `List.csv`, kolonnen "Busnummer", så slå numrene op i vognparken), ændring, sammenligning med vejregler og kontakt (GitHub-brugernavn; navn og organisation er valgfrie; ingen mail eller telefon, filen er offentlig). Tjek linjerne med "tjek" (vejtype, hastighed, fartdæmpere, forbehold). Fartdæmpernes `type` er bumptypens navn fra vejreglerne (cirkelbump, modificeret cirkelbump ...; `antaget: true`, hvis typen ikke er opmålt) eller fx indsnævring; den første bumptype med en tegning i `vejledning\kilder\bumptyper\` vises som tegning.
-3. **Tilføj den:** valg 5 i `koer_analyse.bat`, eller `python program\lav_konklusioner_html.py --tilfoej resultat\konklusion.yaml`. Filen tjekkes (påkrævede felter, gyldig type, tal som tal, intet `UDFYLD`, ingen mail), kopieres til `analyser\<vej>_<by>_<år>.yaml`, og `.md` og `.html` laves igen. En fejl står med fil og felt. En fil med samme navn og en anden kontakt overskrives ikke. HTML-filen har en graf over den målte strækning og ændringen i køretid, en tabel, der kan sorteres og filtreres på type, by, område, fartdæmper, buslommer og parkering, og et afsnit pr. analyse med det, tabellen ikke viser (vej og område, ekstra tid pr. element eller køretid pr. stykke ved kryds, kort over punkterne, tegning af bumptypen, forbehold). Tegningerne er indlejret; kortet henter kortfliser fra OpenStreetMap og kræver internet.
-4. **Del via repoet:** lav en pull request med din fil i `analyser\` og de to oversigtsfiler. Testene tjekker, at alle filer i `analyser\` er gyldige, og at oversigten er lavet igen. Bruger du ikke git, så opret et issue "Ny analysekonklusion", og indsæt indholdet af din fil; en vedligeholder lægger den ind.
+3. **Tilføj den:** valg 5 i `koer_analyse.bat`, eller `python program\lav_konklusioner_html.py --tilfoej resultat\konklusion.yaml`. Filen tjekkes (påkrævede felter, gyldig type, tal som tal, intet `UDFYLD`, ingen mail), kopieres til `analyser\<vej>_<by>_<år>.yaml`, vejkortet hentes til `analyser\kort\` (én forespørgsel til OpenStreetMaps Overpass API; fejler den, laves oversigten uden kort, og `python program\lav_vejkort.py analyser\<fil>.yaml` henter det senere), og `.md` og `.html` laves igen. En fejl står med fil og felt. En fil med samme navn og en anden kontakt overskrives ikke. HTML-filen har en graf over den målte strækning og ændringen i køretid, en tabel, der kan sorteres og filtreres på type, by, område, fartdæmper, buslommer og parkering, og et afsnit pr. analyse med det, tabellen ikke viser (vej og område, ekstra tid pr. element eller køretid pr. stykke ved kryds, vejkort med punkterne, tegning af bumptypen, forbehold). Tegninger og vejkort er indlejret, så filen virker uden internet. Vejkortet tegnes ud fra OpenStreetMap-data (veje, bygninger, fodgængerfelter, stoppesteder med navn); der hentes ingen kortfliser.
+4. **Del via repoet:** lav en pull request med din fil i `analyser\`, kortfilen i `analyser\kort\` og de to oversigtsfiler. Testene tjekker, at alle filer i `analyser\` er gyldige, og at oversigten er lavet igen. Bruger du ikke git, så opret et issue "Ny analysekonklusion", og indsæt indholdet af din fil; en vedligeholder lægger den ind.
 5. **Den nyeste udgave** hentes fra repoet (`git pull` eller download). Din egen fil i `analyser\` bliver liggende; kør `python program\lav_konklusioner_html.py` for at lave oversigten igen.
 
 ### Én periode (uden før-måling)
@@ -645,7 +645,7 @@ Sæson og andre forskelle mellem perioderne er ikke en begrænsning ved værktø
 
 ```powershell
 $env:PYTHONUTF8 = "1"
-python -m pytest "$V\tests" -q                  # 87 tests (kræver pytest)
+python -m pytest "$V\tests" -q                  # 91 tests (kræver pytest)
 # eller uden pytest, én fil ad gangen:
 python "$V\tests\test_v2.py"                   # 11 tests (mod analyse_v2.2.py)
 python "$V\tests\test_komfort.py"              # 13 tests (komfort_v1.0)
@@ -657,6 +657,7 @@ python "$V\tests\test_rapport.py"              # 12 tests: syntetisk datasæt ->
 python "$V\tests\test_rapport_v12.py"          # 6 tests: v1.2 = v1.1 i standardvalget; kendte tal pr. time, dagtype og rute; fravalg; museklik på en time
 python "$V\tests\test_konklusioner_html.py"     # 7 tests: konklusionsfilerne tjekkes (ugyldige afvises), html og md laves igen, browsertest
 python "$V\tests\test_lav_konklusion.py"        # 4 tests: rapportdata/overblik -> konklusionsfil med kendte tal; må ikke overskrive
+python "$V\tests\test_vejkort.py"              # 4 tests: OSM-udtræk (uden net), nye forsøg ved 5xx, genbrug af kortfilen, vejkort i browser
 ```
 
 Hver linje skrives `PASS`/`OK`, og til sidst står antallet bestået; exit-kode 0 = alle bestået. `test_rapport.py` indeholder en browsertest (Edge eller Chromium via `playwright`); uden `playwright` springes den over med besked, og de øvrige tests kører. `ANALYSE_FILE` kan sættes til en anden version af hovedværktøjet (standard `analyse_v2.2.py`; `set ANALYSE_FILE=analyse_v2.1.py` tester den forrige).

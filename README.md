@@ -92,7 +92,7 @@ den og røres ikke.
 |---|---|
 | `ny_analyse.bat` | Start her: opretter en mappe til din analyse |
 | [nationale_analysekonklusioner.md](nationale_analysekonklusioner.md) | Konklusioner fra analyser i hele landet som tabel (laves ud fra `analyser/`) |
-| `nationale_analysekonklusioner.html` | De samme konklusioner med graf, sortérbar tabel med filtre, tegning af fartdæmperen og et kort pr. analyse. Åbn den lokalt i en browser; GitHub viser kun kildekoden. |
+| `nationale_analysekonklusioner.html` | De samme konklusioner med graf, sortérbar tabel med filtre, tegning af fartdæmperen og et vejkort pr. analyse (virker uden internet). Åbn den lokalt i en browser; GitHub viser kun kildekoden. |
 | [analyser/](analyser) | Én fil pr. analyse; tilføj din her ([analyser/README.md](analyser/README.md)) |
 | [vejledning/](vejledning) | Vejledninger (se ovenfor) |
 | [program/](program) | Selve programmet; ret ikke i det |
@@ -113,7 +113,8 @@ Opret et [issue](https://github.com/Sydtrafik/Bus_gps_trackpoint_analyse/issues/
 ## Licens og forbehold
 
 - Koden er udgivet under MIT-licensen (se [LICENSE](LICENSE)). ECharts og Leaflet følger med under
-  deres egne licenser (se [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)).
+  deres egne licenser, og vejkortene i `analyser/kort/` er OpenStreetMap-data under ODbL
+  (se [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)).
 - Rapporten virker uden internet. Slår du kortet til (`kort: true` i `config.yaml`), henter
   rapporten kortfliser fra OpenStreetMap, og læserens IP-adresse sendes til deres server.
 - HAFAS er et varemærke, der tilhører sin ejer. Værktøjet læser kun en eksport fra HAFAS og er

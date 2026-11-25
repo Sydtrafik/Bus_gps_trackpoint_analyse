@@ -112,7 +112,7 @@ def test_html_md_og_tilfoej():
                                             "gnsfart_kmt": None, "laveste_fart_kmt": None, "maerkbar_opbremsning_pct": None,
                                             "maerkbar_acceleration_pct": None, "fartdaempere": []})
         ud = Path(t) / "k.html"
-        r = subprocess.run([sys.executable, str(SCRIPT), "--analyser", str(mappe), "--out", str(ud), "--tilfoej", str(ny)],
+        r = subprocess.run([sys.executable, str(SCRIPT), "--analyser", str(mappe), "--out", str(ud), "--tilfoej", str(ny), "--uden-kort"],
                            capture_output=True, text=True, encoding="utf-8")
         assert r.returncode == 0, r.stderr
         assert (mappe / "anden_script_b_vej_aeby_2025.yaml").exists()
@@ -125,7 +125,7 @@ def test_html_md_og_tilfoej():
         assert "Senest opdateret:** 2026-11-25" in md
         # en anden kontakt må ikke overskrive en eksisterende analyse
         anden = _skriv(t, "anden.yaml", {**GOD, "kontakt": "en_anden"})
-        r = subprocess.run([sys.executable, str(SCRIPT), "--analyser", str(mappe), "--out", str(ud), "--tilfoej", str(anden)],
+        r = subprocess.run([sys.executable, str(SCRIPT), "--analyser", str(mappe), "--out", str(ud), "--tilfoej", str(anden), "--uden-kort"],
                            capture_output=True, text=True, encoding="utf-8")
         assert r.returncode != 0 and "anden kontakt" in r.stderr
 

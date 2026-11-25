@@ -4,7 +4,7 @@ Værktøjets egen kode er under MIT-licensen (se [LICENSE](LICENSE)). Det følge
 
 ## Biblioteker, der følger med (`program/rapport/vendor/`)
 
-Bibliotekerne indlejres i hver rapport, så rapporten virker uden internet. Leaflet indlejres også i `nationale_analysekonklusioner.html` (med licensteksten).
+Bibliotekerne indlejres i hver rapport, så rapporten virker uden internet.
 
 | Bibliotek | Version | Licens | Filer |
 |---|---|---|---|
@@ -23,7 +23,10 @@ The Apache Software Foundation (https://www.apache.org/).
 
 ## Kortdata
 
-Slås kortet til i en rapport (`kort: true`), og når `nationale_analysekonklusioner.html` viser kortet over en analyses punkter, hentes kortfliser fra OpenStreetMap (`tile.openstreetmap.org`). Kortdata © OpenStreetMap-bidragydere, tilgængelige under Open Database License (https://www.openstreetmap.org/copyright). Brugen skal følge OSM's tile-politik (https://operations.osmfoundation.org/policies/tiles/): let brug og synlig kildeangivelse. Læserens IP-adresse sendes til OSM's server, når kortet vises.
+Kortdata © OpenStreetMap-bidragydere, tilgængelige under Open Database License (ODbL) 1.0 (https://www.openstreetmap.org/copyright).
+
+- **Vejkortene i `analyser/kort/*.json`** er udtræk af OpenStreetMap-data (veje, bygninger, fodgængerfelter, stoppesteder og fartdæmpere i et lille område omkring hver analyse), hentet via Overpass API med `program/lav_vejkort.py`. Filerne er under ODbL 1.0, ikke under værktøjets MIT-licens. `nationale_analysekonklusioner.html` tegner kortene ud fra filerne og viser kildeangivelsen under hvert kort; der hentes ingen kortfliser, og læserens IP-adresse sendes ikke nogen steder hen.
+- **Kortet i en rapport** (`kort: true`) henter kortfliser fra OpenStreetMap (`tile.openstreetmap.org`). Brugen skal følge OSM's tile-politik (https://operations.osmfoundation.org/policies/tiles/), og læserens IP-adresse sendes til OSM's server, når kortet vises. OSM kan afvise fliser til en rapport, der åbnes som lokal fil, fordi browseren ikke sender en Referer.
 
 ## Vejregler og bumptegninger
 

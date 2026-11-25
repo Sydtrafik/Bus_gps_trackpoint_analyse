@@ -1,6 +1,6 @@
 # analyser: én fil pr. afsluttet analyse
 
-Her ligger de nationale analysekonklusioner som én YAML-fil pr. analyse, fx `kvaglundvej_esbjerg_2025.yaml`. Ud fra filerne laver `program/lav_konklusioner_html.py` oversigten i roden: `nationale_analysekonklusioner.html` (graf, sortérbar tabel med filtre og tegning af fartdæmperen, kort pr. analyse) og `nationale_analysekonklusioner.md` (samme tabel, som GitHub viser). Ret aldrig i de to filer; ret i filen her, og lav dem igen.
+Her ligger de nationale analysekonklusioner som én YAML-fil pr. analyse, fx `kvaglundvej_esbjerg_2025.yaml`. Ud fra filerne laver `program/lav_konklusioner_html.py` oversigten i roden: `nationale_analysekonklusioner.html` (graf, sortérbar tabel med filtre og tegning af fartdæmperen, vejkort pr. analyse) og `nationale_analysekonklusioner.md` (samme tabel, som GitHub viser). Ret aldrig i de to filer; ret i filen her, og lav dem igen.
 
 Filerne er offentlige: kun aggregerede tal, ingen mail, telefon, tur-id'er eller rådata.
 
@@ -8,10 +8,14 @@ Filerne er offentlige: kun aggregerede tal, ingen mail, telefon, tur-id'er eller
 
 1. **Lav filen:** valg 6 i din analyses `koer_analyse.bat`. Den skriver `resultat\konklusion.yaml` med tallene fra rapporten (de samme som rapportens nøgletal: hverdage, alle ruter og timer, begge retninger, ture uden standsning ved stop, median). Uden bat-filen: `python program\lav_konklusion.py --rapportdata <resultat\rapportdata.json> --out <resultat\konklusion.yaml>`. Kryds: `--overblik <resultat\overblik.csv> --config <config.yaml>` i stedet for `--rapportdata`.
 2. **Udfyld** alle `UDFYLD` (vej, by, område, buslommer, parkering på vejen, linjer, bustype, ændring, sammenligning med vejregler, kontakt; ved kryds også hvor hvert punkt ligger), og tjek linjerne med "tjek" i kommentaren (vejtype, hastighed, fartdæmpere, forbehold).
-3. **Tilføj den:** valg 5 i `koer_analyse.bat` (eller `python program\lav_konklusioner_html.py --tilfoej resultat\konklusion.yaml`). Filen tjekkes, kopieres hertil som `<vej>_<by>_<år>.yaml`, og oversigten laves igen. Er noget forkert, står fil og felt i beskeden.
-4. **Del den** med en pull request med din fil og de to oversigtsfiler (se [CONTRIBUTING.md](../CONTRIBUTING.md)). Bruger du ikke git: opret et issue "Ny analysekonklusion", og indsæt indholdet af din fil.
+3. **Tilføj den:** valg 5 i `koer_analyse.bat` (eller `python program\lav_konklusioner_html.py --tilfoej resultat\konklusion.yaml`). Filen tjekkes, kopieres hertil som `<vej>_<by>_<år>.yaml`, vejkortet hentes til `kort/` (se nedenfor), og oversigten laves igen. Er noget forkert, står fil og felt i beskeden.
+4. **Del den** med en pull request med din fil, kortfilen og de to oversigtsfiler (se [CONTRIBUTING.md](../CONTRIBUTING.md)). Bruger du ikke git: opret et issue "Ny analysekonklusion", og indsæt indholdet af din fil.
 
 En fil med samme navn og en anden kontakt overskrives ikke: ret ikke andres analyser.
+
+## Vejkortet (`kort/`)
+
+`kort/<analysens filnavn>.json` er vejene, bygningerne, fodgængerfelterne, stoppestederne (med navn) og fartdæmperne fra OpenStreetMap i et område på ca. 140 m omkring analysens `punkter`. Det hentes én gang med én forespørgsel til Overpass API (`program/lav_vejkort.py`, kaldes af valg 5), og oversigten tegner det som et SVG-kort, der kan zoomes og virker uden internet. Der hentes ingen kortfliser. Er Overpass optaget, laves oversigten uden kort; hent det senere med `python program\lav_vejkort.py analyser\<fil>.yaml`. Ligger et punkt uden for kortet, hentes det igen af sig selv; ellers hentes et nyt kort med `--overskriv`. Kortfilerne er © OpenStreetMap-bidragydere under Open Database License (ODbL), ikke MIT; se [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
 
 ## Felterne
 
