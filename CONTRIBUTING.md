@@ -5,10 +5,12 @@ fremgangsmåde står i [program/README.md](program/README.md), afsnit 11. Kort:
 
 ## Del dine konklusioner
 
-1. Udfyld skabelonen nederst i [nationale_analysekonklusioner.md](nationale_analysekonklusioner.md)
-   for din analyse, og lav visningen igen (`koer_analyse.bat`, valg 5).
-2. Lav en pull request med begge filer (`.md` og `.html`). Bruger du ikke git, så opret et issue
-   og indsæt din blok.
+1. Lav din konklusionsfil (`koer_analyse.bat`, valg 6), udfyld felterne med `UDFYLD`, og tilføj
+   den (valg 5). Den lægges i [analyser/](analyser) som `<vej>_<by>_<år>.yaml`, og
+   `nationale_analysekonklusioner.md` og `.html` laves igen. Felterne: [analyser/README.md](analyser/README.md).
+2. Lav en pull request med din fil og de to oversigtsfiler. Ret ikke andres filer i `analyser/`.
+   Testene tjekker, at filen er gyldig, og at oversigten er lavet igen. Bruger du ikke git, så
+   opret et issue "Ny analysekonklusion", og indsæt indholdet af din fil.
 
 ## Del en ændring af værktøjet
 

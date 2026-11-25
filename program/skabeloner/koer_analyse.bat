@@ -37,14 +37,15 @@ echo  1 = Stoppesteder pr. retning med forslag (skriver stopnavne.txt)
 echo  2 = Prøvekørsel på 300 ture (ca. 1 min)
 echo  3 = Fuld analyse, turtabel og rapport (ca. 10-30 min)
 echo  4 = Byg rapporten igen (efter du har rettet titel og tekster i config.yaml)
-echo  5 = Lav visningen af nationale_analysekonklusioner igen (efter du har rettet .md-filen)
+echo  5 = Tilføj resultat\konklusion.yaml til de nationale analysekonklusioner (efter 6 og udfyldning)
+echo  6 = Lav din konklusionsfil med rapportens nøgletal (resultat\konklusion.yaml)
 echo.
 rem Et tal som argument (fx  koer_analyse.bat 3) springer menuen over.
 set "VALG="
 set "ARG=%~1"
 if defined ARG set /a VALG=%ARG%+1
 if defined VALG goto valgt
-choice /c 012345 /n /m "Vælg 0-5: "
+choice /c 0123456 /n /m "Vælg 0-6: "
 set VALG=%errorlevel%
 :valgt
 if %VALG%==1 goto installer
@@ -53,12 +54,27 @@ if %VALG%==3 goto proeve
 if %VALG%==4 goto fuld
 if %VALG%==5 goto rapport
 if %VALG%==6 goto konklusioner
+if %VALG%==7 goto konklusionsfil
+goto slut
+
+:konklusionsfil
+if not exist "%UD%\rapportdata.json" goto mangler
+python "%VAERKTOEJ%\lav_konklusion.py" --rapportdata "%UD%\rapportdata.json" --out "%UD%\konklusion.yaml" || goto fejl
+echo.
+echo Udfyld felterne med UDFYLD i resultat\konklusion.yaml, gem filen, og vælg 5.
+if not defined ARG start "" notepad "%UD%\konklusion.yaml"
 goto slut
 
 :konklusioner
-python "%VAERKTOEJ%\lav_konklusioner_html.py" || goto fejl
+if exist "%UD%\konklusion.yaml" (
+  python "%VAERKTOEJ%\lav_konklusioner_html.py" --tilfoej "%UD%\konklusion.yaml" || goto fejl
+) else (
+  echo resultat\konklusion.yaml findes ikke ^(vælg 6 først^). Laver kun oversigten igen.
+  python "%VAERKTOEJ%\lav_konklusioner_html.py" || goto fejl
+)
 echo.
-echo Visningen er klar: nationale_analysekonklusioner.html i værktøjsmappen. Del den sammen med .md-filen via repoet.
+echo Oversigten er klar: nationale_analysekonklusioner.html og .md i værktøjsmappen, din fil i analyser\.
+echo Del din fil og de to oversigtsfiler via repoet (pull request eller issue).
 if not defined ARG start "" "%VAERKTOEJ%\..\nationale_analysekonklusioner.html"
 goto slut
 

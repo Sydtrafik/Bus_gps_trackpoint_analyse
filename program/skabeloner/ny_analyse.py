@@ -36,7 +36,9 @@ SAADAN = """Sådan laver du analysen
      3 = fuld analyse og rapport
 4. Se resultat\\rapport.html. Køretid pr. tur: resultat\\turtabel.csv (Excel/Power BI); pr. time: resultat\\overblik.md.
    Skriv titlen (hvad og hvor; et fund først, når det er verificeret) og teksterne i config.yaml, og vælg 4 for at bygge rapporten igen.
-5. Tilføj dine fund i nationale_analysekonklusioner.md i værktøjsmappen, og del dem via repoet på GitHub (pull request eller issue).
+5. Del dine fund: vælg 6 (laver resultat\\konklusion.yaml med rapportens nøgletal), udfyld felterne med UDFYLD,
+   og vælg 5 (tilføjer den til de nationale analysekonklusioner i værktøjsmappen). Del den via repoet på GitHub
+   (pull request eller issue). Vejledning: analyser\\README.md i værktøjsmappen.
 
 Kun én periode: sæt PERIODER=A øverst i koer_analyse.bat.
 Forbehold og hvordan tallene er regnet: vejledning\\metode_og_rapportering.md i værktøjsmappen.

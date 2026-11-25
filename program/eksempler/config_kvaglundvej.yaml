@@ -153,7 +153,7 @@ rapport:
     - "Linje 3A kørte ikke strækningen 11/8-5/9 2025; de dage er ikke med."
   kilde: "Kilde: realtidsdata (GPS-positioner) for linje 3A. Der tages forbehold for fejl og mangler samt for variationer, usikkerheder og revisioner i både aktuelle og historiske data."
   kort: false                              # true = Leaflet + OpenStreetMap (online-kort, se README)
-  vej:                                     # "Om strækningen" (rapport v1.2); som i nationale_analysekonklusioner.md
+  vej:                                     # "Om strækningen" (rapport v1.2); som i analyser/kvaglundvej_esbjerg_2025.yaml
     vejtype: "Gennemkørselsvej i boligkvarter"
     hastighed: "50 → 40 km/t (sat ned samtidig med bumpene)"
     bumptype: "Sinusbump"

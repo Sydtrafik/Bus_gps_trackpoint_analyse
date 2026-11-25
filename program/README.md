@@ -12,7 +12,7 @@ Python-værktøj fra Sydtrafik, pakket til deling. Det måler bussers **køretid
 
 *Dette er den tekniske reference (i `program\`). Som bruger starter du med [README.md](../README.md) i værktøjsmappen.*
 
-- **Ny bruger uden Python-erfaring:** følg afsnittet "Den nemme vej" nedenfor. Du skal kun bruge `ny_analyse.bat`, en `config.yaml` og en `koer_analyse.bat`. Ret ikke i filerne i værktøjsmappen (undtagen `nationale_analysekonklusioner.md`); dit arbejde ligger i din egen analysemappe.
+- **Ny bruger uden Python-erfaring:** følg afsnittet "Den nemme vej" nedenfor. Du skal kun bruge `ny_analyse.bat`, en `config.yaml` og en `koer_analyse.bat`. Ret ikke i filerne i værktøjsmappen (undtagen din egen fil i `analyser\`); dit arbejde ligger i din egen analysemappe.
 - Skal du lave en rapport, så læs **[formidling_og_grafik.md](../vejledning/formidling_og_grafik.md)** først: rapporttype, budskab, titler, tekst, farver og tjekliste.
 - Brug **[AGENTS.md](../AGENTS.md)**, hvis en kodeagent skal køre værktøjet: kommandoer i rækkefølge, verifikation, faldgruber.
 - Læs **[metode_og_rapportering.md](../vejledning/metode_og_rapportering.md)** for, hvad vi rapporterede, hvordan det er regnet, og hvorfor vi valgte og fravalgte som vi gjorde (inkl. hvad komfortmålet er og ikke er).
@@ -55,7 +55,8 @@ Kører på Windows og kræver Python (testet på 3.13; 3.10 eller nyere forvente
    - `2` prøvekørsel på 300 ture. Tjek `resultat\proeve\kvalitet.md`: næsten alle ture skal være beholdt uden "flag afstand > 200 m". Står det ved næsten alle, så byt p1 og p2 i config. Står der "stop_ikke_fundet" ved næsten alle, så ret stopnavnene.
    - `3` fuld analyse og rapport (10-30 min). Rapporten åbner af sig selv. Køretiden pr. tur står i `resultat\turtabel.csv` (åbn i Excel eller Power BI) og pr. time i `resultat\overblik.md`.
    - `4` byg rapporten igen, efter du har skrevet titlen (hvad og hvor; et fund først, når det er verificeret) og teksterne i config.
-5. **Læs rapporten** og forbeholdene i [metode_og_rapportering.md](../vejledning/metode_og_rapportering.md), og tilføj dine fund i [nationale_analysekonklusioner.md](../nationale_analysekonklusioner.md) (trin 10).
+   - `6` lav din konklusionsfil (`resultat\konklusion.yaml`) med rapportens nøgletal; udfyld den, og vælg `5` for at tilføje den til de nationale analysekonklusioner (trin 10).
+5. **Læs rapporten** og forbeholdene i [metode_og_rapportering.md](../vejledning/metode_og_rapportering.md), og tilføj dine fund til de nationale analysekonklusioner med valg 6 og 5 (trin 10).
 
 Kun én periode: sæt `PERIODER=A` øverst i `koer_analyse.bat`. Flyttes værktøjsmappen, så ret `VAERKTOEJ` samme sted. Flere strækninger i én analyse og alle andre muligheder kræver den fulde config: se `config_eksempel.yaml` og afsnit 4.
 
@@ -72,7 +73,7 @@ Ved en ny version af pakken erstatter du hele værktøjsmappen. Analysemapperne 
 | 4 | `komfort_v1.1.py` | `komfort.csv` (komfort pr. tur; `komfort_<id>.csv` ved flere strækninger) |
 | 5 | `zonetid.py` | `zonetid.json`/`.md` (ekstra køretid pr. element, interval; uden B: tid pr. zone) |
 | 6 | `rapport\lav_rapportdata_v1.2.py` (bruger `turtabel.csv`) og `rapport\byg_rapport.py` | `rapport.html` (én fil, med valg for dage, rute og time) |
-| 7 | Udfyld din blok i `nationale_analysekonklusioner.md`, og del den via repoet (pull request eller issue) | fælles samling af konklusioner (trin 10) |
+| 7 | `lav_konklusion.py` (udfyld UDFYLD) og `lav_konklusioner_html.py --tilfoej`; del via repoet (pull request eller issue) | din fil i `analyser\`, `nationale_analysekonklusioner.md`/`.html` (trin 10) |
 
 Trin 3-6 kan køres med kun periode A: analyse af ét område uden sammenligning (afsnit "Én periode"). Flere strækninger i samme analyse: afsnit "Flere strækninger". Trin for trin: afsnit 4. Komplet kommandoliste med variabler: [AGENTS.md](../AGENTS.md).
 
@@ -111,8 +112,9 @@ Værktøjsmappens rod har kun det, brugeren selv rører. Alt andet ligger i `vej
 |---|---|---|
 | rod | `README.md` | Kort vejledning til brugeren (forsiden på GitHub). |
 | rod | `ny_analyse.bat` | Opretter en ny analysemappe (den nemme vej). |
-| rod | `nationale_analysekonklusioner.md` | Konklusioner fra afsluttede analyser med værktøjet i hele landet: hver bruger tilføjer sine fund via repoet (trin 10). |
-| rod | `nationale_analysekonklusioner.html` | Visning af konklusionsfilen: tabel med filtre, kort pr. analyse med bumptegning. Laves af `program\lav_konklusioner_html.py` (trin 10); ret ikke i den. |
+| rod | `analyser\` | Én YAML-fil pr. afsluttet analyse i hele landet; hver bruger tilføjer sin via repoet (trin 10, [analyser/README.md](../analyser/README.md)). |
+| rod | `nationale_analysekonklusioner.md` | Oversigtstabel over analyserne (vises på GitHub). Laves af `program\lav_konklusioner_html.py` ud fra `analyser\`; ret ikke i den. |
+| rod | `nationale_analysekonklusioner.html` | Graf, sortérbar og filtrérbar tabel med tegning af fartdæmperen og et kort pr. analyse. Laves sammen med .md-filen; ret ikke i den. |
 | rod | `AGENTS.md`, `CLAUDE.md` | Instruktion til en kodeagent (`CLAUDE.md` peger på `AGENTS.md`). |
 | `vejledning\` | `eksportvejledning_HAFAS.md` | Hvordan data eksporteres fra HAFAS, og hvilke kolonner der kræves. |
 | `vejledning\` | `metode_og_rapportering.md` | Hvad der rapporteres, hvordan, og hvorfor. |
@@ -125,6 +127,7 @@ Værktøjsmappens rod har kun det, brugeren selv rører. Alt andet ligger i `vej
 | `program\` | `komfort_v1.0.py` | Komfort-beregningen for én strækning. Den er verificeret og rettes ikke (afsnit 11), derfor er v1.1 en tynd indpakning om den og ikke en erstatning; begge skal være der. |
 | `program\` | `turtabel.py` | Turtabel-trin: én række pr. tur (køretid pr. stykke, tidspunkt pr. punkt, time, ugedag, rute) og et overblik pr. time og periode. Ændrer ingen beregning. |
 | `program\` | `zonetid.py` | Zonetid-trin: ekstra køretid fordelt på elementer og øvrig strækning, med interval. |
+| `program\` | `lav_konklusion.py`, `lav_konklusioner_html.py` | Konklusionsfil med rapportens nøgletal (fra `rapportdata.json` eller kryds-`overblik.csv`) og oversigten over alle filer i `analyser\` (`nationale_analysekonklusioner.md`/`.html`); trin 10. |
 | `program\` | `rapport\lav_rapportdata_v1.2.py` | Samler `result.csv`, `komfort.csv`, `segmenter.csv`, `turtabel.csv`, `zonetid.json` og config til én `rapportdata.json`, også pr. dagtype, rute og time. Bruges af `koer_analyse.bat`. |
 | `program\` | `rapport\lav_rapportdata.py` | Forrige version (v1.1, uden valg for dage, rute og time); samme tal i standardvalget. Bliver i pakken (afsnit 11) og bruges af analysemapper med en ældre `koer_analyse.bat`. |
 | `program\` | `rapport\lav_kryds_rapport.py`, `rapport\kryds_skabelon.html` | Kryds-rapport: køretid pr. stykke over døgnet, pr. rute og pr. planlagt tur, ud fra `turtabel.csv`. Én selvstændig HTML-fil. |
@@ -135,7 +138,7 @@ Værktøjsmappens rod har kun det, brugeren selv rører. Alt andet ligger i `vej
 | `program\` | `VERSION` | Pakkens version (afsnit 11). |
 | `program\` | `requirements.txt` | Python-pakker. |
 | `program\` | `CHANGELOG.md` | Hvad v2.0, v2.1, v2.2, komfort_v1.0 og pakken ændrer. |
-| `program\` | `tests\` | Syntetiske tests (`test_v2.py`, `test_komfort.py`, `test_komfort_v11.py`, `test_zonetid.py`, `test_turtabel.py`, `test_kryds_rapport.py`, `test_rapport.py`, `test_ny_analyse.py`, `test_forbered.py`, `test_konklusioner_html.py`). |
+| `program\` | `tests\` | Syntetiske tests (`test_v2.py`, `test_komfort.py`, `test_komfort_v11.py`, `test_zonetid.py`, `test_turtabel.py`, `test_kryds_rapport.py`, `test_rapport.py`, `test_rapport_v12.py`, `test_ny_analyse.py`, `test_forbered.py`, `test_konklusioner_html.py`, `test_lav_konklusion.py`). |
 
 ## 4. Kom i gang, trin for trin
 
@@ -300,15 +303,13 @@ Den har desuden en strækningsvælger (ved flere strækninger), retningsknapper,
 
 ### Trin 10. Tilføj dine konklusioner via GitHub
 
-[nationale_analysekonklusioner.md](../nationale_analysekonklusioner.md) er en fælles samling af konklusioner fra afsluttede analyser med værktøjet i hele landet, så vi kan lære af hinandens fund. Når din rapport er færdig:
+De nationale analysekonklusioner er en fælles samling af konklusioner fra afsluttede analyser med værktøjet i hele landet, så vi kan lære af hinandens fund. Hver analyse er én YAML-fil i [analyser/](../analyser) (felterne: [analyser/README.md](../analyser/README.md)); ud fra dem laves [nationale_analysekonklusioner.md](../nationale_analysekonklusioner.md) og `nationale_analysekonklusioner.html` i roden. Når din rapport er færdig:
 
-1. Udfyld skabelonen nederst i filen for din analyse: dato, vejnavn, by, link til strækningen i Google Maps, vejtype, bustype (drivmiddel og længde), type bump, indsnævring, sving, hastighedsbegrænsning, perioder for data, data med og uden standsning ved stop, analyse på trackpoint eller stoppoint, fund (køretid, fart, komfort for opbremsning, acceleration og samlet, ekstra tid pr. element, drift) og kontaktperson (GitHub-brugernavn; navn og organisation er valgfrie; ingen mail eller telefon, filen er offentlig). Komforttallene aflæses i rapportens komfort-afsnit (knapperne Opbremsning, Acceleration og Samlet). Bustypen står ikke i HAFAS-eksporten, kun busnummeret (`List.csv`, kolonnen "Busnummer"); slå numrene op i vognparken. Sæt blokken øverst under "Analyser", og tilføj en række i oversigtstabellen. Ret kun din egen blok.
-2. Filen ligger i værktøjsmappens rod (mappen over `program\`).
-3. Lav visningen igen: valg 5 i `koer_analyse.bat`, eller `python program\lav_konklusioner_html.py`. Den skriver `nationale_analysekonklusioner.html` ved siden af .md-filen: en tabel over alle analyser med søgning, filtre (by, vejtype, bumptype) og sortering, et kort pr. analyse med alle felter, kortlink og tegning af bumptypen, og alle bumptegninger fra `vejledning\kilder\bumptyper\`. Tegningerne er indlejret, så HTML-filen kan åbnes alene. Bumptypen findes ud fra feltet "Type bump" (brug betegnelserne fra skabelonen). .md-filen er den, der rettes og flettes; HTML-filen er kun en visning.
-4. Del via repoet: lav en pull request med begge filer. Bruger du ikke git, så opret et issue med din udfyldte blok; en vedligeholder lægger den ind. Filen deles ikke pr. mail.
-5. Den nyeste udgave hentes fra repoet (`git pull` eller download). Har du en blok, der ikke er med endnu, så kopiér den ind i den nye .md-fil, og lav visningen igen.
-
-Kun aggregerede fund i filen: ingen rådata, tur-id'er eller GPS-udtræk.
+1. **Lav din konklusionsfil:** valg 6 i `koer_analyse.bat`, eller `python program\lav_konklusion.py --rapportdata <resultat\rapportdata.json> --out <resultat\konklusion.yaml>`. Tallene er rapportens nøgletal (standardvalget: dagtypen fra `udvalg` i config, alle ruter og timer, begge retninger, ture uden standsning ved stop, median), plus laveste fart ved fartdæmperne, mærkbar opbremsning og acceleration og ekstra tid pr. element. Kryds: `--overblik <resultat\overblik.csv> --config <config.yaml>` i stedet for `--rapportdata`. Analysen har flere strækninger: vælg én med `--straekning <id>`.
+2. **Udfyld** felterne med `UDFYLD`: vej, by, linjer, bustype (drivmiddel og længde; HAFAS-eksporten har kun busnummeret i `List.csv`, kolonnen "Busnummer", så slå numrene op i vognparken), ændring, sammenligning med vejregler og kontakt (GitHub-brugernavn; navn og organisation er valgfrie; ingen mail eller telefon, filen er offentlig). Tjek linjerne med "tjek" (vejtype, hastighed, fartdæmpere, forbehold). Fartdæmpernes `type` er bumptypens navn fra vejreglerne (sinusbump, cirkelbump ...) eller fx indsnævring; den første bumptype med en tegning i `vejledning\kilder\bumptyper\` vises som tegning.
+3. **Tilføj den:** valg 5 i `koer_analyse.bat`, eller `python program\lav_konklusioner_html.py --tilfoej resultat\konklusion.yaml`. Filen tjekkes (påkrævede felter, gyldig type, tal som tal, intet `UDFYLD`, ingen mail), kopieres til `analyser\<vej>_<by>_<år>.yaml`, og `.md` og `.html` laves igen. En fejl står med fil og felt. En fil med samme navn og en anden kontakt overskrives ikke. HTML-filen har en graf over strækningens længde og ændringen i køretid, en tabel, der kan sorteres og filtreres på type, by, vejtype og fartdæmper, og et kort pr. analyse; tegningerne er indlejret, så den kan åbnes alene.
+4. **Del via repoet:** lav en pull request med din fil i `analyser\` og de to oversigtsfiler. Testene tjekker, at alle filer i `analyser\` er gyldige, og at oversigten er lavet igen. Bruger du ikke git, så opret et issue "Ny analysekonklusion", og indsæt indholdet af din fil; en vedligeholder lægger den ind.
+5. **Den nyeste udgave** hentes fra repoet (`git pull` eller download). Din egen fil i `analyser\` bliver liggende; kør `python program\lav_konklusioner_html.py` for at lave oversigten igen.
 
 ### Én periode (uden før-måling)
 
@@ -684,4 +685,4 @@ Pakken deles som repo på GitHub, og flere kan forbedre den samtidig. Git holder
    - Tag den nye som udgangspunkt, indsæt din ændring, og skriv i CHANGELOG under `[Ikke udgivet]`: "flettet fra X.Y.Z (navn)".
    - Kør testene (afsnit 9), før du bruger den flettede udgave.
 6. **Versionsnummeret sættes kun ved udgivelse** på GitHub, så to brugere ikke udgiver hver sin 1.2.0. I en pull request står ændringen under `[Ikke udgivet]`. Alt, der kommer på `main`, udgives med det samme som en ny version med git-tag og GitHub Release, så zip-filen under Releases altid er den nyeste udgave.
-7. `nationale_analysekonklusioner.md` og `.html` deles på samme måde, via pull request eller issue (trin 10).
+7. Analysekonklusioner (din fil i `analyser\` + `nationale_analysekonklusioner.md` og `.html`) deles på samme måde, via pull request eller issue (trin 10).

@@ -1,52 +1,50 @@
 name: Ny analysekonklusion
-description: Del fundene fra din analyse uden git. Vedligeholderen sætter blokken ind i nationale_analysekonklusioner.md.
+description: Del fundene fra din analyse uden git. Vedligeholderen lægger din fil i analyser/.
 title: "Konklusion: <vejnavn>, <by> (<år>)"
 labels: ["konklusion"]
 body:
   - type: markdown
     attributes:
       value: |
-        Udfyld skabelonen nedenfor. Felterne er de samme som i skabelonen nederst i nationale_analysekonklusioner.md.
+        Lav konklusionsfilen med valg 6 i din analyses `koer_analyse.bat` (eller `program/lav_konklusion.py`), udfyld alle UDFYLD, og tjek den med valg 5. Indsæt så hele filen nedenfor. Felterne er beskrevet i [analyser/README.md](https://github.com/Sydtrafik/Bus_gps_trackpoint_analyse/blob/main/analyser/README.md).
         Kun aggregerede tal: ingen rådata, tur-id'er, mailadresser eller telefonnumre. Issuet er offentligt.
   - type: textarea
-    id: blok
+    id: fil
     attributes:
-      label: Udfyldt skabelon
-      description: Skriv i højre kolonne. Lad en række stå med "ikke oplyst", hvis du ikke kender svaret.
+      label: Konklusionsfilen (YAML)
+      description: Hele indholdet af din udfyldte konklusion.yaml. Har du ikke kunnet lave filen, så udfyld skabelonen så godt du kan; tal uden enhed.
       value: |
-        ### <Vejnavn>, <by> (<år>)
-
-        | Felt | Værdi |
-        |---|---|
-        | Opdateret | <ÅÅÅÅ-MM-DD> |
-        | Vejnavn og strækning | <vej>, <længde> m fra <punkt> til <punkt> |
-        | By | |
-        | Kort | <link til strækningen i Google Maps> |
-        | Vejtype | |
-        | Linje(r) | <linje, retninger, ture pr. hverdag> |
-        | Bustype | <drivmiddel og længde; samme før og efter?> |
-        | Ændring | <hvad blev ændret, og hvornår> |
-        | Type bump | <fx sinusbump, cirkelbump, trapezbump; "ikke bekræftet", hvis antaget> |
-        | Sammenligning med vejregler | |
-        | Antal bump og placering | |
-        | Indsnævring | |
-        | Sving | |
-        | Hastighedsbegrænsning | <før / efter> |
-        | Stoppesteder på strækningen | |
-        | Perioder for data | <før og efter: datoer, hverdage, ture> |
-        | Udeladte dage | |
-        | Analyse på trackpoint eller stoppoint | |
-        | Data med og uden standsning ved stop | |
-        | Fund: køretid | |
-        | Fund: fart | |
-        | Fund: komfort (opbremsning og acceleration langs vejen) | |
-        | Fund: ekstra tid pr. element | |
-        | Fund: drift | |
-        | Forbehold | |
-        | Rapport | |
-        | Værktøjsversion | |
-        | Kontaktperson | <GitHub-brugernavn; navn og organisation er valgfrie> |
-      render: markdown
+        skema: 1
+        type: foer_efter          # foer_efter, en_periode eller kryds
+        vej:
+        by:
+        aar:
+        vejtype:
+        linjer:
+        bustype:
+        aendring:
+        fartdaempere:
+          - {type: , antal: }     # fx sinusbump, cirkelbump, indsnævring
+        hastighed_kmt: {foer: , efter: }
+        laengde_m:
+        kort:
+        dage: hverdage
+        perioder:
+          foer: {fra: , til: , dage: }
+          efter: {fra: , til: , dage: }
+        ture: {foer: , efter: }
+        koeretid_s: {foer: , efter: }      # median, uden standsning ved stop
+        gnsfart_kmt: {foer: , efter: }
+        laveste_fart_kmt: {foer: , efter: }
+        maerkbar_opbremsning_pct: {foer: , efter: }
+        maerkbar_acceleration_pct: {foer: , efter: }
+        forbehold:
+          -
+        sammenligning_vejregler:
+        vaerktoej:
+        opdateret:
+        kontakt:                  # GitHub-brugernavn
+      render: yaml
     validations:
       required: true
   - type: checkboxes
@@ -54,5 +52,5 @@ body:
     attributes:
       label: Data
       options:
-        - label: Blokken indeholder kun aggregerede tal, ingen rådata, tur-id'er, mail eller telefonnumre.
+        - label: Filen indeholder kun aggregerede tal, ingen rådata, tur-id'er, mail eller telefonnumre.
           required: true

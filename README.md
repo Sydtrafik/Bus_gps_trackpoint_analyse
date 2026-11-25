@@ -62,13 +62,17 @@ den og røres ikke.
    2  prøvekørsel på 300 ture: tjek, at næsten alle ture er beholdt
    3  fuld analyse og rapport (10-30 min)
    4  byg rapporten igen, når du har rettet titel og tekster i config.yaml
+   5  tilføj din konklusion til de nationale analysekonklusioner (efter 6)
+   6  lav din konklusionsfil med rapportens nøgletal (resultat\konklusion.yaml)
    ```
 
 4. **Læs rapporten** i `resultat\rapport.html`. Køretiden pr. tur står også i
    `resultat\turtabel.csv` og pr. time i `resultat\overblik.md`. Forbehold og hvordan tallene er
    regnet: [metode_og_rapportering.md](vejledning/metode_og_rapportering.md).
-5. **Del dine fund** i `nationale_analysekonklusioner.md` med en pull request eller et issue
-   (se [CONTRIBUTING.md](CONTRIBUTING.md)). Filen er offentlig, så skriv ingen mailadresser.
+5. **Del dine fund:** valg 6 laver `resultat\konklusion.yaml` med rapportens nøgletal. Udfyld
+   felterne med `UDFYLD` (vej, by, bustype, kontakt m.m.), og vælg 5: filen tjekkes og lægges i
+   værktøjets [analyser/](analyser), og oversigten laves igen. Del den med en pull request eller et
+   issue (se [CONTRIBUTING.md](CONTRIBUTING.md)). Filen er offentlig, så skriv ingen mailadresser.
 
 
 ## Hvad skal jeg læse, og hvornår
@@ -87,8 +91,9 @@ den og røres ikke.
 | Fil eller mappe | Indhold |
 |---|---|
 | `ny_analyse.bat` | Start her: opretter en mappe til din analyse |
-| [nationale_analysekonklusioner.md](nationale_analysekonklusioner.md) | Konklusioner fra analyser i hele landet; tilføj dine |
-| `nationale_analysekonklusioner.html` | De samme konklusioner med filtre og tegning af bumptypen. Åbn den lokalt i en browser; GitHub viser kun kildekoden. |
+| [nationale_analysekonklusioner.md](nationale_analysekonklusioner.md) | Konklusioner fra analyser i hele landet som tabel (laves ud fra `analyser/`) |
+| `nationale_analysekonklusioner.html` | De samme konklusioner med graf, sortérbar tabel med filtre, tegning af fartdæmperen og et kort pr. analyse. Åbn den lokalt i en browser; GitHub viser kun kildekoden. |
+| [analyser/](analyser) | Én fil pr. analyse; tilføj din her ([analyser/README.md](analyser/README.md)) |
 | [vejledning/](vejledning) | Vejledninger (se ovenfor) |
 | [program/](program) | Selve programmet; ret ikke i det |
 | [AGENTS.md](AGENTS.md), `CLAUDE.md` | Til en AI-agent (fx Claude Code), hvis du bruger en |
