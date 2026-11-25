@@ -2,9 +2,9 @@
 
 Afsluttede trackpoint-analyser i hele landet, så vi kan lære af hinandens fund.
 
-- **Tallene** er medianer på hverdage for ture uden standsning ved stop, begge retninger.
+- **Tallene** er medianer. Strækninger: hverdage, ture uden standsning ved stop, begge retninger. Kryds: retningen med flest ture.
 - **Ændring** er køretid efter minus før.
-- **Laveste fart ved fartdæmper** er medianen af den laveste fart pr. tur ved fartdæmperne (bump o.l.).
+- **Laveste fart ved fartdæmper** er medianen af den laveste fart pr. tur ved hver fartdæmper (bump o.l.), gennemsnit over fartdæmperne.
 - **Graf, filtre og tegninger** står i `nationale_analysekonklusioner.html` (åbn den i en browser).
 - **Filen laves** af `program/lav_konklusioner_html.py` ud fra [analyser/](analyser/) (én fil pr. analyse); ret den ikke i hånden. Sådan tilføjer du din analyse: [CONTRIBUTING.md](CONTRIBUTING.md).
 

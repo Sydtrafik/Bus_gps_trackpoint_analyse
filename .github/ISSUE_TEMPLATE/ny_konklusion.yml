@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Lav konklusionsfilen med valg 6 i din analyses `koer_analyse.bat` (eller `program/lav_konklusion.py`), udfyld alle UDFYLD, og tjek den med valg 5. Indsæt så hele filen nedenfor. Felterne er beskrevet i [analyser/README.md](https://github.com/Sydtrafik/Bus_gps_trackpoint_analyse/blob/main/analyser/README.md).
+        Lav konklusionsfilen med valg 6 i din analyses `koer_analyse.bat` (eller `program/lav_konklusion.py`), og udfyld alle UDFYLD. Valg 5 tjekker filen og tilføjer den til din egen `analyser\`-mappe (ingen deling). Indsæt så hele filen nedenfor. Felterne er beskrevet i [analyser/README.md](https://github.com/Sydtrafik/Bus_gps_trackpoint_analyse/blob/main/analyser/README.md).
         Kun aggregerede tal: ingen rådata, tur-id'er, mailadresser eller telefonnumre. Issuet er offentligt.
   - type: textarea
     id: fil
@@ -31,6 +31,8 @@ body:
         hastighed_kmt: {foer: , efter: }
         laengde_m:
         kort:
+        punkter:                  # til kortet; ved kryds også beskrivelse, fx "stoplinjen"
+          - {navn: , lat: , lon: }
         dage: hverdage
         perioder:
           foer: {fra: , til: , dage: }

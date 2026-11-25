@@ -56,7 +56,7 @@ def _doc():
             "dagtyper": [{"navn": "Hverdage", "dagtyper": ["hverdag"]}, {"navn": "Alle dage", "dagtyper": None}],
             "perioder_datoer": {"A": ["2025-06-30", "2025-09-25"], "B": ["2025-10-18", "2026-01-04"]},
             "straekninger": [strk], "forbehold": ["Ingen sammenligningsstrækning."],
-            "vej": {"vejtype": "Boligvej", "hastighed": "50 → 40 km/t", "bumptype": "Modificeret cirkelbump (antaget)"}}
+            "vej": {"vejtype": "Almindelig vej i boligområde", "hastighed": "50 → 40 km/t", "bumptype": "Modificeret cirkelbump (antaget)"}}
     omf = [{"S": "s1", "Dag": "Hverdage", "Rute": "Alle ruter", "Time": -1, "Periode": p, "Dage": d, "Ture": 1} for p, d in (("A", 44), ("B", 51))]
     zt = [{"S": "s1", "Retning": "B", "Element": "Bump 1", "Type": "bump", "Lav": 2.55, "Hoej": 3.58},
           {"S": "s1", "Retning": "1", "Element": "Bump 1", "Type": "bump", "Lav": 9, "Hoej": 9}]
@@ -72,6 +72,11 @@ def test_kendt_positiv_standardvalget():
     assert ud["maerkbar_acceleration_pct"] == {"foer": 25, "efter": 25}     # kun hverdage, uden stop
     assert ud["perioder"]["efter"] == {"fra": "2025-10-18", "til": "2026-01-04", "dage": 51}
     assert ud["fartdaempere"] == [{"type": "modificeret cirkelbump", "antal": 2, "antaget": True}, {"type": "indsnævring", "antal": 1}]
+    assert (ud["vejtype"], ud["omraade"]) == ("almindelig vej", "boligområde")     # område ud af vejtypen
+    d = _doc()
+    d["meta"]["vej"] = {"vejtype": "Trafikvej"}                                    # ingen bumptype, intet område
+    ud2, _ = L.fra_rapportdata(d)
+    assert ud2["fartdaempere"][0] == {"type": L.UDFYLD, "antal": 2} and ud2["vejtype"] == "trafikvej" and "omraade" not in ud2
     assert ud["hastighed_kmt"] == {"foer": 50, "efter": 40}
     assert ud["ekstra_tid_pr_element_s"] == [{"element": "Bump 1", "lav": 2.55, "hoej": 3.58}]
 

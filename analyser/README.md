@@ -40,4 +40,6 @@ En fil med samme navn og en anden kontakt overskrives ikke: ret ikke andres anal
 | `vaerktoej`, `opdateret` | Værktøjsversion og dato | script |
 | `kontakt` | GitHub-brugernavn; evt. "Organisation (GitHub: brugernavn)". Ingen mail eller telefon | person |
 
-Tal skal stå som tal uden anførselstegn og enhed (`54`, ikke `"54 s"`), ellers afvises filen. Ændringer (efter minus før, pr. 100 m, procentpoint) regnes ved visningen og står ikke i filen.
+Tal skal stå som tal uden anførselstegn og enhed (`54`, ikke `"54 s"`), ellers afvises filen. Ændringen i køretid (efter minus før) regnes ved visningen og står ikke i filen.
+
+Påkrævet: `skema`, `type`, `vej`, `by`, `aar`, `perioder`, `opdateret` og `kontakt`. De øvrige felter kan udelades, men et felt, der står i filen, skal være gyldigt.

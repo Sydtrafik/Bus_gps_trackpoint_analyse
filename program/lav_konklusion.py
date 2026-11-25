@@ -120,7 +120,9 @@ def fra_rapportdata(doc, sid=None):
     # bumptype "Modificeret cirkelbump (antaget)" -> type uden parentes + antaget: true
     bt = str(vej.get("bumptype") or "bump")
     bt_antaget = "antaget" in bt.lower()
-    bt = re.sub(r"\s*\([^)]*\)", "", bt).strip().lower() or "bump"
+    bt = re.sub(r"\s*\([^)]*\)", "", bt).strip().lower()
+    if bt in ("", "bump"):
+        bt = UDFYLD   # bumptypens navn fra vejreglerne skal skrives af personen
     antal = {}
     for e in s.get("elementer") or []:
         t = str(e["type"]).lower()
@@ -128,13 +130,21 @@ def fra_rapportdata(doc, sid=None):
             t = bt
         elif t.startswith("indsn"):
             t = "indsnævring"
+        else:
+            t = UDFYLD   # fx "andet": personen skriver typen
         antal[t] = antal.get(t, 0) + 1
     ud["fartdaempere"] = sorted(({"type": t, "antal": n, **({"antaget": True} if t == bt and bt_antaget else {})}
                                  for t, n in antal.items()), key=lambda x: x["type"] == "indsnævring")
     kom["fartdaempere"] = "tjek: fra elementer i config og rapport.vej.bumptype; brug bumptypens navn fra vejreglerne"
-    ud["vejtype"] = vej.get("vejtype") or UDFYLD
-    if vej.get("vejtype"):
-        kom["vejtype"] = "tjek: fra rapport.vej i config"
+    # rapport.vej.vejtype "Almindelig vej i boligområde" -> vejtype "almindelig vej" + omraade "boligområde"
+    vt = str(vej.get("vejtype") or "").strip()
+    vt, _, omr = vt.partition(" i ")
+    ud["vejtype"] = (vt[:1].lower() + vt[1:]) if vt else UDFYLD
+    if vt:
+        kom["vejtype"] = "tjek: fra rapport.vej.vejtype i config (kun vejen selv)"
+    if omr.strip():
+        ud["omraade"] = omr.strip()
+        kom["omraade"] = "tjek: fra rapport.vej.vejtype i config"
     hast = [int(x) for x in re.findall(r"\d+", str(vej.get("hastighed") or ""))]
     if to and len(hast) >= 2:
         ud["hastighed_kmt"] = {"foer": hast[0], "efter": hast[1]}
@@ -248,7 +258,7 @@ def skriv_yaml(ud, kom):
          linje("by", UDFYLD),
          linje("aar", ud["aar"], "året for ændringen (eller perioden)"),
          linje("vejtype", ud["vejtype"], "vejen selv, fx almindelig vej, boligvej, trafikvej, landevej"),
-         linje("omraade", UDFYLD, "fx boligområde, bymidte, erhvervsområde, åbent land"),
+         linje("omraade", ud.get("omraade", UDFYLD), kom.get("omraade") or "fx boligområde, bymidte, erhvervsområde, åbent land"),
          linje("buslommer", UDFYLD, "ja, nej eller ukendt: holder bussen i en buslomme ved stoppestederne på strækningen?"),
          linje("parkering_paa_vejen", UDFYLD, "ja, nej eller ukendt: må der parkeres på kørebanen?"),
          linje("linjer", UDFYLD, "fx 3A, begge retninger"),

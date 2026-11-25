@@ -215,7 +215,7 @@ rapport:
   udtraekdato: ""                   # fx "11-11-2026"; vises i fodnoten (ellers kun byggedato)
   min_ture: 5                        # kun skabelon.html (v1.1): færre ture -> "-". v1.2 viser alle tal og markerer grupper under 20 ture
   vej: {}                            # "Om strækningen" (v1.2): vejtype, hastighed, bumptype, andre_foranstaltninger (tekst),
-                                     # fx {vejtype: "Gennemkørselsvej i boligkvarter", hastighed: "50 → 40 km/t", bumptype: "Cirkelbump",
+                                     # fx {vejtype: "Almindelig vej i boligområde", hastighed: "50 → 40 km/t", bumptype: "Cirkelbump",
                                      #     andre_foranstaltninger: "2 indsnævringer"}. Mangler et felt, advarer byg_rapport.py.
   foer_navn: "Før"
   efter_navn: "Efter"

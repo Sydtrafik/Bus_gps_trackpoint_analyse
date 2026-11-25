@@ -306,7 +306,8 @@ def tegning(navn, mappe):
     for ext, mime in (("svg", "image/svg+xml"), ("png", "image/png")):
         p = Path(mappe) / f"{navn}.{ext}"
         if p.exists():
-            return f"data:{mime};base64," + base64.b64encode(p.read_bytes()).decode("ascii")
+            b = p.read_bytes().replace(b"\r\n", b"\n") if ext == "svg" else p.read_bytes()   # samme bytes ved CRLF- og LF-checkout
+            return f"data:{mime};base64," + base64.b64encode(b).decode("ascii")
     return None
 
 
@@ -352,9 +353,9 @@ def byg_md(analyser, i_dag):
     r = [raekke(n, d) for n, d in analyser]
     ud = ["# Nationale analysekonklusioner", "",
           "Afsluttede trackpoint-analyser i hele landet, så vi kan lære af hinandens fund.", "",
-          "- **Tallene** er medianer på hverdage for ture uden standsning ved stop, begge retninger.",
+          "- **Tallene** er medianer. Strækninger: hverdage, ture uden standsning ved stop, begge retninger. Kryds: retningen med flest ture.",
           "- **Ændring** er køretid efter minus før.",
-          "- **Laveste fart ved fartdæmper** er medianen af den laveste fart pr. tur ved fartdæmperne (bump o.l.).",
+          "- **Laveste fart ved fartdæmper** er medianen af den laveste fart pr. tur ved hver fartdæmper (bump o.l.), gennemsnit over fartdæmperne.",
           "- **Graf, filtre og tegninger** står i `nationale_analysekonklusioner.html` (åbn den i en browser).",
           "- **Filen laves** af `program/lav_konklusioner_html.py` ud fra [analyser/](analyser/) (én fil pr. analyse); "
           "ret den ikke i hånden. Sådan tilføjer du din analyse: [CONTRIBUTING.md](CONTRIBUTING.md).", "",
@@ -497,9 +498,9 @@ SKABELON = """<!doctype html>
 <p class="meta" id="taeller" aria-live="polite"></p>
 <div class="tabelboks"><table id="tabel"><thead></thead><tbody></tbody></table></div>
 <ul class="noter">
-<li><strong>Tallene</strong> er medianer på hverdage for ture uden standsning ved stop, begge retninger.</li>
+<li><strong>Tallene</strong> er medianer. Strækninger: hverdage, ture uden standsning ved stop, begge retninger. Kryds: retningen med flest ture.</li>
 <li><strong>Ændring</strong> er køretid efter minus før.</li>
-<li><strong>Laveste fart ved fartdæmper</strong> er medianen af den laveste fart pr. tur ved fartdæmperne (bump o.l.).</li>
+<li><strong>Laveste fart ved fartdæmper</strong> er medianen af den laveste fart pr. tur ved hver fartdæmper (bump o.l.), gennemsnit over fartdæmperne.</li>
 <li><strong>Tegningerne</strong> er vejreglernes standardprofil for typen, ikke opmålte bump.</li>
 <li><strong>Sådan bruges tabellen:</strong> klik på en overskrift for at sortere og på en analyse for at se den.</li>
 </ul>

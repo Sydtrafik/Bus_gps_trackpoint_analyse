@@ -645,7 +645,7 @@ Sæson og andre forskelle mellem perioderne er ikke en begrænsning ved værktø
 
 ```powershell
 $env:PYTHONUTF8 = "1"
-python -m pytest "$V\tests" -q                  # 78 tests (kræver pytest)
+python -m pytest "$V\tests" -q                  # 87 tests (kræver pytest)
 # eller uden pytest, én fil ad gangen:
 python "$V\tests\test_v2.py"                   # 11 tests (mod analyse_v2.2.py)
 python "$V\tests\test_komfort.py"              # 13 tests (komfort_v1.0)
@@ -655,6 +655,8 @@ python "$V\tests\test_turtabel.py"             # 6 tests: kendte tider -> turtab
 python "$V\tests\test_kryds_rapport.py"        # 3 tests: kendte køretider -> tal pr. rute, time og planlagt tur; ingen tur-id i HTML
 python "$V\tests\test_rapport.py"              # 12 tests: syntetisk datasæt -> rapportdata -> HTML uden JS-fejl, én periode, to strækninger, stop pr. retning, kontrast
 python "$V\tests\test_rapport_v12.py"          # 6 tests: v1.2 = v1.1 i standardvalget; kendte tal pr. time, dagtype og rute; fravalg; museklik på en time
+python "$V\tests\test_konklusioner_html.py"     # 7 tests: konklusionsfilerne tjekkes (ugyldige afvises), html og md laves igen, browsertest
+python "$V\tests\test_lav_konklusion.py"        # 4 tests: rapportdata/overblik -> konklusionsfil med kendte tal; må ikke overskrive
 ```
 
 Hver linje skrives `PASS`/`OK`, og til sidst står antallet bestået; exit-kode 0 = alle bestået. `test_rapport.py` indeholder en browsertest (Edge eller Chromium via `playwright`); uden `playwright` springes den over med besked, og de øvrige tests kører. `ANALYSE_FILE` kan sættes til en anden version af hovedværktøjet (standard `analyse_v2.2.py`; `set ANALYSE_FILE=analyse_v2.1.py` tester den forrige).
