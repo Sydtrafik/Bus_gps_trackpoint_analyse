@@ -9,7 +9,6 @@ Bibliotekerne indlejres i hver rapport, så rapporten virker uden internet.
 | Bibliotek | Version | Licens | Filer |
 |---|---|---|---|
 | Apache ECharts | 5.6.0 | Apache License 2.0 | `echarts.min.js`, licens: `ECHARTS-LICENSE.txt`, notits: `ECHARTS-NOTICE.txt` |
-| Leaflet | 1.9.4 | BSD 2-Clause | `leaflet.min.js`, `leaflet.min.css`, licens: `LEAFLET-LICENSE.txt` |
 
 ECharts' NOTICE-fil (gengivet uændret, som Apache License 2.0 § 4(d) kræver):
 
@@ -26,7 +25,8 @@ The Apache Software Foundation (https://www.apache.org/).
 Kortdata © OpenStreetMap-bidragydere, tilgængelige under Open Database License (ODbL) 1.0 (https://www.openstreetmap.org/copyright).
 
 - **Vejkortene i `analyser/kort/*.json`** er udtræk af OpenStreetMap-data (veje, bygninger, fodgængerfelter, stoppesteder og fartdæmpere i et lille område omkring hver analyse), hentet via Overpass API med `program/lav_vejkort.py`. Filerne er under ODbL 1.0, ikke under værktøjets MIT-licens. `nationale_analysekonklusioner.html` tegner kortene ud fra filerne og viser kildeangivelsen under hvert kort; der hentes ingen kortfliser, og læserens IP-adresse sendes ikke nogen steder hen.
-- **Kortet i en rapport** (`kort: true`) henter kortfliser fra OpenStreetMap (`tile.openstreetmap.org`). Brugen skal følge OSM's tile-politik (https://operations.osmfoundation.org/policies/tiles/), og læserens IP-adresse sendes til OSM's server, når kortet vises. OSM kan afvise fliser til en rapport, der åbnes som lokal fil, fordi browseren ikke sender en Referer.
+- **Kortet i en rapport** (`kort: true`) tegnes på samme måde ud fra `vejkort.json`, som `program/rapport/byg_rapport.py` henter én gang via Overpass API ved siden af `rapportdata.json` (ligger uden for repoet). Kildeangivelsen står under kortet. Læseren henter intet.
+- Værktøjet henter ingen kortfliser (OSM's tile-politik forbyder at gemme fliser til brug uden net). Før 1.10.0 brugte rapporten Leaflet (BSD 2-Clause) med kortfliser; Leaflet følger ikke længere med.
 
 ## Vejregler og bumptegninger
 

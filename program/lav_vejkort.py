@@ -146,9 +146,19 @@ def lav(analyse, overskriv=False, hent_fn=hent):
     punkter = [p for p in (d.get("punkter") or []) if isinstance(p, dict) and p.get("lat") is not None]
     if not punkter:
         return None
-    ud = kortfil(analyse)
-    if ud.exists() and not overskriv and daekker(json.loads(ud.read_text(encoding="utf-8")), punkter):
-        return ud
+    return hent_til(punkter, kortfil(analyse), overskriv, hent_fn)
+
+
+def hent_til(punkter, ud, overskriv=False, hent_fn=hent):
+    """Hent kortet om punkterne ({lat, lon}) til filen ud, medmindre den findes og dækker punkterne. Returnerer ud.
+    Bruges også af rapport/byg_rapport.py (rapport.kort: true -> vejkort.json ved rapportdata.json)."""
+    ud = Path(ud)
+    if ud.exists() and not overskriv:
+        try:
+            if daekker(json.loads(ud.read_text(encoding="utf-8")), punkter):
+                return ud
+        except (ValueError, KeyError, TypeError):
+            pass                                   # ødelagt fil: hent igen
     bbox = omraade(punkter)
     k = kompakt(hent_fn(bbox), bbox)
     ud.parent.mkdir(parents=True, exist_ok=True)

@@ -99,7 +99,7 @@ Nøjagtighed og svagheder: afsnit 8.
 - Windows. Testene kører med Python 3.10 og 3.13 på Windows ved hver ændring (GitHub Actions, `.github\workflows\tests.yml`); analyserne er kørt med 3.13. Linux og macOS er ikke afprøvet (`.bat`-filerne er kun til Windows).
 - `pandas`, `numpy`, `pyyaml`. Testet med pandas 2.2.3, numpy 2.2.5, pyyaml 6.0.2. `tqdm` er valgfri (fremdriftsbjælke). `pytest` er valgfri (testene kan køres uden).
 - Installation: `python -m pip install -r requirements.txt` (fil i denne mappe).
-- Rapporten kræver ingen ekstra pakker (ECharts og Leaflet ligger i `rapport\vendor\`). `playwright` er valgfri og bruges kun af browsertesten i `tests\test_rapport.py`.
+- Rapporten kræver ingen ekstra pakker (ECharts ligger i `rapport\vendor\`, vejkortet i `vejkort.js`/`vejkort.css`). `playwright` er valgfri og bruges kun af browsertesten i `tests\test_rapport.py`.
 - RAM: `analyse_v2.2.py` læser `Details.csv` i bidder og holder kun rækkerne mellem de to stop. Målt på en bærbar pc i 2026: højst 1,2-1,7 GB pr. periode ved ca. 9 mio. rækker (1,3-1,5 GB) og højst 2,2 GB ved 24 mio. rækker (3,4 GB). Den forrige `analyse_v2.1.py` holdt hele filen (ca. 6 GB ved 9 mio. rækker, ca. 20 GB ved 3,4 GB).
 - Tid: ca. 4-8 min pr. periode ved 9 mio. rækker og ca. 9 min ved 24 mio. rækker, afhængigt af maskinen (to gennemløb af filen; v2.1 brugte ca. 2 min ved 9 mio. rækker). Hele kæden for to perioder (valg 3 i `koer_analyse.bat`): 16 min på Kvaglundvej. Testene: 1-4 min.
 - Kommandoerne nedenfor er PowerShell (testet i PowerShell 7). Sæt `PYTHONUTF8=1`, så æ, ø og å ikke giver fejl.
@@ -132,7 +132,8 @@ Værktøjsmappens rod har kun det, brugeren selv rører. Alt andet ligger i `vej
 | `program\` | `rapport\lav_rapportdata.py` | Forrige version (v1.1, uden valg for dage, rute og time); samme tal i standardvalget. Bliver i pakken (afsnit 11) og bruges af analysemapper med en ældre `koer_analyse.bat`. |
 | `program\` | `rapport\lav_kryds_rapport.py`, `rapport\kryds_skabelon.html` | Kryds-rapport: køretid pr. stykke over døgnet, pr. rute og pr. planlagt tur, ud fra `turtabel.csv`. Én selvstændig HTML-fil. |
 | `program\` | `rapport\byg_rapport.py`, `rapport\skabelon_v1.2.html`, `rapport\skabelon.html` | Sætter `rapportdata.json` ind i skabelonen: én selvstændig HTML-fil. Skabelonen vælges efter datafilens version (v1.2 → `skabelon_v1.2.html`, v1.1 → `skabelon.html`). |
-| `program\` | `rapport\vendor\` | ECharts (Apache-2.0) og Leaflet (BSD-2-Clause) med licensfiler. Indlejres i rapporten. |
+| `program\` | `rapport\vendor\` | ECharts (Apache-2.0) med licensfiler. Indlejres i rapporten. |
+| `program\` | `vejkort.js`, `vejkort.css` | Vejkort som SVG ud fra OpenStreetMap-data (zoom, træk, fast tekststørrelse); bruges af rapporten og `nationale_analysekonklusioner.html`. |
 | `program\` | `config_eksempel.yaml` | Kommenteret fuld config med alle parametre (flere strækninger, alle indstillinger). |
 | `program\` | `eksempler\config_kvaglundvej.yaml` | Udfyldt eksempel (bybus 3A, Kvaglundvej). Filstierne er pladsholdere. |
 | `program\` | `VERSION` | Pakkens version (afsnit 11). |
@@ -296,7 +297,7 @@ Den har desuden en strækningsvælger (ved flere strækninger), retningsknapper,
 **Tilpas rapporten:**
 - **Farver og skrift:** CSS-variablerne øverst i `rapport\skabelon.html` (`:root`). Kør `byg_rapport.py` igen. Graferne og kortet læser de samme variabler. Tekst skal have mindst 4,5:1 kontrast mod baggrunden og datamærker mindst 3:1 ([formidling_og_grafik.md](../vejledning/formidling_og_grafik.md), afsnit 8); rapporten skriver en advarsel i browserens konsol, hvis en farve er for svag.
 - **Tekster:** sektionen `rapport:` i config (titel, undertitel, retningsnavne, stoppesteder pr. kørselsretning, forbehold, kilde, afsender, udtræksdato, `maalenoter`). Mangler en tekst, bruges en neutral standardtekst.
-- **Kort (valgfrit, slået fra som standard):** `rapport.kort: true` giver et Leaflet-kort med OpenStreetMap-kortfliser, kildeangivelse og internetkrav ved visning. Intet token kræves.
+- **Kort (valgfrit, slået fra som standard):** `rapport.kort: true` giver et vejkort med veje, bygninger, fodgængerfelter og stoppesteder fra OpenStreetMap, strækningerne, elementerne og stoppestederne fra config. `byg_rapport.py` henter kortdata én gang via Overpass API til `vejkort.json` ved siden af `rapportdata.json` (igen kun, hvis punkterne ligger uden for kortet); rapporten virker derefter uden internet, og der hentes ingen kortfliser. Fejler hentningen, viser kortet kun punkterne. `--uden-kort` springer hentningen over. Kildeangivelse står under kortet. Intet token kræves.
 - **Egen skabelon:** kopiér `skabelon.html` og brug `--skabelon`. De fem mærker i filen skal bevares (se [AGENTS.md](../AGENTS.md)).
 - Vælg først rapporttype og budskab, og skriv teksten efter [formidling_og_grafik.md](../vejledning/formidling_og_grafik.md) og afsnit 5 i [metode_og_rapportering.md](../vejledning/metode_og_rapportering.md). Komfort er **passagerkomfort i kørslen på hele strækningen** (opbremsning og acceleration langs vejen), ikke stødet over selve bumpet.
 - **Stoppesteder** har én position pr. side af vejen, altså pr. kørselsretning. Angiv hvert stop med `retning` (1 eller 2) under `rapport.stoppesteder`. Fartprofilen og kortet viser dem pr. retning, og retningsknapperne vælger de rigtige.

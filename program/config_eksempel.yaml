@@ -226,4 +226,4 @@ rapport:
   stoppesteder: []                    # valgfrit, én position pr. side af vejen (kørselsretning): [{navn: "Stopnavn", retning: 1, lat: 55.48, lon: 8.46}, ...]
   forbehold: []                       # korte linjer i forbeholdsboksen (fx omkørselsdage, ingen kontrolstrækning)
   kilde: "Kilde: realtidsdata (GPS-positioner)."
-  kort: false                         # standard false. true = Leaflet + OpenStreetMap-kort (kræver internet ved visning)
+  kort: false                         # standard false. true = vejkort ud fra OpenStreetMap-data (hentes én gang ved byg_rapport.py; rapporten virker uden internet)

@@ -410,6 +410,11 @@ def byg_md(analyser, i_dag):
 
 
 # ---------------------------------------------------------------- HTML
+def _modul(navn):
+    """Fælles vejkort-modul (program/vejkort.js og .css), som også rapporten bruger."""
+    return (PROGRAM / navn).read_text(encoding="utf-8")
+
+
 def laes_vejkort(kortmappe, navn):
     """Vejkortet fra lav_vejkort.py (analyser\\kort\\<navn>.json), eller None. En ødelagt fil stopper kørslen."""
     p = Path(kortmappe) / f"{navn}.json" if kortmappe else None
@@ -475,12 +480,15 @@ def byg_html(analyser, mappe, i_dag, kortmappe=None):
     galleri = "".join(f'<figure><img src="{src}" alt="{html.escape(n)}" loading="lazy"><figcaption>{html.escape(n)}</figcaption></figure>'
                       for f, n in alle for src in [tegn.get(f) or tegning(f, mappe)] if src)
     return SKABELON.replace("__ANTAL__", str(len(rows))).replace("__DATO__", html.escape(i_dag)) \
-        .replace("__GALLERI__", galleri).replace("__CSS__", CSS).replace("__JS__", JS).replace("__DATA__", js_data)
+        .replace("__GALLERI__", galleri).replace("__VEJKORT_CSS__", _modul("vejkort.css")).replace("__CSS__", CSS) \
+        .replace("__VEJKORT_JS__", _modul("vejkort.js").replace("</script", "<\\/script")).replace("__JS__", JS) \
+        .replace("__DATA__", js_data)
 
 
 SKABELON = """<!doctype html>
 <html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Nationale analysekonklusioner</title>
+<style>__VEJKORT_CSS__</style>
 <style>__CSS__</style></head>
 <body>
 <header>
@@ -514,6 +522,7 @@ SKABELON = """<!doctype html>
 <div class="galleri">__GALLERI__</div></details>
 </main>
 <script>const D = __DATA__;</script>
+<script>__VEJKORT_JS__</script>
 <script>__JS__</script>
 </body></html>
 """
@@ -574,32 +583,9 @@ ul.fakta { margin:.3em 0; padding-left:1.2em; } ul.fakta li { margin:3px 0; } ul
 figure { margin:0; border:1px solid var(--line); border-radius:8px; padding:8px; max-width:520px; }
 figure img { width:100%; height:auto; display:block; background:#fff; }
 figcaption { font-size:.82rem; color:var(--muted); margin-top:4px; }
-.vk { --land:#f4f3ef; --bygn:#e2dfd8; --vej:#ffffff; --vkant:#c9c6bf; --sti:#b5b2aa; --bump:#c2410c; --stop:#0f766e; margin-bottom:8px; }
+.vk { --vk-linje:var(--efter); --vk-anden:var(--foer); --vk-papir:var(--bg); --vk-tekst:var(--fg); --vk-daempet:var(--muted); --vk-ramme:var(--line); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .vk { --land:#1f2227; --bygn:#2b2f36; --vej:#3a3f47; --vkant:#2a2d33; --sti:#555b64; --bump:#f0a35e; --stop:#5eead4; } }
 :root[data-theme="dark"] .vk { --land:#1f2227; --bygn:#2b2f36; --vej:#3a3f47; --vkant:#2a2d33; --sti:#555b64; --bump:#f0a35e; --stop:#5eead4; }
-.vk-svg { width:100%; height:auto; display:block; border:1px solid var(--line); border-radius:8px; touch-action:none; cursor:grab;
-  user-select:none; -webkit-user-select:none; --k:1; --ky:1; }
-.vk-bg { fill:var(--land); } .vk-bygn { fill:var(--bygn); }
-.vk-vej { fill:none; stroke-linecap:round; stroke-linejoin:round; stroke:var(--vej); }
-.vk-k1 { stroke-width:9; filter:drop-shadow(0 0 1px var(--vkant)); } .vk-k2 { stroke-width:7; filter:drop-shadow(0 0 1px var(--vkant)); }
-.vk-k3 { stroke-width:5.5; filter:drop-shadow(0 0 1px var(--vkant)); } .vk-k4 { stroke-width:3; }
-.vk-k5 { stroke:var(--sti); stroke-width:1.2; stroke-dasharray:3 3; }
-.vk-maalt { fill:none; stroke:var(--efter); stroke-width:3; stroke-linecap:round; stroke-linejoin:round; opacity:.6; vector-effect:non-scaling-stroke; }
-.vk-vejnavn { font-size:calc(11px * var(--k)); fill:var(--muted); paint-order:stroke; stroke:var(--land); stroke-width:calc(3px * var(--k)); }
-.vk-ende { fill:var(--efter); stroke:var(--bg); stroke-width:2; } .vk-elem { fill:var(--bg); stroke:var(--efter); stroke-width:2.5; }
-.vk-lbg { fill:var(--bg); opacity:.85; } .vk-lbl { font-size:12px; fill:var(--fg); } .vk-lbl.fed { font-weight:600; }
-.vk-svg.lille .vk-pkt:not(.vk-altid) .vk-lbg, .vk-svg.lille .vk-pkt:not(.vk-altid) .vk-lbl { display:none; }
-.vk-detalje { display:none; } .vk-svg.zoomet .vk-detalje { display:inline; }
-.vk-s-bump { fill:var(--bump); stroke:var(--bg); stroke-width:1; } .vk-s-kryds { fill:var(--bg); stroke:var(--fg); stroke-width:1.2; }
-.vk-s-stop rect { fill:var(--stop); } .vk-s-stop path { fill:none; stroke:var(--bg); stroke-width:1.2; }
-.vk-stopnavn { font-size:11px; fill:var(--stop); paint-order:stroke; stroke:var(--land); stroke-width:3px; }
-.vk-skala path { fill:none; stroke:var(--fg); stroke-width:calc(1.5px * var(--ky)); }
-.vk-skala text { font-size:calc(10px * var(--ky)); fill:var(--muted); paint-order:stroke; stroke:var(--land); stroke-width:calc(3px * var(--ky)); }
-.vk-knapper { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-top:6px; }
-.vk-knapper button { font:inherit; font-size:.9rem; min-width:34px; padding:3px 10px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--fg); cursor:pointer; }
-.vk-tegn { display:flex; flex-wrap:wrap; gap:2px 12px; color:var(--muted); font-size:.82rem; margin-left:6px; }
-.vk-tegn svg { width:13px; height:13px; vertical-align:-2px; margin-right:3px; }
-.vk-kilde { color:var(--muted); font-size:.8rem; margin:4px 0 0; }
 .tid { display:grid; grid-template-columns:minmax(110px, max-content) 7.5em 1fr; gap:4px 12px; align-items:center; font-size:.9rem; }
 .tid .v { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .tid .spor { position:relative; height:10px; background:var(--head); border-radius:2px; }
@@ -749,7 +735,7 @@ function kortHtml(r, ri) {
     + `${li('Fartdæmpere', esc(r.daemperTekst))}${li('Linje', esc(r.linjer))}${li('Perioder', per)}</ul>`;
   const tegn = r.tegning ? `<figure><img src="${D.tegn[r.tegning]}" alt="Standardprofil: ${esc(r.bumpNavn)}"><figcaption><strong>${esc(r.bumpNavn)}</strong>: vejreglernes standardprofil, ikke opmålt${r.bumpAntaget ? '. Typen er antaget' : ''}.</figcaption></figure>`
     : (r.bumpNavn ? `<p class="note">Ingen tegning af ${esc(r.bumpNavn.toLowerCase())}: typen findes ikke i vejreglernes bilag.</p>` : '');
-  const kort = r.punkter.length ? vejkortHtml(r, ri) : '';
+  const kort = r.punkter.length ? `<div class="vk-plads" data-ri="${ri}"></div>` : '';
   const link = /^https?:\/\//.test(r.kort) ? `<a class="knap" href="${esc(r.kort)}" target="_blank" rel="noopener">Åbn i Google Maps</a>` : '';
   return `<article class="kort" id="k-${esc(r.id)}"><h2><span class="mark" style="--c:${farve(r.type)}"></span>${esc(r.vej)}, ${esc(r.by)} (${r.aar})</h2>
 <p class="under">${esc(r.typeNavn)}${r.aendring ? ' · ' + esc(r.aendring) : ''}</p>
@@ -758,138 +744,14 @@ ${r.vejregler ? `<h3>Vejregler</h3><p>${esc(r.vejregler)}</p>` : ''}${r.forbehol
 <ul class="fakta note">${li('Bustype', esc(r.bustype))}${li('Værktøj', esc(r.vaerktoej))}${li('Kontakt', `${esc(r.kontakt)} · opdateret ${esc(r.opdateret)}`)}</ul></div>
 <div>${kort}${link}${tegn ? `<div style="margin-top:12px">${tegn}</div>` : ''}</div></div></article>`;
 }
-// ---------- vejkort: SVG ud fra OSM-data i analyser/kort/ (ingen kortfliser, virker uden internet)
-const VK_W = 640, VK_MARGIN = 140;
-function vkOmraade(pk) {
-  const la = pk.map((p) => p.lat), lo = pk.map((p) => p.lon), lat0 = la.reduce((a, b) => a + b, 0) / la.length;
-  const kx = 111320 * Math.cos(lat0 * Math.PI / 180), ky = 110540;
-  let s = Math.min(...la) - VK_MARGIN / ky, n = Math.max(...la) + VK_MARGIN / ky, w = Math.min(...lo) - VK_MARGIN / kx, e = Math.max(...lo) + VK_MARGIN / kx;
-  const b = (e - w) * kx, h = (n - s) * ky;
-  if (b < h * 1.6) { const x = (h * 1.6 - b) / 2 / kx; w -= x; e += x; }
-  return [s, w, n, e];
-}
-function vejkortHtml(r, ri) {
-  const vk = r.vejkort, [s, w, n, e] = vk ? vk.omraade : vkOmraade(r.punkter), en = vk ? vk.enhed : 1e-5;
-  const kx = 111320 * Math.cos((s + n) / 2 * Math.PI / 180), ky = 110540, sk = VK_W / ((e - w) * kx), H = Math.round((n - s) * ky * sk);
-  const X = (lon) => +((lon - w) * kx * sk).toFixed(1), Y = (lat) => +((n - lat) * ky * sk).toFixed(1);
-  const U = (dy, dx) => [X(w + dx * en), Y(s + dy * en)];
-  const linje = (f) => { const p = []; let y = 0, x = 0; for (let i = 0; i < f.length; i += 2) { y += f[i]; x += f[i + 1]; p.push(U(y, x)); } return p; };
-  const d = (p) => 'M' + p.map(([x, y]) => `${x},${y}`).join(' L');
-  let ind = `<rect class="vk-bg" width="${VK_W}" height="${H}"/>`;
-  const navne = {}, kl = {1: [], 2: [], 3: [], 4: [], 5: []}, legende = new Set();
-  if (vk) {
-    ind += vk.bygninger.map((b) => `<path class="vk-bygn" d="${d(linje(b))}Z"/>`).join('');
-    vk.veje.forEach(([k, navn, f]) => {
-      const p = linje(f); kl[k].push(d(p));
-      if (navn && k <= 3) {
-        const l = p.slice(1).reduce((a, q, i) => a + Math.hypot(q[0] - p[i][0], q[1] - p[i][1]), 0);
-        if (!navne[navn] || l > navne[navn][0]) navne[navn] = [l, p[p.length - 1][0] < p[0][0] ? p.slice().reverse() : p];
-      }
-    });
-    [5, 4, 3, 2, 1].forEach((k) => { if (kl[k].length) ind += `<path class="vk-vej vk-k${k}" d="${kl[k].join(' ')}"/>`; });
-  }
-  const ps = r.punkter.map((p) => [X(p.lon), Y(p.lat)]);
-  if (ps.length > 1) ind += `<path class="vk-maalt" d="${d(ps)}"/>`;
-  Object.entries(navne).sort().forEach(([navn, [l, p]], i) => {
-    if (l < navn.length * 6.5 + 20) return;
-    ind += `<path id="vk${ri}-${i}" d="${d(p)}" fill="none"/><text class="vk-vejnavn" dy="-0.35em"><textPath href="#vk${ri}-${i}" startOffset="50%" text-anchor="middle">${esc(navn)}</textPath></text>`;
-  });
-  // fast skærmstørrelse: gruppen skaleres med 1/zoom i aktiverVejkort
-  const fast = (x, y, indhold, kl2 = '', attr = '') => `<g class="vk-fast ${kl2}" data-x="${x}" data-y="${y}"${attr} transform="translate(${x} ${y})">${indhold}</g>`;
-  const BUS = '<rect x="-6" y="-6" width="12" height="12" rx="2.5"/><path d="M-3.5,-3.5 h7 v6 h-7 Z M-3.5,0 h7 M-2,2.5 v2 M2,2.5 v2"/>';
-  if (vk) {
-    const stop = vk.detaljer.filter((x) => x[0] === 'stop').map(([, t, dy, dx]) => [t, ...U(dy, dx)]);
-    vk.detaljer.forEach(([art, t, dy, dx]) => {
-      const [x, y] = U(dy, dx); legende.add(art);
-      if (art === 'bump') ind += fast(x, y, `<path class="vk-s-bump" d="M-5,3 L0,-5 L5,3 Z"><title>Fartdæmper i OSM: ${esc(t)}</title></path>`, 'vk-detalje');
-      else if (art === 'kryds') ind += fast(x, y, '<rect class="vk-s-kryds" x="-4" y="-4" width="8" height="8" rx="1"><title>Fodgængerfelt (OSM)</title></rect>', 'vk-detalje');
-      else {
-        // navnet står på den side, der vender væk fra nærmeste andet stoppested (typisk det i modsat retning)
-        const andre = stop.filter(([, x2, y2]) => x2 !== x || y2 !== y).map(([, x2, y2]) => [Math.hypot(x2 - x, y2 - y), x2]).sort((a, b) => a[0] - b[0]);
-        const side = !andre.length || andre[0][1] <= x ? 1 : -1;
-        ind += fast(x, y, `<g class="vk-s-stop">${BUS}<title>Stoppested: ${esc(t)} (OSM)</title></g>`
-          + (t ? `<text class="vk-stopnavn" x="${9 * side}" y="3.5" text-anchor="${side === 1 ? 'start' : 'end'}">${esc(t)}</text>` : ''), 'vk-detalje');
-      }
-    });
-  }
-  // analysens punkter: navn til højre, ellers til venstre ved overlap
-  const bokse = [];
-  r.punkter.forEach((p, i) => {
-    const [x, y] = ps[i], ende = r.type !== 'kryds' && (i === 0 || i === r.punkter.length - 1), tb = p.navn.length * 6.6 + 10;
-    let b;
-    for (const side of [1, -1]) {
-      const lx = side === 1 ? x + 10 : x - 10 - tb; b = [lx, y - 9, lx + tb, y + 9];
-      if (!bokse.some((q) => !(b[2] < q[0] || b[0] > q[2] || b[3] < q[1] || b[1] > q[3]))) break;
-    }
-    bokse.push(b);
-    const rx = +(b[0] - x).toFixed(1);
-    ind += fast(x, y,
-      `<circle class="${ende || r.type === 'kryds' ? 'vk-ende' : 'vk-elem'}" r="${ende ? 6 : 4.5}"><title>${esc(p.beskrivelse || p.navn)}</title></circle>`
-      + `<rect class="vk-lbg" x="${rx}" y="-9" width="${tb.toFixed(0)}" height="18" rx="3"/><text class="vk-lbl${ende ? ' fed' : ''}" x="${rx + 5}" y="4">${esc(p.navn)}</text>`,
-      'vk-pkt' + (ende || r.type === 'kryds' ? ' vk-altid' : ''), ` data-rx="${rx}" data-tb="${tb.toFixed(0)}"`);
-  });
-  const LEG = {bump: ['<path class="vk-s-bump" d="M-5,3 L0,-5 L5,3 Z"/>', 'fartdæmper i OSM'], kryds: ['<rect class="vk-s-kryds" x="-4" y="-4" width="8" height="8" rx="1"/>', 'fodgængerfelt'],
-    stop: [`<g class="vk-s-stop">${BUS}</g>`, 'stoppested']};
-  const leg = ['bump', 'kryds', 'stop'].filter((a) => legende.has(a)).map((a) => `<span><svg viewBox="-7 -7 14 14" aria-hidden="true">${LEG[a][0]}</svg>${LEG[a][1]}</span>`).join('');
-  return `<div class="vk" data-w="${VK_W}" data-h="${H}" data-sk="${sk}">`
-    + `<svg class="vk-svg" viewBox="0 0 ${VK_W} ${H}" role="img" aria-label="Vejkort over analysens punkter"><svg class="vk-indre" x="0" y="0" width="${VK_W}" height="${H}" viewBox="0 0 ${VK_W} ${H}">${ind}</svg>`
-    + `<g class="vk-skala"><path d=""/><text x="12" y="${H - 20}" text-anchor="middle"></text></g></svg>`
-    + `<div class="vk-knapper"><button type="button" data-z="ind" aria-label="Zoom ind">+</button><button type="button" data-z="ud" aria-label="Zoom ud">−</button><button type="button" data-z="nul">Hele kortet</button>`
-    + `<span class="vk-tegn">${leg}${leg ? '<span>(ved zoom)</span>' : ''}</span></div>`
-    + `<p class="vk-kilde">${vk ? 'Kortdata © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-bidragydere, hentet ' + esc(vk.hentet) + '. ' : 'Intet vejkort for denne analyse; kun punkterne. '}`
-    + 'Træk for at flytte; zoom med knapperne, eller klik i kortet og brug musehjulet.</p></div>';
-}
-function aktiverVejkort(el) {
-  const ydre = el.querySelector('.vk-svg'), indre = el.querySelector('.vk-indre'), W = +el.dataset.w, H = +el.dataset.h, SK = +el.dataset.sk;
-  const faste = [...indre.querySelectorAll('.vk-fast')], pkter = [...indre.querySelectorAll('.vk-pkt')], skala = el.querySelector('.vk-skala path'), skt = el.querySelector('.vk-skala text');
-  let v = {x: 0, y: 0, w: W, h: H};
-  const saet = () => {
-    v.w = Math.min(W, Math.max(W / 16, v.w)); v.h = v.w * H / W;
-    v.x = Math.min(W - v.w, Math.max(0, v.x)); v.y = Math.min(H - v.h, Math.max(0, v.y));
-    indre.setAttribute('viewBox', `${v.x} ${v.y} ${v.w} ${v.h}`);
-    const bredde = ydre.getBoundingClientRect().width || W, k = v.w / bredde, ky = W / bredde;   // k: brugerenheder pr. skærm-pixel
-    ydre.style.setProperty('--k', k); ydre.style.setProperty('--ky', ky);
-    ydre.classList.toggle('zoomet', v.w / W < 0.5);
-    ydre.classList.toggle('lille', k > 1.5);   // lille kort (mobil, hele kortet): kun navne ved enderne
-    faste.forEach((g) => g.setAttribute('transform', `translate(${g.dataset.x} ${g.dataset.y}) scale(${k})`));
-    // et navn, der ville stikke ud over kortets kant, flyttes til den anden side af punktet
-    pkter.forEach((g) => {
-      const x = +g.dataset.x, rx = +g.dataset.rx, tb = +g.dataset.tb, alt = rx >= 0 ? -10 - tb : 10;
-      const ude = (r0) => x + r0 * k < v.x || x + (r0 + tb) * k > v.x + v.w;
-      const brug = ude(rx) && !ude(alt) ? alt : rx;
-      g.querySelector('.vk-lbg').setAttribute('x', brug); g.querySelector('.vk-lbl').setAttribute('x', brug + 5);
-    });
-    const pxPrM = SK * W / v.w / ky, m = [10, 20, 25, 50, 100, 200, 500, 1000].find((x) => x * pxPrM >= 50) || 1000, L = m * pxPrM * ky;
-    skala.setAttribute('d', `M12,${H - 14} v-5 M12,${H - 14} h${L.toFixed(1)} v-5`);
-    skt.setAttribute('x', (12 + L / 2).toFixed(1)); skt.textContent = `${m} m`;
-  };
-  const pkt = (cx, cy) => { const b = ydre.getBoundingClientRect(); return [v.x + (cx - b.left) / b.width * v.w, v.y + (cy - b.top) / b.height * v.h]; };
-  const zoom = (f, px, py) => { const nw = Math.min(W, Math.max(W / 16, v.w * f)), q = nw / v.w; v.x = px - (px - v.x) * q; v.y = py - (py - v.y) * q; v.w = nw; saet(); };
-  // musehjulet zoomer først, når man har klikket i kortet (ellers scroller siden som normalt)
-  ydre.addEventListener('wheel', (e) => { if (!ydre.classList.contains('aktiv') && !e.ctrlKey) return; e.preventDefault(); const [px, py] = pkt(e.clientX, e.clientY); zoom(e.deltaY < 0 ? 0.8 : 1.25, px, py); }, {passive: false});
-  ydre.addEventListener('mouseleave', () => ydre.classList.remove('aktiv'));
-  const tryk = new Map();
-  ydre.addEventListener('pointerdown', (e) => { e.preventDefault(); ydre.classList.add('aktiv'); ydre.setPointerCapture(e.pointerId); tryk.set(e.pointerId, [e.clientX, e.clientY]); });
-  ydre.addEventListener('pointermove', (e) => {
-    if (!tryk.has(e.pointerId)) return;
-    const b = ydre.getBoundingClientRect(), gl = tryk.get(e.pointerId);
-    if (tryk.size === 2) {
-      const [a, c] = [...tryk.values()], d0 = Math.hypot(a[0] - c[0], a[1] - c[1]);
-      tryk.set(e.pointerId, [e.clientX, e.clientY]);
-      const [p, q] = [...tryk.values()], d1 = Math.hypot(p[0] - q[0], p[1] - q[1]);
-      const [px, py] = pkt((p[0] + q[0]) / 2, (p[1] + q[1]) / 2); if (d1 > 0) zoom(d0 / d1, px, py); return;
-    }
-    v.x -= (e.clientX - gl[0]) / b.width * v.w; v.y -= (e.clientY - gl[1]) / b.height * v.h; saet();
-    tryk.set(e.pointerId, [e.clientX, e.clientY]);
-  });
-  const slip = (e) => tryk.delete(e.pointerId);
-  ydre.addEventListener('pointerup', slip); ydre.addEventListener('pointercancel', slip);
-  el.querySelectorAll('.vk-knapper button').forEach((b) => b.addEventListener('click', () => {
-    if (b.dataset.z === 'nul') { v = {x: 0, y: 0, w: W, h: H}; saet(); return; }
-    zoom(b.dataset.z === 'ind' ? 0.7 : 1 / 0.7, v.x + v.w / 2, v.y + v.h / 2);
+// ---------- vejkort (fælles modul program/vejkort.js, også i rapporten)
+function vejkort(el) {
+  const r = R[+el.dataset.ri], sidst = r.punkter.length - 1;
+  const k = Vejkort.lav(el, r.vejkort, r.punkter.map((p) => [p.lat, p.lon]));
+  k.tegn([{pkt: r.punkter.map((p) => [p.lat, p.lon]), valgt: true}], r.punkter.map((p, i) => {
+    const ende = r.type !== 'kryds' && (i === 0 || i === sidst);
+    return {lat: p.lat, lon: p.lon, navn: p.navn, ende, navn_altid: ende || r.type === 'kryds', titel: p.beskrivelse || p.navn};
   }));
-  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(saet).observe(ydre);
-  saet();
 }
 function visKort(id) {
   document.querySelectorAll('.kort').forEach((k) => k.classList.toggle('valgt', k.id === 'k-' + id));
@@ -900,7 +762,7 @@ function tegn() {
   document.querySelectorAll('.kort').forEach((k) => { k.hidden = !synlig(R.find((r) => 'k-' + r.id === k.id)); });
 }
 document.getElementById('kort').innerHTML = R.map(kortHtml).join('');
-document.querySelectorAll('.vk').forEach(aktiverVejkort);
+document.querySelectorAll('.vk-plads').forEach(vejkort);
 byggFiltre(); tegn();
 """
 

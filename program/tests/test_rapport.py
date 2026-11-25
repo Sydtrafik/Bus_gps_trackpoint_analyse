@@ -114,12 +114,12 @@ def test_byg_html_uden_maerker_og_uden_kort():
     with tempfile.TemporaryDirectory() as tmp:
         d = _doc(tmp)
     h = B.byg(d, SKABELON)
-    for mark in ("{{TITEL}}", "__RAPPORTDATA__", "/*__ECHARTS__*/", "/*__LEAFLET_JS__*/", "/*__LEAFLET_CSS__*/"):
+    for mark in ("{{TITEL}}", "__RAPPORTDATA__", "/*__ECHARTS__*/", "/*__VEJKORT_JS__*/", "/*__VEJKORT_CSS__*/"):
         assert mark not in h, mark
     assert "<title>Test af skabelonen</title>" in h
     assert "Apache License" in (ROOT / "rapport" / "vendor" / "ECHARTS-LICENSE.txt").read_text(encoding="utf-8")
-    assert "L.map(" in h                      # skabelonens kortkode er med, men Leaflet selv er ikke indlejret
-    assert "Leaflet 1.9.4" not in h and "leaflet-container" not in h
+    assert "Vejkort.lav(" in h                # skabelonens kortkode er med, men vejkort.js selv er ikke indlejret
+    assert "const Vejkort" not in h and "leaflet" not in h.lower() and "tile.openstreetmap" not in h
     # selvstændig: ingen eksterne script/link-referencer
     assert "<script src" not in h and "<link " not in h
     # komfort-afgrænsningen står i skabelonen
@@ -131,7 +131,16 @@ def test_byg_html_med_kort():
         d = _doc(tmp, rapport={"titel": "Med kort", "kort": True})
     assert d["meta"]["kort"]["aktiv"] is True
     h = B.byg(d, SKABELON)
-    assert "leaflet-container" in h and "tile.openstreetmap.org" in h and "OpenStreetMap" in h
+    assert "const Vejkort" in h and ".vk-svg" in h and "tile.openstreetmap" not in h and "leaflet" not in h.lower()
+    assert '"grund"' not in h                                    # uden vejkort.json: kun punkterne
+    grund = {"omraade": [55.0, 8.0, 55.01, 8.02], "enhed": 1e-5, "hentet": "2026-11-25", "veje": [[3, "Testvej", [100, 100, 50, 50]]], "bygninger": [], "detaljer": []}
+    h = B.byg(d, SKABELON, vejkort=grund)
+    assert '"grund":{"omraade":[55.0,8.0,55.01,8.02]' in h and "Testvej" in h
+    assert {round(p["lat"], 3) for p in B.kort_punkter(d)} >= {round(d["meta"]["straekninger"][0]["linje"][0][0], 3)}
+    # kendt negativ: en egen kopi af en skabelon fra før 1.10.0 (Leaflet-mærker) bygges stadig, men uden kort
+    gl = SKABELON.replace("/*__VEJKORT_JS__*/", "/*__LEAFLET_JS__*/").replace("/*__VEJKORT_CSS__*/", "/*__LEAFLET_CSS__*/")
+    h = B.byg(d, gl, vejkort=grund)
+    assert "const Vejkort" not in h and "__LEAFLET" not in h
 
 
 def test_byg_afviser_skabelon_uden_maerker():
@@ -286,12 +295,14 @@ def test_browser_to_straekninger_vaelger_stop_pr_retning_og_kort():
             # stoppesteder pr. retning i fartprofilen: begge retninger -> begge stolper med retning i navnet
             navne = [m[0] for m in marks(pg)]
             assert "Stop X (retn. 1)" in navne and "Stop X (retn. 2)" in navne, navne
-            n_b = pg.evaluate("window.RAPPORT_KORT.eachLayer ? (() => { let n = 0; window.RAPPORT_KORT.eachLayer(l => { if (l.getTooltip && l.getTooltip()) n++; }); return n; })() : -1")
+            KORT_NAVNE = "[...document.querySelectorAll('#kort .vk-lag .vk-lbl')].map(t => t.textContent)"
+            n_b = pg.evaluate(KORT_NAVNE)
+            assert "Stop X (retn. 1)" in n_b and "Stop X (retn. 2)" in n_b and pg.locator('#kort .vk-svg').count() == 1, n_b
             pg.click('.knapper[data-f="ret"] button:nth-child(2)')                  # retning 1
             m1 = marks(pg)
             assert [m for m in m1 if m[0].startswith("Stop X")] == [["Stop X", "100"]], m1
-            n_1 = pg.evaluate("(() => { let n = 0; window.RAPPORT_KORT.eachLayer(l => { if (l.getTooltip && l.getTooltip()) n++; }); return n; })()")
-            assert n_1 == n_b - 1, (n_1, n_b)                                       # kortet viser kun retning 1's stolpe
+            n_1 = pg.evaluate(KORT_NAVNE)
+            assert len(n_1) == len(n_b) - 1 and "Stop X" in n_1, (n_1, n_b)       # kortet viser kun retning 1's stoppested
             pg.click('.knapper[data-f="ret"] button:nth-child(3)')                  # retning 2 (omvendt: kørselsretningen fra venstre)
             m2 = marks(pg)
             bin_max = d["meta"]["straekninger"][0]["bin_max_m"]                     # 590: strækningen er 599,99999 m

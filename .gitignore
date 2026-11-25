@@ -9,6 +9,7 @@ data/
 resultat/
 trackpoint_analyser/
 rapportdata.json
+vejkort.json
 zonetid.json
 rapport.html
 kryds_rapport.html

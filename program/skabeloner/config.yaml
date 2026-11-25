@@ -101,7 +101,7 @@ rapport:
   udtraekdato: ""                # <-- UDFYLD: dato for HAFAS-eksporten, fx "11-11-2026"
   forbehold: []                  # korte linjer, fx ["Omkørsel 3.-5. marts er ikke med."]
   kilde: "Kilde: realtidsdata (GPS-positioner). Der tages forbehold for fejl og mangler."
-  kort: false                    # true = kort over strækningen (kræver internet, når rapporten vises)
+  kort: false                    # true = vejkort over strækningen (OpenStreetMap-data hentes én gang; rapporten virker uden internet)
   vej:                           # vises i "Om strækningen" øverst i rapporten
     vejtype: ""                  # <-- UDFYLD, fx "Almindelig vej i boligområde"
     hastighed: ""                # <-- UDFYLD: hastighedsgrænse, fx "50 → 40 km/t" (før → efter)

@@ -4,8 +4,10 @@ byg_rapport.py - bygger én selvstændig HTML-fil af skabelon.html + rapportdata
 
     python byg_rapport.py --data ud/rapportdata.json --out ud/rapport.html
 
-Filen indeholder alt (data, ECharts fra vendor/, og Leaflet hvis kort er slået til i config). Den kan sendes pr. mail
-og åbnes i en browser uden internet (undtagen kortet, hvis det er slået til: kortfliser hentes fra OpenStreetMap).
+Filen indeholder alt (data, ECharts fra vendor/ og, hvis kort er slået til i config, vejkortet). Den kan sendes pr. mail
+og åbnes i en browser uden internet. Kortet (rapport.kort: true) tegnes som SVG med program/vejkort.js ud fra
+OpenStreetMap-data, som hentes én gang (Overpass) til vejkort.json ved siden af rapportdata.json; der hentes ingen
+kortfliser. --uden-kort springer hentningen over.
 
 Farver og skrift ligger øverst i skabelonen som CSS-variabler (:root). Ret dem dér, og kør byg_rapport.py igen.
 Skabelonen vælges efter datafilens version: rapportdata fra lav_rapportdata_v1.2.py (version 1.2) bruger
@@ -19,6 +21,7 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+PROGRAM = HERE.parent
 VERSION = "1.2"
 VEJ_FELTER = {"vejtype": "vejtype", "hastighed": "hastighedsgrænse", "bumptype": "bumptype", "andre_foranstaltninger": "andre hastighedsforanstaltninger"}
 
@@ -41,26 +44,63 @@ def script_sikker(js):
     return js.replace("</script", "<\\/script").replace("<!--", "<\\!--")
 
 
-def byg(data, skabelon_tekst, vendor=None):
-    """Returnér HTML som tekst. data = rapportdata (dict)."""
+def kort_punkter(data):
+    """Alle punkter, kortet skal dække: strækningernes ender, elementer og stoppesteder."""
+    ud = []
+    for s in data["meta"].get("straekninger") or []:
+        ud += [{"lat": la, "lon": lo} for la, lo in s.get("linje") or []]
+        ud += [{"lat": x["lat"], "lon": x["lon"]} for x in (s.get("elementer") or []) + (s.get("stoppesteder") or []) if x.get("lat") is not None]
+    return ud
+
+
+def byg(data, skabelon_tekst, vendor=None, vejkort=None):
+    """Returnér HTML som tekst. data = rapportdata (dict); vejkort = kortdata fra lav_vejkort.py (dict) eller None."""
     vendor = Path(vendor) if vendor else HERE / "vendor"
     t = skabelon_tekst
-    for mark in ("{{TITEL}}", "__RAPPORTDATA__", "/*__ECHARTS__*/", "/*__LEAFLET_JS__*/", "/*__LEAFLET_CSS__*/"):
+    gammel = "/*__LEAFLET_JS__*/" in t and "/*__VEJKORT_JS__*/" not in t
+    if gammel:   # egen kopi af en skabelon fra før 1.10.0: Leaflet-kortet virker ikke længere (OSM blokerer fliser til lokale filer)
+        print("ADVARSEL: skabelonen er fra før 1.10.0 og har Leaflet-kortet; kortet vises ikke. Kopiér skabelon_v1.2.html igen "
+              "for at få vejkortet.", file=sys.stderr)
+        t = t.replace("/*__LEAFLET_JS__*/", "/*__VEJKORT_JS__*/").replace("/*__LEAFLET_CSS__*/", "/*__VEJKORT_CSS__*/")
+    for mark in ("{{TITEL}}", "__RAPPORTDATA__", "/*__ECHARTS__*/", "/*__VEJKORT_JS__*/", "/*__VEJKORT_CSS__*/"):
         if t.count(mark) != 1:
             raise SystemExit(f"Skabelonen skal indeholde præcis én '{mark}' (fandt {t.count(mark)})")
     titel = data["meta"].get("titel") or "Rapport"
+    kort = bool(data["meta"].get("kort", {}).get("aktiv")) and not gammel
+    if kort and vejkort:
+        data = {**data, "meta": {**data["meta"], "kort": {**data["meta"]["kort"],
+                "grund": {k: vejkort[k] for k in ("omraade", "enhed", "hentet", "veje", "bygninger", "detaljer")}}}}
     js = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/").replace("<!--", "<\\!--")
     echarts = script_sikker(laes(vendor / "echarts.min.js"))
-    kort = bool(data["meta"].get("kort", {}).get("aktiv"))
-    leaflet_js = script_sikker(laes(vendor / "leaflet.min.js")) if kort else ""
-    leaflet_css = laes(vendor / "leaflet.min.css") if kort else ""
+    vk_js = script_sikker(laes(PROGRAM / "vejkort.js")) if kort else ""
+    vk_css = laes(PROGRAM / "vejkort.css") if kort else ""
     # Rækkefølge: data først (kan indeholde mærkerne som tekst, må ikke erstattes bagefter)
     t = t.replace("{{TITEL}}", html.escape(titel))
-    t = t.replace("/*__LEAFLET_CSS__*/", leaflet_css)
+    t = t.replace("/*__VEJKORT_CSS__*/", vk_css)
     t = t.replace("/*__ECHARTS__*/", echarts)
-    t = t.replace("/*__LEAFLET_JS__*/", leaflet_js)
+    t = t.replace("/*__VEJKORT_JS__*/", vk_js)
     t = t.replace("__RAPPORTDATA__", js)
     return t
+
+
+def hent_vejkort(data, datafil, hent=True):
+    """rapport.kort: true -> vejkortet fra vejkort.json ved rapportdata.json; hentes én gang fra OpenStreetMap (Overpass).
+    Returnerer kortdata eller None (kortet viser så kun punkterne)."""
+    if not data["meta"].get("kort", {}).get("aktiv"):
+        return None
+    punkter = kort_punkter(data)
+    if not punkter:
+        return None
+    sys.path.insert(0, str(PROGRAM))
+    import lav_vejkort
+    fil = Path(datafil).parent / "vejkort.json"
+    try:
+        if hent:
+            lav_vejkort.hent_til(punkter, fil)
+        return json.loads(fil.read_text(encoding="utf-8")) if fil.exists() else None
+    except lav_vejkort.VejkortFejl as e:
+        print(f"ADVARSEL: {e}\nRapporten laves med kortet uden veje (kun punkterne).", file=sys.stderr)
+        return json.loads(fil.read_text(encoding="utf-8")) if fil.exists() else None
 
 
 def advarsler(data):
@@ -86,11 +126,12 @@ def main(argv=None):
     ap.add_argument("--out", required=True, help="HTML-fil der skrives")
     ap.add_argument("--skabelon", default=None, help="standard: efter datafilens version (skabelon_v1.2.html eller skabelon.html)")
     ap.add_argument("--vendor", default=str(HERE / "vendor"))
+    ap.add_argument("--uden-kort", action="store_true", help="hent ikke vejkortet fra OpenStreetMap (bruger vejkort.json, hvis den findes)")
     a = ap.parse_args(argv)
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     data = json.loads(laes(a.data))
-    ut = byg(data, laes(a.skabelon or standard_skabelon(data)), a.vendor)
+    ut = byg(data, laes(a.skabelon or standard_skabelon(data)), a.vendor, hent_vejkort(data, a.data, hent=not a.uden_kort))
     out = Path(a.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(ut, encoding="utf-8")

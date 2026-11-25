@@ -112,10 +112,10 @@ Opret et [issue](https://github.com/Sydtrafik/Bus_gps_trackpoint_analyse/issues/
 
 ## Licens og forbehold
 
-- Koden er udgivet under MIT-licensen (se [LICENSE](LICENSE)). ECharts og Leaflet følger med under
-  deres egne licenser, og vejkortene i `analyser/kort/` er OpenStreetMap-data under ODbL
+- Koden er udgivet under MIT-licensen (se [LICENSE](LICENSE)). ECharts følger med under sin egen
+  licens, og vejkortene (`analyser/kort/`, `vejkort.json`) er OpenStreetMap-data under ODbL
   (se [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)).
 - Rapporten virker uden internet. Slår du kortet til (`kort: true` i `config.yaml`), henter
-  rapporten kortfliser fra OpenStreetMap, og læserens IP-adresse sendes til deres server.
+  `byg_rapport.py` vejdata fra OpenStreetMap én gang, når rapporten bygges; læseren henter intet.
 - HAFAS er et varemærke, der tilhører sin ejer. Værktøjet læser kun en eksport fra HAFAS og er
   ikke tilknyttet eller godkendt af ejeren.

@@ -1,0 +1,30 @@
+/* vejkort.css - udseende for vejkort.js. Værtssiden kan sætte farverne på .vk:
+   --vk-linje (strækning og punkter), --vk-anden (strækninger, der ikke er valgt), --vk-papir (bag tekst), --vk-tekst,
+   --vk-daempet (vejnavne, skala), --vk-ramme, og kortets egne: --land, --bygn, --vej, --vkant, --sti, --bump, --stop. */
+.vk { --vk-linje:#1f5fa8; --vk-anden:#9aa5b1; --vk-papir:#ffffff; --vk-tekst:#1d1d1f; --vk-daempet:#5f6368; --vk-ramme:#d9dce1;
+  --land:#f4f3ef; --bygn:#e2dfd8; --vej:#ffffff; --vkant:#c9c6bf; --sti:#b5b2aa; --bump:#c2410c; --stop:#0f766e; margin-bottom:8px; }
+.vk-svg { width:100%; height:auto; display:block; border:1px solid var(--vk-ramme); border-radius:8px; touch-action:none; cursor:grab;
+  user-select:none; -webkit-user-select:none; --k:1; --ky:1; }
+.vk-bg { fill:var(--land); } .vk-bygn { fill:var(--bygn); }
+.vk-vej { fill:none; stroke-linecap:round; stroke-linejoin:round; stroke:var(--vej); }
+.vk-k1 { stroke-width:9; filter:drop-shadow(0 0 1px var(--vkant)); } .vk-k2 { stroke-width:7; filter:drop-shadow(0 0 1px var(--vkant)); }
+.vk-k3 { stroke-width:5.5; filter:drop-shadow(0 0 1px var(--vkant)); } .vk-k4 { stroke-width:3; }
+.vk-k5 { stroke:var(--sti); stroke-width:1.2; stroke-dasharray:3 3; }
+.vk-maalt { fill:none; stroke:var(--vk-linje); stroke-width:3; stroke-linecap:round; stroke-linejoin:round; opacity:.6; vector-effect:non-scaling-stroke; }
+.vk-maalt.vk-anden { stroke:var(--vk-anden); stroke-width:2; }
+.vk-vejnavn { font-size:calc(11px * var(--k)); fill:var(--vk-daempet); paint-order:stroke; stroke:var(--land); stroke-width:calc(3px * var(--k)); }
+.vk-ende { fill:var(--vk-linje); stroke:var(--vk-papir); stroke-width:2; }
+.vk-elem { fill:var(--vk-papir); stroke:var(--vk-linje); stroke-width:2.5; }
+.vk-lbg { fill:var(--vk-papir); opacity:.85; } .vk-lbl { font-size:12px; fill:var(--vk-tekst); } .vk-lbl.fed { font-weight:600; }
+.vk-svg.lille .vk-pkt:not(.vk-altid) .vk-lbg, .vk-svg.lille .vk-pkt:not(.vk-altid) .vk-lbl { display:none; }
+.vk-detalje { display:none; } .vk-svg.zoomet .vk-detalje { display:inline; }
+.vk-s-bump { fill:var(--bump); stroke:var(--vk-papir); stroke-width:1; } .vk-s-kryds { fill:var(--vk-papir); stroke:var(--vk-tekst); stroke-width:1.2; }
+.vk-s-stop rect { fill:var(--stop); } .vk-s-stop path { fill:none; stroke:var(--vk-papir); stroke-width:1.2; }
+.vk-stopnavn { font-size:11px; fill:var(--stop); paint-order:stroke; stroke:var(--land); stroke-width:3px; }
+.vk-skala path { fill:none; stroke:var(--vk-tekst); stroke-width:calc(1.5px * var(--ky)); }
+.vk-skala text { font-size:calc(10px * var(--ky)); fill:var(--vk-daempet); paint-order:stroke; stroke:var(--land); stroke-width:calc(3px * var(--ky)); }
+.vk-knapper { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-top:6px; }
+.vk-knapper button { font:inherit; font-size:.9rem; min-width:34px; padding:3px 10px; border:1px solid var(--vk-ramme); border-radius:6px; background:var(--vk-papir); color:var(--vk-tekst); cursor:pointer; }
+.vk-tegn { display:flex; flex-wrap:wrap; gap:2px 12px; color:var(--vk-daempet); font-size:.82rem; margin-left:6px; }
+.vk-tegn svg { width:13px; height:13px; vertical-align:-2px; margin-right:3px; }
+.vk-kilde { color:var(--vk-daempet); font-size:.8rem; margin:4px 0 0; }
