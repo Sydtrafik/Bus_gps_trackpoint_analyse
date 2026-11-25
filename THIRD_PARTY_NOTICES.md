@@ -4,7 +4,7 @@ Værktøjets egen kode er under MIT-licensen (se [LICENSE](LICENSE)). Det følge
 
 ## Biblioteker, der følger med (`program/rapport/vendor/`)
 
-Bibliotekerne indlejres i hver rapport, så rapporten virker uden internet.
+Bibliotekerne indlejres i hver rapport, så rapporten virker uden internet. Leaflet indlejres også i `nationale_analysekonklusioner.html` (med licensteksten).
 
 | Bibliotek | Version | Licens | Filer |
 |---|---|---|---|
@@ -23,7 +23,7 @@ The Apache Software Foundation (https://www.apache.org/).
 
 ## Kortdata
 
-Slås kortet til i en rapport (`kort: true`), hentes kortfliser fra OpenStreetMap (`tile.openstreetmap.org`). Kortdata © OpenStreetMap-bidragydere, tilgængelige under Open Database License (https://www.openstreetmap.org/copyright). Brugen skal følge OSM's tile-politik (https://operations.osmfoundation.org/policies/tiles/): let brug og synlig kildeangivelse. Læserens IP-adresse sendes til OSM's server, når kortet vises.
+Slås kortet til i en rapport (`kort: true`), og når `nationale_analysekonklusioner.html` viser kortet over en analyses punkter, hentes kortfliser fra OpenStreetMap (`tile.openstreetmap.org`). Kortdata © OpenStreetMap-bidragydere, tilgængelige under Open Database License (https://www.openstreetmap.org/copyright). Brugen skal følge OSM's tile-politik (https://operations.osmfoundation.org/policies/tiles/): let brug og synlig kildeangivelse. Læserens IP-adresse sendes til OSM's server, når kortet vises.
 
 ## Vejregler og bumptegninger
 

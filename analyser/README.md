@@ -7,7 +7,7 @@ Filerne er offentlige: kun aggregerede tal, ingen mail, telefon, tur-id'er eller
 ## Sådan tilføjer du din analyse
 
 1. **Lav filen:** valg 6 i din analyses `koer_analyse.bat`. Den skriver `resultat\konklusion.yaml` med tallene fra rapporten (de samme som rapportens nøgletal: hverdage, alle ruter og timer, begge retninger, ture uden standsning ved stop, median). Uden bat-filen: `python program\lav_konklusion.py --rapportdata <resultat\rapportdata.json> --out <resultat\konklusion.yaml>`. Kryds: `--overblik <resultat\overblik.csv> --config <config.yaml>` i stedet for `--rapportdata`.
-2. **Udfyld** alle `UDFYLD` (vej, by, linjer, bustype, ændring, sammenligning med vejregler, kontakt), og tjek linjerne med "tjek" i kommentaren (vejtype, hastighed, fartdæmpere, forbehold).
+2. **Udfyld** alle `UDFYLD` (vej, by, område, buslommer, parkering på vejen, linjer, bustype, ændring, sammenligning med vejregler, kontakt; ved kryds også hvor hvert punkt ligger), og tjek linjerne med "tjek" i kommentaren (vejtype, hastighed, fartdæmpere, forbehold).
 3. **Tilføj den:** valg 5 i `koer_analyse.bat` (eller `python program\lav_konklusioner_html.py --tilfoej resultat\konklusion.yaml`). Filen tjekkes, kopieres hertil som `<vej>_<by>_<år>.yaml`, og oversigten laves igen. Er noget forkert, står fil og felt i beskeden.
 4. **Del den** med en pull request med din fil og de to oversigtsfiler (se [CONTRIBUTING.md](../CONTRIBUTING.md)). Bruger du ikke git: opret et issue "Ny analysekonklusion", og indsæt indholdet af din fil.
 
@@ -20,12 +20,16 @@ En fil med samme navn og en anden kontakt overskrives ikke: ret ikke andres anal
 | `skema` | Altid `1` | script |
 | `type` | `foer_efter`, `en_periode` eller `kryds` | script |
 | `vej`, `by`, `aar` | Vejnavn, by og året for ændringen (giver filnavnet) | person (`aar`: script) |
-| `vejtype` | Fx gennemkørselsvej i boligkvarter, boligvej, trafikvej, landevej | person (forslag fra config) |
+| `vejtype` | Vejen selv, fx almindelig vej, boligvej, trafikvej, landevej | person (forslag fra config) |
+| `omraade` | Området, vejen ligger i, fx boligområde, bymidte, erhvervsområde, åbent land | person |
+| `buslommer` | Holder bussen i en buslomme ved stoppestederne på strækningen: `ja`, `nej` eller `ukendt` | person |
+| `parkering_paa_vejen` | Må der parkeres på kørebanen: `ja`, `nej` eller `ukendt` | person |
 | `linjer`, `bustype` | Linje(r) og retninger; drivmiddel og længde ("ikke oplyst", hvis ukendt) | person |
-| `aendring` | Kort tekst, fx "2 sinusbump + 2 indsnævringer, 50 → 40 km/t" | person |
-| `fartdaempere` | Liste af `{type, antal}`. Type = bumptypens navn fra vejreglerne (sinusbump, cirkelbump, modificeret cirkelbump, pudebump, trapezbump, hævet flade ...) eller fx indsnævring, chikane. Første bumptype med en tegning giver tegningen. `[]` = ingen | person (forslag fra config) |
+| `aendring` | Kort tekst, fx "2 modificerede cirkelbump + 2 indsnævringer, 50 → 40 km/t" | person |
+| `fartdaempere` | Liste af `{type, antal}`. Type = bumptypens navn fra vejreglerne (cirkelbump, modificeret cirkelbump, modificeret sinusbump, trapezbump, pudebump, hævet flade ...) eller fx indsnævring, chikane. Første bumptype med en tegning giver tegningen. Er typen ikke opmålt, så skriv `bekraeftet: false`. `[]` = ingen. Vejreglerne har ingen almindelig sinusbump, kun modificeret sinusbump (kun til 50 km/t) | person (forslag fra config) |
 | `hastighed_kmt` | Hastighedsgrænsen pr. periode, tal uden enhed | person (forslag fra config) |
-| `laengde_m`, `kort` | Strækningens længde og Google Maps-link | script |
+| `laengde_m`, `kort` | Den målte strækning i meter og Google Maps-link | script |
+| `punkter` | Punkter til kortet: `{navn, lat, lon}` og ved kryds `beskrivelse` (hvor punktet ligger, fx "stoplinjen"). Strækning: start, fartdæmperne og slut | script (kryds: beskrivelse fra person) |
 | `dage`, `perioder` | Dagtype og datoer pr. periode (`foer`/`efter`, eller `periode` ved én periode) | script |
 | `ture`, `koeretid_s`, `gnsfart_kmt` | Antal ture, median køretid, median gennemsnitsfart | script |
 | `laveste_fart_kmt` | Laveste fart ved fartdæmperne: medianen af den laveste fart pr. tur i hvert vindue, gennemsnit over vinduerne (som rapporten). Tom uden vinduer | script |

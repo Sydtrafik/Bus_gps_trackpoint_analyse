@@ -20,7 +20,9 @@ K = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(K)
 
 GOD = {
-    "skema": 1, "type": "foer_efter", "vej": "Testvej", "by": "Testby", "aar": 2025, "vejtype": "Boligvej",
+    "skema": 1, "type": "foer_efter", "vej": "Testvej", "by": "Testby", "aar": 2025, "vejtype": "almindelig vej",
+    "omraade": "boligområde", "buslommer": "nej", "parkering_paa_vejen": "ja",
+    "punkter": [{"navn": "A", "beskrivelse": "start", "lat": 55.0, "lon": 8.0}, {"navn": "B", "lat": 55.003, "lon": 8.0}],
     "linjer": "1", "bustype": "ikke oplyst", "aendring": "2 cirkelbump",
     "fartdaempere": [{"type": "cirkelbump", "antal": 2}], "hastighed_kmt": {"foer": 50, "efter": 40},
     "laengde_m": 400, "kort": "https://www.google.com/maps/dir/?api=1&origin=1,2&destination=3,4",
@@ -73,6 +75,9 @@ def test_kendte_negative_afvises_med_felt():
     assert "'kort' skal være et link" in _fejl(kort="javascript:alert(1)")
     assert "perioderne foer, efter" in _fejl(perioder={"periode": GOD["perioder"]["foer"]})
     assert "'aar' skal være et heltal" in _fejl(aar="2025")
+    assert "'buslommer' skal være ja, nej eller ukendt" in _fejl(buslommer="måske")
+    assert "'punkter' skal have navn" in _fejl(punkter=[{"navn": "A", "lat": "55"}])
+    assert "bekraeftet skal være true eller false" in _fejl(fartdaempere=[{"type": "x", "antal": 1, "bekraeftet": "nej"}])
 
 
 def test_ugyldig_fil_stopper_kørslen():
@@ -86,7 +91,9 @@ def test_ugyldig_fil_stopper_kørslen():
 
 def test_udledte_tal_og_flertal():
     x = K.raekke("a", copy.deepcopy(GOD))
-    assert x["delta"] == 10 and x["delta100"] == 2.5 and x["opbrPP"] == 39.8
+    assert x["delta"] == 10 and x["opbr"] == [10.5, 50.25] and x["parkering"] == "ja"
+    assert K.daemper_tekst([{"type": "modificeret cirkelbump", "antal": 2, "bekraeftet": False}]) == "2 modificeret cirkelbump (ikke bekræftet)"
+    assert K.mini_tegning("pudebump_40", K.BUMPMAPPE) is not None      # pudebump får cirkelbumpets længdeprofil
     assert K.daemper_tekst([{"type": "sinusbump", "antal": 2}, {"type": "indsnævring", "antal": 2}]) == "2 sinusbump, 2 indsnævringer"
     assert K.bumptype("modificeret sinusbump")[0] == "Modificeret sinusbump"
     assert K.bumptype("sinusbump") == ("Sinusbump", [])          # ingen tegning: vejreglerne har kun modificeret sinusbump
@@ -112,7 +119,8 @@ def test_html_md_og_tilfoej():
         assert "</script><b>" not in h                              # brugertekst kan ikke bryde ud af data-blokken
         assert h.count('"id": "') == 2 and "data:image/svg+xml;base64," in h and "<polygon" in h   # mini-tegning af cirkelbump
         md = ud.with_suffix(".md").read_text(encoding="utf-8")
-        assert "| [Testvej, Testby](analyser/testvej_testby_2025.yaml) | Før/efter | 2025 | 400 m | 2 cirkelbump | 50 → 40 | 40 → 50 | +10 s | 2,5 |" in md
+        assert "| [Testvej, Testby](analyser/testvej_testby_2025.yaml) | Før/efter | 2025 | 400 m | 2 cirkelbump | 50 → 40 | 40 → 50 | +10 s | 40 → 22 | 10 → 50 | 12 → 40 | 100 → 120 |" in md
+        assert "**Buslommer:** nej · **Parkering på vejen:** ja" in md
         assert "Senest opdateret:** 2026-11-25" in md
         # en anden kontakt må ikke overskrive en eksisterende analyse
         anden = _skriv(t, "anden.yaml", {**GOD, "kontakt": "en_anden"})
@@ -172,9 +180,9 @@ def test_browser_sortering_filter_og_mobil():
                 assert pg.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth") <= 0, bredde
                 navne = lambda: pg.eval_on_selector_all("#tabel tbody td.navn", "e => e.map(x => x.textContent)")   # noqa: E731
                 assert navne() == ["Testvej, Testby", "Bvej, Bby", "Cvej, Testby"]          # standard: største ændring først (10, 5, 3)
-                pg.click("#tabel th:has-text('Længde')")                  # tal sorteres som tal (som tekst ville 900 komme før 1200)
+                pg.click("#tabel th:has-text('Målt strækning')")          # tal sorteres som tal (som tekst ville 900 komme før 1200)
                 assert navne() == ["Cvej, Testby", "Bvej, Bby", "Testvej, Testby"]
-                pg.click("#tabel th:has-text('Længde')")
+                pg.click("#tabel th:has-text('Målt strækning')")
                 assert navne()[0] == "Testvej, Testby"
                 pg.select_option("#filtre select[data-i='0']", "Kryds")
                 assert navne() == ["Cvej, Testby"] and pg.inner_text("#taeller") == "1 af 3 analyser"

@@ -19,12 +19,15 @@ body:
         vej:
         by:
         aar:
-        vejtype:
+        vejtype:                  # fx almindelig vej
+        omraade:                  # fx boligområde
+        buslommer:                # ja, nej eller ukendt
+        parkering_paa_vejen:      # ja, nej eller ukendt
         linjer:
         bustype:
         aendring:
         fartdaempere:
-          - {type: , antal: }     # fx sinusbump, cirkelbump, indsnævring
+          - {type: , antal: }     # fx modificeret cirkelbump, indsnævring; bekraeftet: false, hvis ikke opmålt
         hastighed_kmt: {foer: , efter: }
         laengde_m:
         kort:

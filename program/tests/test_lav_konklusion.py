@@ -98,6 +98,8 @@ def test_fil_kan_udfyldes_og_tilfoejes():
         fejl = K.tjek_analyse(yaml.safe_load(tekst))
         assert fejl and all("UDFYLD" in f for f in fejl)                    # kun de felter, personen skal udfylde
         fyldt = yaml.safe_load(tekst.replace('"UDFYLD"', '"x"'))
+        assert {f.split("'")[1] for f in K.tjek_analyse(fyldt)} == {"buslommer", "parkering_paa_vejen"}   # kun ja/nej/ukendt
+        fyldt.update(buslommer="nej", parkering_paa_vejen="ukendt")
         assert K.tjek_analyse(fyldt) == []
         # overskriver ikke en udfyldt fil
         r = subprocess.run([sys.executable, str(SCRIPT), "--rapportdata", str(rd), "--out", str(ud)], capture_output=True, text=True, encoding="utf-8")

@@ -110,6 +110,11 @@ def fra_rapportdata(doc, sid=None):
     (la, lo), (lb, lob) = s["linje"]
     ud["laengde_m"] = tal(s["laengde_m"], 0)
     ud["kort"] = f"https://www.google.com/maps/dir/?api=1&origin={la:.5f},{lo:.5f}&destination={lb:.5f},{lob:.5f}&travelmode=driving"
+    # punkter til kortet: strækningens start, elementerne langs vejen, slut
+    ud["punkter"] = ([{"navn": str(s.get("start_navn") or "Start"), "lat": round(la, 6), "lon": round(lo, 6)}]
+                     + [{"navn": str(e["navn"]), "lat": round(float(e["lat"]), 6), "lon": round(float(e["lon"]), 6)}
+                        for e in s.get("elementer") or [] if e.get("lat") is not None]
+                     + [{"navn": str(s.get("slut_navn") or "Slut"), "lat": round(lb, 6), "lon": round(lob, 6)}])
     # elementer -> fartdæmpere (gættet ud fra config; tjekkes af personen)
     vej = m.get("vej") or {}
     antal = {}
@@ -193,6 +198,9 @@ def fra_overblik(rk, cfg):
     kom["laengde_m"] = "ca.: lige linjer mellem punkterne i point_order.direction_1"
     a, b = pts[orden[0]], pts[orden[-1]]
     ud["kort"] = f"https://www.google.com/maps/dir/?api=1&origin={a['lat']:.5f},{a['lon']:.5f}&destination={b['lat']:.5f},{b['lon']:.5f}&travelmode=driving"
+    ud["punkter"] = [{"navn": str(pts[p].get("name") or p), "beskrivelse": UDFYLD, "lat": float(pts[p]["lat"]), "lon": float(pts[p]["lon"])}
+                     for p in orden]
+    kom["punkter"] = "skriv, hvor hvert punkt ligger (fx 'stoplinjen i Ådalen'), så stykkerne kan læses"
     pc = cfg.get("periods") or {}
     ud["perioder"] = {nav[p]: {"fra": str((pc.get(p) or {}).get("start") or UDFYLD), "til": str((pc.get(p) or {}).get("end") or UDFYLD), "dage": None} for p in per}
     dt_ = ((cfg.get("udvalg") or {}).get("dagtype") or "hverdage")
@@ -234,13 +242,17 @@ def skriv_yaml(ud, kom):
          linje("vej", UDFYLD, "vejnavn, fx Kvaglundvej"),
          linje("by", UDFYLD),
          linje("aar", ud["aar"], "året for ændringen (eller perioden)"),
-         linje("vejtype", ud["vejtype"], "fx gennemkørselsvej i boligkvarter, boligvej, trafikvej, landevej"),
+         linje("vejtype", ud["vejtype"], "vejen selv, fx almindelig vej, boligvej, trafikvej, landevej"),
+         linje("omraade", UDFYLD, "fx boligområde, bymidte, erhvervsområde, åbent land"),
+         linje("buslommer", UDFYLD, "ja, nej eller ukendt: holder bussen i en buslomme ved stoppestederne på strækningen?"),
+         linje("parkering_paa_vejen", UDFYLD, "ja, nej eller ukendt: må der parkeres på kørebanen?"),
          linje("linjer", UDFYLD, "fx 3A, begge retninger"),
          linje("bustype", UDFYLD, "drivmiddel og længde, fx elbusser (alle); 'ikke oplyst' hvis ukendt"),
          linje("aendring", UDFYLD if ud["type"] != "en_periode" else "ingen (én periode)",
-               "kort, fx 2 sinusbump + 2 indsnævringer, 50 → 40 km/t"),
-         "# Fartdæmpere: bumptype med navnet fra vejreglerne (sinusbump, cirkelbump, modificeret cirkelbump, pudebump,",
-         "# trapezbump, hævet flade ...), indsnævring, chikane, rundkørsel o.l. Tom liste [] = ingen. Første bumptype giver tegningen.",
+               "kort, fx 2 modificerede cirkelbump + 2 indsnævringer, 50 → 40 km/t"),
+         "# Fartdæmpere: bumptype med navnet fra vejreglerne (cirkelbump, modificeret cirkelbump, modificeret sinusbump, pudebump,",
+         "# trapezbump, hævet flade ...), indsnævring, chikane o.l. Tom liste [] = ingen. Første bumptype giver tegningen.",
+         "# Er typen ikke bekræftet, så tilføj  bekraeftet: false  (fx {type: \"modificeret cirkelbump\", antal: 2, bekraeftet: false}).",
          ("fartdaempere:" + (f"   # {kom['fartdaempere']}" if kom.get("fartdaempere") else "")
           if ud["fartdaempere"] else "fartdaempere: []   # ingen fartdæmpere i config; tilføj dem, hvis der er nogen"),
     ]
@@ -250,8 +262,11 @@ def skriv_yaml(ud, kom):
           "",
           "# ---- herunder er tallene udfyldt fra analysen; ret dem ikke ----",
           linje("laengde_m", ud["laengde_m"]),
-          linje("kort", ud["kort"]),
-          linje("dage", ud["dage"]),
+          linje("kort", ud["kort"])]
+    if ud.get("punkter"):
+        L.append("punkter:" + (f"   # {kom['punkter']}" if kom.get("punkter") else "   # til kortet; navne fra config"))
+        L += [f"  - {_v(x)}" for x in ud["punkter"]]
+    L += [linje("dage", ud["dage"]),
           "perioder:"]
     for k, v in ud["perioder"].items():
         L.append(f"  {k}: {_v(v)}")

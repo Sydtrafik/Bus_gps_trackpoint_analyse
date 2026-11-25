@@ -1,24 +1,34 @@
 # Konklusion til de nationale analysekonklusioner (én fil pr. analyse; vejledning: analyser/README.md).
 # Tallene er lavet med lav_konklusion.py ud fra rapportdata.json (A15-kørslen af eksemplet); teksterne er flyttet
-# fra den tidligere nationale_analysekonklusioner.md (2026-11-19).
+# fra den tidligere nationale_analysekonklusioner.md og rettet 2026-11-25 (bumptype, vej, område, buslommer, parkering).
 
 skema: 1
 type: "foer_efter"
 vej: "Kvaglundvej"
 by: "Esbjerg"
 aar: 2025
-vejtype: "Gennemkørselsvej i boligkvarter"
+vejtype: "almindelig vej"
+omraade: "boligområde"
+buslommer: "nej"
+parkering_paa_vejen: "ja"
 linjer: "3A, begge retninger (ca. 129 ture pr. hverdag)"
 bustype: "Elbusser (alle ture); længde ikke oplyst"
-aendring: "2 sinusbump + 2 indsnævringer, 50 → 40 km/t (anlagt 26/9-17/10 2025)"
+aendring: "2 bump + 2 indsnævringer, 50 → 40 km/t (anlagt 26/9-17/10 2025)"
 fartdaempere:
-  - {type: "sinusbump", antal: 2}
+  - {type: "modificeret cirkelbump", antal: 2, bekraeftet: false}   # vejen er 40 km/t; typen er ikke opmålt
   - {type: "indsnævring", antal: 2}
 hastighed_kmt: {foer: 50, efter: 40}
 
 # ---- herunder er tallene udfyldt fra analysen; ret dem ikke ----
 laengde_m: 626
 kort: "https://www.google.com/maps/dir/?api=1&origin=55.48511,8.47295&destination=55.48041,8.46749&travelmode=driving"
+punkter:
+  - {navn: "Spangsbjerg Møllevej", lat: 55.485113, lon: 8.472948}
+  - {navn: "Indsnævring 2", lat: 55.484884, lon: 8.472725}
+  - {navn: "Indsnævring 1", lat: 55.483369, lon: 8.470954}
+  - {navn: "Bump 2", lat: 55.48214, lon: 8.4695}
+  - {navn: "Bump 1", lat: 55.481243, lon: 8.46843}
+  - {navn: "Niels Lambertsens Vej", lat: 55.480407, lon: 8.467494}
 dage: "hverdage"
 perioder:
   foer: {fra: "2025-06-30", til: "2025-09-25", dage: 44}
@@ -41,8 +51,9 @@ ekstra_tid_pr_element_s:   # uden standsning ved stop, gennemsnit pr. tur, inter
 forbehold:
   - "Ingen sammenligningsstrækning: tallene viser, hvad der skete samtidig med bumpene."
   - "Bump, indsnævringer og den lavere hastighedsgrænse kom på samme tid, så tallene kan ikke skille deres virkning ad."
+  - "Bumptypen er ikke opmålt: formentlig modificeret cirkelbump, fordi vejen er skiltet 40 km/t."
   - "Linje 3A kørte ikke strækningen 11/8-5/9 2025 (omkørsel); de dage er ikke med."
-sammenligning_vejregler: "Vejreglerne har ingen passagehastighed for almindelige sinusbump (kun modificeret sinusbump til 50 km/t: 35 km/t), så den målte fart er ikke sammenlignet. Håndbog Fartdæmpere anbefaler at undgå bump på veje med busser i fast rute."
+sammenligning_vejregler: "Er bumpene modificerede cirkelbump til 40 km/t, er vejreglernes passagehastighed for busser 25 km/t; den laveste målte fart ved bumpene var ca. 25 km/t efter. Håndbog Fartdæmpere anbefaler at undgå bump på veje med busser i fast rute."
 vaerktoej: "analyse_v2.2, komfort_v1.1, zonetid 1.1, rapportdata 1.2"
 opdateret: "2026-11-25"
 kontakt: "Sydtrafik (GitHub: Anfuth)"
