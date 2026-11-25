@@ -132,7 +132,7 @@ zonetid:
 # RAPPORT: tekster og valg til rapport\lav_rapportdata_v1.2.py (og v1.1). Alt er valgfrit.
 # ------------------------------------------------------------------------------
 rapport:
-  titel: "Køretiden steg 12 s samtidig med, at bumpene kom"
+  titel: "Køretid, fart og komfort på Kvaglundvej, Esbjerg"   # hvad og hvor; et fund først i titlen, når det er verificeret
   undertitel: "Kvaglundvej, linje 3A, Esbjerg · bussernes GPS · hverdage før (sommer 2025) og efter bump (efterår 2025)"
   straekning_tekst: "626 meter af Kvaglundvej med to bump, to indsnævringer og to stoppesteder. Linje 3A kører begge veje."
   afsender: "Sydtrafik"
