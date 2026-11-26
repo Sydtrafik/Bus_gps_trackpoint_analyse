@@ -10,8 +10,9 @@ OpenStreetMap-data, som hentes én gang (Overpass) til vejkort.json ved siden af
 kortfliser. --uden-kort springer hentningen over.
 
 Farver og skrift ligger øverst i skabelonen som CSS-variabler (:root). Ret dem dér, og kør byg_rapport.py igen.
-Skabelonen vælges efter datafilens version: rapportdata fra lav_rapportdata_v1.2.py (version 1.2) bruger
-skabelon_v1.2.html (valg for dage, rute og time); ældre rapportdata (lav_rapportdata.py, v1.1) bruger skabelon.html.
+Skabelonen vælges efter datafilens version: rapportdata fra lav_rapportdata_v1.3.py (version 1.3) bruger
+skabelon_v1.3.html (to definitioner af standsning), lav_rapportdata_v1.2.py (1.2) bruger skabelon_v1.2.html (valg for
+dage, rute og time), og ældre rapportdata (lav_rapportdata.py, v1.1) bruger skabelon.html.
 Valgfrit: --skabelon <fil> hvis du har en tilpasset kopi af skabelonen.
 """
 import argparse
@@ -22,17 +23,17 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 PROGRAM = HERE.parent
-VERSION = "1.2"
+VERSION = "1.3"
 VEJ_FELTER = {"vejtype": "vejtype", "hastighed": "hastighedsgrænse", "bumptype": "bumptype", "andre_foranstaltninger": "andre hastighedsforanstaltninger"}
 
 
 def standard_skabelon(data):
-    """skabelon_v1.2.html til rapportdata v1.2 og nyere, ellers skabelon.html (v1.1)."""
+    """skabelon_v1.3.html til rapportdata v1.3 og nyere, skabelon_v1.2.html til v1.2, ellers skabelon.html (v1.1)."""
     try:
-        ny = tuple(int(x) for x in str(data.get("version", "1.1")).split(".")[:2]) >= (1, 2)
+        v = tuple(int(x) for x in str(data.get("version", "1.1")).split(".")[:2])
     except ValueError:
-        ny = False
-    return HERE / ("skabelon_v1.2.html" if ny else "skabelon.html")
+        v = (1, 1)
+    return HERE / ("skabelon_v1.3.html" if v >= (1, 3) else "skabelon_v1.2.html" if v >= (1, 2) else "skabelon.html")
 
 
 def laes(sti):
@@ -59,7 +60,7 @@ def byg(data, skabelon_tekst, vendor=None, vejkort=None):
     t = skabelon_tekst
     gammel = "/*__LEAFLET_JS__*/" in t and "/*__VEJKORT_JS__*/" not in t
     if gammel:   # egen kopi af en skabelon fra før 1.10.0: Leaflet-kortet virker ikke længere (OSM blokerer fliser til lokale filer)
-        print("ADVARSEL: skabelonen er fra før 1.10.0 og har Leaflet-kortet; kortet vises ikke. Kopiér skabelon_v1.2.html igen "
+        print("ADVARSEL: skabelonen er fra før 1.10.0 og har Leaflet-kortet; kortet vises ikke. Kopiér skabelon_v1.3.html igen "
               "for at få vejkortet.", file=sys.stderr)
         t = t.replace("/*__LEAFLET_JS__*/", "/*__VEJKORT_JS__*/").replace("/*__LEAFLET_CSS__*/", "/*__VEJKORT_CSS__*/")
     for mark in ("{{TITEL}}", "__RAPPORTDATA__", "/*__ECHARTS__*/", "/*__VEJKORT_JS__*/", "/*__VEJKORT_CSS__*/"):
@@ -124,7 +125,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description="Bygger rapporten (én HTML-fil) af skabelon + rapportdata.json.")
     ap.add_argument("--data", required=True, help="rapportdata.json fra lav_rapportdata.py")
     ap.add_argument("--out", required=True, help="HTML-fil der skrives")
-    ap.add_argument("--skabelon", default=None, help="standard: efter datafilens version (skabelon_v1.2.html eller skabelon.html)")
+    ap.add_argument("--skabelon", default=None, help="standard: efter datafilens version (skabelon_v1.3.html, skabelon_v1.2.html eller skabelon.html)")
     ap.add_argument("--vendor", default=str(HERE / "vendor"))
     ap.add_argument("--uden-kort", action="store_true", help="hent ikke vejkortet fra OpenStreetMap (bruger vejkort.json, hvis den findes)")
     a = ap.parse_args(argv)

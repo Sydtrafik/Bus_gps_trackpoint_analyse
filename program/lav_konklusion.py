@@ -7,8 +7,9 @@ config'en (vejtype, hastighed, fartdæmpere, forbehold), har kommentaren "tjek".
 som tjekker den, kopierer den til analyser\\<vej>_<by>_<år>.yaml og laver oversigten igen.
 
 Tallene er præcis rapportens nøgletal (standardvalget): dagtypen fra udvalg i config (normalt hverdage), alle ruter,
-alle timer, begge retninger, ture uden standsning ved stop, median.
-  - Strækning (før/efter eller én periode):  --rapportdata resultat\\rapportdata.json   (lav_rapportdata_v1.2.py)
+alle timer, begge retninger, median, ture uden standsning: rapportdata v1.3 "ved stop" (standard, når der er stoppesteder
+i config) eller "i alt" (--standsning "i alt"); v1.2 kendte kun "i alt". Feltet standsning i filen siger, hvilken.
+  - Strækning (før/efter eller én periode):  --rapportdata resultat\\rapportdata.json   (lav_rapportdata_v1.3.py eller v1.2)
   - Kryds:                                    --overblik resultat\\overblik.csv --config config.yaml   (turtabel.py)
 
     python program\\lav_konklusion.py --rapportdata <resultat\\rapportdata.json> --out <resultat\\konklusion.yaml>
@@ -46,11 +47,33 @@ def tal(v, n=1):
 
 
 # ---------------------------------------------------------------- strækning (rapportdata.json)
-def fra_rapportdata(doc, sid=None):
-    """Returnér (felter, kommentarer) ud fra rapportdata.json v1.2."""
-    if str(doc.get("version")) != "1.2":
-        raise SystemExit(f"rapportdata.json har version {doc.get('version')}; lav den med lav_rapportdata_v1.2.py (koer_analyse.bat valg 4)")
+STANDSNING_GRUPPE = {"ved stop": "Uden ved stop", "i alt": "Uden i alt"}   # rapportdata v1.3
+
+
+def fra_rapportdata(doc, sid=None, standsning=None):
+    """Returnér (felter, kommentarer) ud fra rapportdata.json v1.2 eller v1.3.
+    standsning (kun v1.3): "ved stop" (ture uden standsning ved stop) eller "i alt" (ture uden nogen standsning);
+    standard = rapportens standard (ved stop, når der er stoppesteder i config). v1.2 kendte kun "i alt"."""
+    ver = str(doc.get("version"))
+    if ver not in ("1.2", "1.3"):
+        raise SystemExit(f"rapportdata.json har version {doc.get('version')}; lav den med lav_rapportdata_v1.3.py (koer_analyse.bat valg 4)")
     m = doc["meta"]
+    if ver == "1.2":
+        if standsning not in (None, "i alt"):
+            raise SystemExit("rapportdata v1.2 har kun 'standsning i alt' (laveste fart under grænsen et sted på strækningen). "
+                             "Lav rapportdata med lav_rapportdata_v1.3.py for 'ved stop'.")
+        standsning, grp = "i alt", "Uden stop"
+        i_grp = lambda x: x["Stop"] == "Uden stop"   # noqa: E731
+    else:
+        sn = m.get("standsning") or {}
+        standsning = standsning or sn.get("standard") or "i alt"
+        if standsning not in STANDSNING_GRUPPE:
+            raise SystemExit(f"--standsning skal være 'ved stop' eller 'i alt' (står: {standsning!r})")
+        if standsning == "ved stop" and not sn.get("ved_stop"):
+            raise SystemExit("Analysen har ingen stoppesteder på strækningen (rapport.stoppesteder), så 'ved stop' kan ikke bruges. Brug --standsning \"i alt\".")
+        grp = STANDSNING_GRUPPE[standsning]
+        st_felt = "Ved" if standsning == "ved stop" else "Alt"
+        i_grp = lambda x: x[st_felt] == "Uden"   # noqa: E731
     strk = m["straekninger"]
     if sid is None:
         if len(strk) > 1:
@@ -68,14 +91,14 @@ def fra_rapportdata(doc, sid=None):
     dagset = next((x["dagtyper"] for x in m["dagtyper"] if x["navn"] == std), None)
 
     def nr(p):
-        r = [x for x in doc["nogletal"] if x["S"] == sid and x["Retning"] == "B" and x["Gruppe"] == "Uden stop"
+        r = [x for x in doc["nogletal"] if x["S"] == sid and x["Retning"] == "B" and x["Gruppe"] == grp
              and x["Periode"] == p and x["Dag"] == std and x["Rute"] == AR and x["Time"] == AT]
         if len(r) != 1:
             raise SystemExit(f"Fandt {len(r)} nøgletal for periode {p} i standardvalget (forventede 1)")
         return r[0]
 
     def andel(p, kol):
-        rk = [x for x in doc["fordeling"] if x["S"] == sid and x["Periode"] == p and x["Stop"] == "Uden stop"
+        rk = [x for x in doc["fordeling"] if x["S"] == sid and x["Periode"] == p and i_grp(x)
               and (dagset is None or x["Dagtype"] in dagset)]
         n = sum(x["n"] for x in rk)
         return 100 * sum(x["n"] for x in rk if x[kol] in ("Maerkbar", "Kraftig")) / n if n else None
@@ -101,6 +124,9 @@ def fra_rapportdata(doc, sid=None):
         ud["laveste_fart_kmt"] = None
         kom["laveste_fart_kmt"] = "ingen fartdæmpere med vindue i analysen (komfort.bump_vinduer)"
     ud["dage"] = "hverdage" if std == "Hverdage" else std.lower()
+    ud["standsning"] = standsning
+    kom["standsning"] = ("ture uden standsning ved stop (standsning i kø og ved kryds er med)" if standsning == "ved stop"
+                         else "ture uden nogen standsning (heller ikke i kø eller ved kryds)")
     pd_ = m.get("perioder_datoer") or {}
     ud["perioder"] = {}
     for p in PER:
@@ -281,15 +307,17 @@ def skriv_yaml(ud, kom):
     if ud.get("punkter"):
         L.append("punkter:" + (f"   # {kom['punkter']}" if kom.get("punkter") else "   # til kortet; navne fra config"))
         L += [f"  - {_v(x)}" for x in ud["punkter"]]
-    L += [linje("dage", ud["dage"]),
-          "perioder:"]
+    L += [linje("dage", ud["dage"])]
+    if ud.get("standsning"):
+        L.append(linje("standsning", ud["standsning"]))
+    L += ["perioder:"]
     for k, v in ud["perioder"].items():
         L.append(f"  {k}: {_v(v)}")
     for felt in ("ture", "koeretid_s", "gnsfart_kmt", "laveste_fart_kmt", "maerkbar_opbremsning_pct", "maerkbar_acceleration_pct"):
         if felt in ud:
             L.append(linje(felt, ud[felt]))
     if ud.get("ekstra_tid_pr_element_s"):
-        L.append("ekstra_tid_pr_element_s:   # uden standsning ved stop, gennemsnit pr. tur, interval (lav-hoej)")
+        L.append("ekstra_tid_pr_element_s:   # ture uden nogen standsning (zonetid.py), gennemsnit pr. tur, interval (lav-hoej)")
         L += [f"  - {_v(x)}" for x in ud["ekstra_tid_pr_element_s"]]
     if ud.get("kryds_stykker"):
         L.append("kryds_stykker:   # median køretid pr. stykke (s), alle timer")
@@ -312,6 +340,9 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--rapportdata", help="rapportdata.json fra lav_rapportdata_v1.2.py (strækning)")
     ap.add_argument("--straekning", help="strækningens id, hvis analysen har flere")
+    ap.add_argument("--standsning", choices=["ved stop", "i alt"], default=None,
+                    help="hvilke ture tallene bygger på (rapportdata v1.3): uden standsning 'ved stop' (standard, når der er "
+                         "stoppesteder) eller uden standsning 'i alt'")
     ap.add_argument("--overblik", help="overblik.csv fra turtabel.py (kryds); kræver --config")
     ap.add_argument("--config", help="analysens config.yaml (kun ved --overblik)")
     ap.add_argument("--out", required=True, help="konklusionsfilen, der skal udfyldes (fx resultat\\konklusion.yaml)")
@@ -323,7 +354,7 @@ def main(argv=None):
         raise SystemExit("Angiv enten --rapportdata (strækning) eller --overblik med --config (kryds)")
     if a.rapportdata:
         doc = json.loads(Path(a.rapportdata).read_text(encoding="utf-8"))
-        ud, kom = fra_rapportdata(doc, a.straekning)
+        ud, kom = fra_rapportdata(doc, a.straekning, a.standsning)
     else:
         if not a.config:
             raise SystemExit("--overblik kræver --config (punkter, perioder og distances)")

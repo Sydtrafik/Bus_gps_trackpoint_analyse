@@ -52,6 +52,7 @@ FELTER = {
     "laveste_fart_kmt": ("pr_periode", False), "maerkbar_opbremsning_pct": ("pr_periode", False),
     "maerkbar_acceleration_pct": ("pr_periode", False),
     "ekstra_tid_pr_element_s": ("elementtid", False), "kryds_stykker": ("kryds_stykker", False),
+    "standsning": ("standsning", False),
     "forbehold": ("tekstliste", False), "sammenligning_vejregler": ("tekst", False),
     "vaerktoej": ("tekst", False), "opdateret": ("dato", True), "kontakt": ("tekst", True),
 }
@@ -74,6 +75,9 @@ BUMPTYPER = [
 # længdeprofil som cirkelbump 40 km/t (vejledning\kilder\README.md).
 MINI_PROFIL = {"pudebump_40": "cirkelbump_40", "pukkelbump_50_plan": "pukkelbump_50_tvaersnit"}
 JANEJ = ("ja", "nej", "ukendt")
+# standsning (valgfrit, rapportdata v1.3+): hvilke ture tallene bygger på. Mangler feltet, vises intet (ældre filer).
+STANDSNING = {"ved stop": "ture uden standsning ved stop (standsning i kø og ved kryds er med)",
+              "i alt": "ture uden nogen standsning (heller ikke i kø eller ved kryds)"}
 
 
 class FilFejl(Exception):
@@ -143,6 +147,9 @@ def _tjek_felt(navn, art, v, perioder, fejl):
     elif art == "janej":
         if v not in JANEJ:
             f(f"skal være ja, nej eller ukendt (står: {v!r})")
+    elif art == "standsning":
+        if v not in STANDSNING:
+            f(f"skal være 'ved stop' eller 'i alt' (står: {v!r})")
     elif art == "punkter":
         if not isinstance(v, list):
             f("skal være en liste (- {navn: A, beskrivelse: ..., lat: 55.1, lon: 8.4})")
@@ -387,6 +394,8 @@ def byg_md(analyser, i_dag):
         ud.append("- **Perioder:** " + "; ".join(
             f"{PERIODE_NAVN[k]} {per[k].get('fra')} til {per[k].get('til')}"
             + (f" ({per[k]['dage']} {d.get('dage') or 'dage'})" if per[k].get("dage") else "") for k in per))
+        if d.get("standsning") in STANDSNING:
+            ud.append(f"- **Tallene bygger på:** {STANDSNING[d['standsning']]}")
         if d.get("gnsfart_kmt"):
             ud.append(f"- **Gennemsnitsfart (km/t):** {_fe(x['gnsfart'])}")
         if d.get("ekstra_tid_pr_element_s"):
@@ -462,6 +471,8 @@ def byg_html(analyser, mappe, i_dag, kortmappe=None):
         x["linjer"] = str(d.get("linjer") or "")
         x["perioder"] = {k: {kk: str(vv) for kk, vv in v.items()} for k, v in d["perioder"].items()}
         x["dageNavn"] = str(d.get("dage") or "dage")
+        if d.get("standsning") in STANDSNING:   # kun når feltet findes: ældre filer giver samme oversigt som før
+            x["standsning"] = STANDSNING[d["standsning"]]
         x["forbehold"] = list(d.get("forbehold") or [])
         x["vejregler"] = str(d.get("sammenligning_vejregler") or "")
         x["elementer"] = d.get("ekstra_tid_pr_element_s") or []
