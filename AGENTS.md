@@ -32,7 +32,14 @@ Brugerens analyser ligger uden for værktøjsmappen, i `trackpoint_analyser\<nav
 
 ## Rækkefølge af kommandoer
 
-**Brugeren kan ikke Python:** brug den nemme vej (README, "Den nemme vej"). `ny_analyse.bat --navn "<navn>"` opretter analysemappen (`trackpoint_analyser\<navn>\` ved siden af værktøjet) med den korte `config.yaml` og `koer_analyse.bat`; `koer_analyse.bat <0-6>` kører et trin uden menu (0 installér og test, 1 stoppesteder pr. retning med forslag til start/slut og tjek af om p1/p2 skal byttes, 2 prøve, 3 fuld analyse, turtabel og rapport, 4 rapport igen, 5 tilføj `resultat\konklusion.yaml` til de nationale analysekonklusioner, 6 lav konklusionsfilen; regel 6). Valg 3 og 4 kører på `resultat\config_beregnet.yaml` (`program\skabeloner\forbered.py config`: absolutte datastier og `komfort.bump_vinduer` = bumpets position ± `radius_m`, standard 30 m). Hjælp brugeren med at udfylde config'en; kæden er den samme som nedenfor.
+**Brugeren kan ikke Python:** brug den nemme vej (README, "Den nemme vej"). `ny_analyse.bat --navn "<navn>"` opretter analysemappen (`trackpoint_analyser\<navn>\` ved siden af værktøjet) med `config.yaml` (den fulde config med guide: `[UDFYLD]`, `[KAN SLETTES]`, `[RØR IKKE]`; `analysetype: straekning` eller `kryds`; strækninger under `straekninger:`) og `koer_analyse.bat`. `koer_analyse.bat <0-7>` kører et trin uden menu (0 installér og test, 1 stoppesteder pr. retning med forslag til start/slut ud fra retningens yderste punkter, OBS hvis en retning er byttet om, fundne stoppesteder og `kontrolkort.html`, 2 prøve, 3 fuld kæde (kryds: analyse, turtabel og kryds-rapport), 4 rapport igen, 5 tilføj `resultat\konklusion*.yaml` til de nationale analysekonklusioner, 6 lav konklusionsfilen (flere strækninger: én pr. strækning), 7 tjek config og tegn kontrolkortet igen; regel 6). Før valg 1-4 kører `program\skabeloner\tjek_config.py` (exit 1 ved fejl). Valg 2-4 kører på `resultat\config_beregnet.yaml` (`program\skabeloner\forbered.py config`: absolutte datastier, `bump_vinduer` pr. strækning = bumpets position ± `radius_m`, standard 30 m, og `rapport.stoppesteder` fra `resultat\stoppesteder_hafas.yaml`, når feltet er tomt). Programversionerne står i én blok øverst i `koer_analyse.bat`. Hjælp brugeren med at udfylde config'en, og kør `tjek_config.py`, før du kører kæden; kæden er den samme som nedenfor.
+
+```powershell
+python "$V\skabeloner\tjek_config.py" --config "$P\config.yaml"                                 # tjek (exit 1 ved fejl); --trin stopnavne er mildere
+python "$V\skabeloner\forbered.py" stopnavne --config "$P\config.yaml" --out "$P\stopnavne.txt"  # stop pr. retning, forslag, stoppesteder (ca. 1 min pr. GB)
+python "$V\skabeloner\forbered.py" kort --config "$P\config.yaml" --out "$P\kontrolkort.html"   # alle punkter på et kort (--uden-net: hent ikke vejkortet)
+python "$V\skabeloner\forbered.py" config --config "$P\config.yaml" --out "$P\resultat\config_beregnet.yaml"
+```
 
 `$V` = `program\` i denne mappe (der, hvor `analyse_v2.2.py` ligger), `$P` = projektmappen med config og data. PowerShell 7.
 
@@ -70,7 +77,7 @@ python "$V\rapport\lav_rapportdata_v1.2.py" --config "$P\min_config.yaml" --a "$
 python "$V\rapport\byg_rapport.py" --data "$P\ud\rapportdata.json" --out "$P\ud\rapport.html"
 ```
 
-`analyse_v2.2.py` skriver en harmløs advarsel "ukendte nøgler i config ignoreres" om `elementer`, `straekninger`, `udvalg`, `zonetid` og `rapport`; de læses af trin 3-5.
+`analyse_v2.2.py` skriver en harmløs advarsel "ukendte nøgler i config ignoreres" om `analysetype`, `elementer`, `straekninger`, `udvalg`, `zonetid` og `rapport`; de læses af trin 3-5 og den nemme vej. Hele nøglesættet står i `program\skabeloner\tjek_config.py`; får et program en ny config-nøgle, så tilføj den dér (testen `test_tjek_config.py` sammenligner med programmernes `DEFAULTS`).
 
 **Genskab eksemplet:** kopiér `program\eksempler\config_kvaglundvej.yaml` og ret kun de fire datastier; resten kan stå.
 
@@ -141,7 +148,7 @@ Reglerne står i [metode_og_rapportering.md](vejledning/metode_og_rapportering.m
 | `program\rapport\lav_rapportdata_v1.2.py`, `byg_rapport.py`, `skabelon_v1.2.html`, `vendor\` | Strækningsrapport med valg for dage, rute og time (kræver `turtabel.csv`). |
 | `program\rapport\lav_rapportdata.py`, `skabelon.html` | Forrige version (v1.1) af rapportens beregning og skabelon; rettes ikke (regel 1). |
 | `program\config_eksempel.yaml`, `program\eksempler\config_kvaglundvej.yaml` | Kommenteret fuld config og et udfyldt eksempel. |
-| `ny_analyse.bat`, `program\skabeloner\` | Den nemme vej: opretter en analysemappe med kort `config.yaml` (to punkter, én strækning) og `koer_analyse.bat` (menu eller argument 0-6); `forbered.py` laver stopforslag og bump-vinduer. |
+| `ny_analyse.bat`, `program\skabeloner\` | Den nemme vej: opretter en analysemappe med den fulde `config.yaml` med guide (en eller flere strækninger, eller kryds) og `koer_analyse.bat` (menu eller argument 0-7); `tjek_config.py` tjekker config'en før kørsel; `forbered.py` laver stopforslag, fundne stoppesteder, kontrolkort, bump-vinduer og config-info til bat'en. |
 | `vejledning\formidling_og_grafik.md` | Guide til rapporttype, budskab, titler, tekst, grafer, farver og tjek før deling. |
 | `analyser\`, `program\lav_konklusion.py`, `program\lav_konklusioner_html.py`, `program\lav_vejkort.py` | Én fil pr. afsluttet analyse i hele landet; konklusionsfilen laves ud fra `rapportdata.json` (eller kryds-`overblik.csv`), vejkortet hentes én gang fra OpenStreetMap (Overpass) til `analyser\kort\`, og oversigten `nationale_analysekonklusioner.md`/`.html` laves ud fra alle filerne (regel 6). |
 | `vejledning\kilder\README.md`, `vejledning\kilder\bumptyper\` | Vejregler og ældre rapporter om bump og busser (status, version, indholdsfortegnelse, bilag, sidst tjekket) og tegninger af bumptyper. Brug den, når en analyse skal sammenholdes med regler, eller en sag skal underbygges. Tjek status på vejregler.dk igen, før en kilde citeres, og ret "Sidst tjekket". |

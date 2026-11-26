@@ -95,12 +95,15 @@ def test_config_skabelon_har_det_kaeden_kraever():
     assert set(cfg["periods"]) == {"A", "B"}
     assert cfg["data"]["Periode_A"]["details_csv"] == "data/A/Details.csv"
     pts = cfg["points"]
-    assert cfg["komfort"]["fra"] in pts and cfg["komfort"]["til"] in pts
-    assert cfg["point_order"]["direction_1"] == [cfg["komfort"]["fra"], cfg["komfort"]["til"]]
+    assert cfg["analysetype"] == "straekning"
+    s = cfg["straekninger"][0]                     # den fulde config: strækninger som liste (én som standard)
+    assert s["fra"] in pts and s["til"] in pts
+    assert cfg["point_order"]["direction_1"] == [s["fra"], s["til"]]
     assert cfg["distances"]["d1"]["from"] == "p1" and cfg["distances"]["d1"]["to"] == "p2"
     assert set(cfg["stops"]) == {"direction_1", "direction_2"}
-    assert all(e["type"] in ("bump", "indsnævring", "andet") for e in cfg["elementer"])
+    assert all(e["type"] in ("bump", "indsnævring", "andet") for e in s["elementer"])
     assert cfg["komfort"]["bump_vinduer"] == {}   # standardens Kvaglundvej-vinduer må ikke følge med
+    assert cfg["rapport"]["stoppesteder"] == []   # tom = de fundne stoppesteder bruges
 
 
 if __name__ == "__main__":

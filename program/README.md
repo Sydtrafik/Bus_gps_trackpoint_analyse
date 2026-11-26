@@ -7,7 +7,7 @@ Python-værktøj fra Sydtrafik, pakket til deling. Det måler bussers **køretid
 **Anvendelser:**
 - **Før og efter en vejændring** (hovedanvendelsen): ekstra køretid pr. element, fart og komfort.
 - **Én periode, uden før-måling:** hvordan bussen påvirkes, og hvordan der køres på en strækning i dag: fartprofil, opbremsning og acceleration, og hvor bussen standser (afsnit "Én periode").
-- **Køretid gennem et kryds** (kræver den fulde config, ikke den nemme vej): læg flere punkter langs bussens vej i én retning, fx et punkt et godt stykke før krydset (før køen), et ved stoplinjen, et ude i krydset, et på vejen efter krydset og evt. et længere ude. Brug kun den retning under `point_order` og `stops` (ture i den anden retning kasseres som `ingen_point_order_direction_<n>`), og én `distances`-linje pr. stykke. Så giver `result.csv` køretiden pr. stykke pr. tur, og `segmenter.csv` hvert ping med fart og tidspunkt. Punkterne matches på nærmeste ping i rækkefølge, så sving går fint; men komfort, fartprofil, zonetid og rapporten antager en ret strækning og skal ikke bruges her. Fokus er køretiden pr. stykke (p1-p2, p2-p3 osv.), ikke en beregnet ventetid. Vil man se, hvad trafikken koster, sammenligner man grupper af ture fra samme udtræk, fx tidspunkter med meget let og meget tung trafik; det er et valg i analysen og rapporten, ikke grænseværdier i beregningen. Den anden retning er sin egen køretid med egne punkter. `turtabel.py` giver køretid pr. stykke og tidspunkt ved hvert punkt i én række pr. tur og et overblik pr. time (trin 6b). `rapport\lav_kryds_rapport.py` laver en rapport (én HTML-fil) med køretid pr. stykke over døgnet, pr. rute og pr. planlagt tur, for én periode eller før/efter. Opsætning, config-skabelon og kommandoer: afsnittet "Kryds: køretid pr. stykke i én retning" under trin 10.
+- **Køretid gennem et kryds** (den nemme vej med `analysetype: kryds`, eller kommandoerne): læg flere punkter langs bussens vej i én retning, fx et punkt et godt stykke før krydset (før køen), et ved stoplinjen, et ude i krydset, et på vejen efter krydset og evt. et længere ude. Brug kun den retning under `point_order` og `stops` (ture i den anden retning kasseres som `ingen_point_order_direction_<n>`), og én `distances`-linje pr. stykke. Så giver `result.csv` køretiden pr. stykke pr. tur, og `segmenter.csv` hvert ping med fart og tidspunkt. Punkterne matches på nærmeste ping i rækkefølge, så sving går fint; men komfort, fartprofil, zonetid og rapporten antager en ret strækning og skal ikke bruges her. Fokus er køretiden pr. stykke (p1-p2, p2-p3 osv.), ikke en beregnet ventetid. Vil man se, hvad trafikken koster, sammenligner man grupper af ture fra samme udtræk, fx tidspunkter med meget let og meget tung trafik; det er et valg i analysen og rapporten, ikke grænseværdier i beregningen. Den anden retning er sin egen køretid med egne punkter. `turtabel.py` giver køretid pr. stykke og tidspunkt ved hvert punkt i én række pr. tur og et overblik pr. time (trin 6b). `rapport\lav_kryds_rapport.py` laver en rapport (én HTML-fil) med køretid pr. stykke over døgnet, pr. rute og pr. planlagt tur, for én periode eller før/efter. Opsætning, config-skabelon og kommandoer: afsnittet "Kryds: køretid pr. stykke i én retning" under trin 10.
 - **Pr. tur:** `turtabel.csv` (trin 6b) har én række pr. tur med periode, dato, ugedag, dagtype, time, retning, rute, planlagt turnummer, køretid pr. stykke og tidspunkt ved hvert punkt. Eneste kilde er HAFAS-eksporten (analysens output og `List.csv`); der slås ikke op i andre kilder. `overblik.md` viser køretiden pr. stykke pr. time og periode (median og p25-p75). Strækningsrapporten fordeler ikke på tid på dagen; det gør kryds-rapporten. Rådata og tur-id'er må ikke med i filer, der deles (AGENTS regel 3); `turtabel.csv` har tur-id og er til egen udforskning.
 
 *Dette er den tekniske reference (i `program\`). Som bruger starter du med [README.md](../README.md) i værktøjsmappen.*
@@ -42,23 +42,34 @@ Kører på Windows og kræver Python (testet på 3.13; 3.10 eller nyere forvente
    trackpoint_analyser\Kvaglundvej Esbjerg\
    ├─ data\A\            ← HAFAS-eksporten for før-perioden (Details.csv og List.csv)
    ├─ data\B\            ← HAFAS-eksporten for efter-perioden
-   ├─ config.yaml        ← udfyld felterne med  <-- UDFYLD
+   ├─ config.yaml        ← udfyld efter guiden i filen
    ├─ koer_analyse.bat   ← dobbeltklik for at køre
    ├─ Vejledning - trin for trin.txt   ← de samme trin som her
+   ├─ stopnavne.txt, kontrolkort.html  ← laves af valg 1
    └─ resultat\          ← tal og rapport.html
    ```
 2. **Læg eksporten** i `data\A` og `data\B` ([eksportvejledning_HAFAS.md](../vejledning/eksportvejledning_HAFAS.md)).
-3. **Udfyld `config.yaml`** i Notesblok: perioder, strækningens to ender p1 og p2 (koordinater fra Google Maps) og elementerne. Hvert bump har en `radius_m`: hvor langt før og efter bumpet den laveste fart og største opbremsning måles. 30 m passer til et almindeligt enkelt bump; er bumpet udført anderledes (fx to forskudte bump, ét i hver vejbane), så sæt koordinaten midt imellem og en radius, der dækker begge. Resten kan stå.
-4. **Dobbeltklik på `koer_analyse.bat`**, og vælg:
+3. **Udfyld `config.yaml`** i Notesblok. Den er den fulde config, men kun med de felter, du skal tage stilling til; hver sektion er mærket `[UDFYLD]` (skal udfyldes), `[KAN SLETTES]` (kan blankes eller slettes) eller `[RØR IKKE]`, og nederst står eksempler på to punkter, flere punkter og strækninger, og kryds:
+   - `analysetype`: `straekning` (køretid, fart, komfort og rapport) eller `kryds` (køretid pr. stykke i én retning; se "Kryds" nedenfor).
+   - `periods`: datoerne for før (A) og efter (B). Kun én periode: slet B under `periods` og `data`.
+   - `points`: punkterne med koordinater fra Google Maps, `point_order` (køreorden pr. retning) og `distances` (én pr. køretid, du vil have, og én pr. strækning).
+   - `straekninger`: én blok pr. strækning (id, navn, fra, til) med elementerne på den. Hvert bump har en `radius_m`: hvor langt før og efter bumpet den laveste fart og største opbremsning måles. 30 m passer til et almindeligt enkelt bump; er bumpet udført anderledes (fx to forskudte bump, ét i hver vejbane), så sæt koordinaten midt imellem og en radius, der dækker begge. To eller flere strækninger giver en strækningsvælger i rapporten.
+   - `stops` udfyldes efter valg 1. `rapport` (titel og tekster) kan vente til efter første kørsel.
+4. **Dobbeltklik på `koer_analyse.bat`**, og vælg. **Før valg 1-4 tjekkes `config.yaml`** (`skabeloner\tjek_config.py`): YAML-fejl med linjenummer, tabulatorer, ukendte nøgler og stavefejl (med forslag), pladsholder-koordinater, punkt-id'er, der ikke findes, manglende stop pr. retning, datoer, manglende datafiler, elementer uden for strækningen og kryds med komfort-sektioner. Hver besked siger sektion, felt og hvad du skal gøre. Fejl stopper kørslen; advarsler gør ikke.
    - `0` første gang: installerer Python-pakkerne og tester værktøjet.
-   - `1` stoppesteder: skriver `stopnavne.txt` med stoppestederne for hver retning i køreorden og et forslag til start- og slutstop for hver retning, klar til at kopiere ind i `config.yaml` (punkt 4). Navnene kan være forskellige i de to retninger og ligge forskelligt, så retningerne udfyldes hver for sig. Står der OBS nederst, kører retning 1 fra p2 mod p1: byt p1 og p2, og kør `1` igen.
-   - `2` prøvekørsel på 300 ture. Tjek `resultat\proeve\kvalitet.md`: næsten alle ture skal være beholdt uden "flag afstand > 200 m". Står det ved næsten alle, så byt p1 og p2 i config. Står der "stop_ikke_fundet" ved næsten alle, så ret stopnavnene.
-   - `3` fuld analyse og rapport (10-30 min). Rapporten åbner af sig selv. Køretiden pr. tur står i `resultat\turtabel.csv` (åbn i Excel eller Power BI) og pr. time i `resultat\overblik.md`.
+   - `1` stoppesteder og kontrolkort: skriver `stopnavne.txt` med stoppestederne for hver retning i køreorden og et forslag til start- og slutstop for hver retning ud fra retningens første og sidste punkt, klar til at kopiere ind i `config.yaml` (`stops`). Navnene kan være forskellige i de to retninger og ligge forskelligt, så retningerne udfyldes hver for sig. Står der OBS, kører en retning i data modsat din `point_order` (to punkter: byt p1 og p2; kryds: brug den retning, OBS-linjen nævner), og kør `1` igen. Stoppestederne på strækningerne findes også (se nedenfor). `kontrolkort.html` viser alle punkter, strækningerne, elementerne og stoppestederne på et vejkort med koordinater og et Google Maps-link pr. punkt: tjek dem, og ret i `config.yaml` før kørsel.
+   - `2` prøvekørsel på 300 ture (kryds: 2000). Tjek `resultat\proeve\kvalitet.md`: næsten alle ture skal være beholdt uden "flag afstand > 200 m". Står det ved næsten alle, er retningen byttet om (vælg 1 og læs OBS). Står der "stop_ikke_fundet" ved næsten alle, så ret stopnavnene.
+   - `3` fuld analyse og rapport (10-30 min): analyse og komfort pr. periode, turtabel, zonetid (kun med elementer) og rapporten; kryds: analyse, turtabel og kryds-rapport. Rapporten åbner af sig selv. Køretiden pr. tur står i `resultat\turtabel.csv` (åbn i Excel eller Power BI) og pr. time i `resultat\overblik.md`.
    - `4` byg rapporten igen, efter du har skrevet titlen (hvad og hvor; et fund først, når det er verificeret) og teksterne i config.
-   - `6` lav din konklusionsfil (`resultat\konklusion.yaml`) med rapportens nøgletal; udfyld den, og vælg `5` for at tilføje den til de nationale analysekonklusioner (trin 10).
+   - `6` lav din konklusionsfil (`resultat\konklusion.yaml`; flere strækninger: én pr. strækning, `konklusion_<id>.yaml`) med rapportens nøgletal; udfyld den, og vælg `5` for at tilføje den til de nationale analysekonklusioner (trin 10).
+   - `7` tjek `config.yaml` og tegn kontrolkortet igen (fx efter du har rettet en koordinat).
 5. **Læs rapporten** og forbeholdene i [metode_og_rapportering.md](../vejledning/metode_og_rapportering.md), og tilføj dine fund til de nationale analysekonklusioner med valg 6 og 5 (trin 10).
 
-Kun én periode: sæt `PERIODER=A` øverst i `koer_analyse.bat`. Flyttes værktøjsmappen, så ret `VAERKTOEJ` samme sted. Flere strækninger i én analyse og alle andre muligheder kræver den fulde config: se `config_eksempel.yaml` og afsnit 4.
+**Stoppesteder i rapporten:** valg 1 finder stoppestederne i HAFAS-eksporten (de planlagte koordinater på stop-rækkerne, median pr. retning og stopnavn) og gemmer dem i `resultat\stoppesteder_hafas.yaml`. Er `rapport.stoppesteder` tom (`[]`) i `config.yaml`, bruger rapporten automatisk dem, der ligger på en strækning (højst 40 m fra linjen mellem fra og til), én pr. side af vejen. `stopnavne.txt` har dem som en færdig blok: vil du rette eller fjerne et, så kopiér blokken ind i `config.yaml` og ret den; så bruges din. Kontrolkortet viser også OpenStreetMaps stoppesteder (busikon) og afstanden til nærmeste, så du kan se, om HAFAS' position passer. Kortet hentes én gang fra OpenStreetMap (Overpass) til `resultat\vejkort_kontrol.json`; uden net, eller hvis Overpass ikke svarer, viser kortet kun punkterne.
+
+**Perioder og værktøjets sti:** `PERIODER=auto` øverst i `koer_analyse.bat` kører de perioder, der har data i `config.yaml`; skriv `A` eller `A B` for at bestemme selv. Flyttes værktøjsmappen, så ret `VAERKTOEJ` samme sted. Programversionerne, bat'en kalder, står i én blok lige under (ret dem ikke). Alle andre muligheder (parametre, komfortindstillinger): `config_eksempel.yaml` og afsnit 4.
+
+**Ældre analysemapper** (med den korte config fra version 1.10 eller ældre: `komfort: fra/til` og `elementer:` øverst) kører stadig, både med deres egen `koer_analyse.bat` og med en ny. Den korte form er én strækning.
 
 Ved en ny version af pakken erstatter du hele værktøjsmappen. Analysemapperne ligger ved siden af og røres ikke.
 
@@ -120,7 +131,7 @@ Værktøjsmappens rod har kun det, brugeren selv rører. Alt andet ligger i `vej
 | `vejledning\` | `metode_og_rapportering.md` | Hvad der rapporteres, hvordan, og hvorfor. |
 | `vejledning\` | `formidling_og_grafik.md` | Guide til rapporttype, budskab, titler, tekst, grafer, farver og tjek før deling. |
 | `vejledning\` | `kilder\README.md`, `kilder\bumptyper\` | Gældende vejregler om bump og busser (status, version, indhold og bilag), ældre målinger af fart, G-påvirkning og chaufførpåvirkning, og tegninger af hver bumptype til rapporter. Læs den, før en analyse bruges i en konkret sag. |
-| `program\` | `skabeloner\` | `config.yaml` (kort config med UDFYLD-felter), `koer_analyse.bat` (kører trinene med en menu), `ny_analyse.py` og `forbered.py` (stoppesteder pr. retning med forslag, og `resultat\config_beregnet.yaml` med bump-vinduer ud fra `radius_m`). `config.yaml` og `koer_analyse.bat` kopieres ind i analysemappen af `ny_analyse.bat`; ret dem ikke her. |
+| `program\` | `skabeloner\` | `config.yaml` (den fulde config med guide: UDFYLD / KAN SLETTES / RØR IKKE, og eksempler), `koer_analyse.bat` (kører trinene med en menu), `ny_analyse.py`, `tjek_config.py` (tjekker config'en før kørsel) og `forbered.py` (stoppesteder pr. retning med forslag, fundne stoppesteder, `kontrolkort.html`, og `resultat\config_beregnet.yaml` med bump-vinduer ud fra `radius_m`). `config.yaml` og `koer_analyse.bat` kopieres ind i analysemappen af `ny_analyse.bat`; ret dem ikke her. |
 | `program\` | `analyse_v2.2.py` | Hovedværktøjet. Læser HAFAS-eksporten og config og skriver resultater. Læser store filer i bidder. |
 | `program\` | `analyse_v2.1.py` | Forrige version med samme resultater; holder hele `Details.csv` i hukommelsen. Bliver i pakken som reference (afsnit 11). |
 | `program\` | `komfort_v1.1.py` | Komfort-trin for en eller flere strækninger. Læser `segmenter.csv` fra hovedværktøjet. Bruger `komfort_v1.0.py` til beregningen. |
@@ -321,7 +332,7 @@ Værktøjet kan også bruges til at se, hvordan kørslen er i ét område uden s
 
 ### Flere strækninger
 
-Du kan definere flere strækninger i samme analyse for at isolere områder og effekter. Hver strækning har et fra- og til-punkt og egne elementer, og komfort og zonetid regnes pr. strækning. Rapporten får en strækningsvælger, som styrer nøgletal, fartprofil, komfort, tabel og drift; kortet viser alle strækninger og fremhæver den valgte. Config (afsnit 5b):
+Du kan definere flere strækninger i samme analyse for at isolere områder og effekter. Hver strækning har et fra- og til-punkt og egne elementer, og komfort og zonetid regnes pr. strækning. Rapporten får en strækningsvælger, som styrer nøgletal, fartprofil, komfort, tabel og drift; kortet viser alle strækninger og fremhæver den valgte. I den nemme vej er det sektion 6 i `config.yaml` (eksempel B nederst i filen). Config (afsnit 5b):
 
 ```yaml
 straekninger:
@@ -342,25 +353,22 @@ En config med den gamle form (`komfort: fra/til` og `elementer:` øverst) er én
 
 ### Kryds: køretid pr. stykke i én retning
 
-Til køretid gennem et kryds bruges den fulde config (ikke `ny_analyse.bat`) og kun trin 3, 5, 6 og 6b samt kryds-rapporten: analysen, `turtabel.py` og `rapport\lav_kryds_rapport.py`. Kør **ikke** komfort, zonetid eller strækningsrapporten (trin 7-9): de antager en ret strækning, og zonetid stopper uden `elementer:`. `koer_analyse.bat` valg 3 kører zonetid efter turtabellen og melder derfor fejl; kør hellere kommandoerne nedenfor.
+Til køretid gennem et kryds bruges kun trin 3, 5, 6 og 6b samt kryds-rapporten: analysen, `turtabel.py` og `rapport\lav_kryds_rapport.py`. Komfort, zonetid og strækningsrapporten (trin 7-9) antager en ret strækning og bruges ikke.
+
+**Den nemme vej:** opret mappen med `ny_analyse.bat`, sæt `analysetype: kryds` i `config.yaml`, slet sektionerne `straekninger` og `komfort`, og udfyld punkter, `point_order`, `distances` og `stops` for din retning (eksempel C nederst i `config.yaml`). Vælg så 1 (stopnavne og kontrolkort; OBS-linjen siger, om din retning er retning 1 eller 2 i data), 2 (prøve på 2000 ture) og 3 (analyse, turtabel og kryds-rapport i `resultat\kryds_rapport.html`). Tjekket afviser en kryds-config med `straekninger`, `komfort`, `zonetid` eller `elementer`. En config uden `analysetype` og uden de sektioner (som eksemplet herunder) regnes også som kryds. Trinene og kommandoerne bag står herunder.
 
 1. **Punkter:** læg punkterne langs bussens vej i den retning, du vil måle, fx før køen, ved stoplinjen, i krydset, efter krydset og evt. længere ude. Find koordinaterne i Google Maps (højreklik på vejen). Punkterne skal ligge på bussens vej; tjek bagefter `nærmeste afstand (m)` i `analyse_log.txt`.
 2. **Én retning:** skriv kun den retning under `point_order` og `stops`. Ture i den anden retning kasseres med årsagen `ingen_point_order_direction_<n>` (ses i `kvalitet.md` og `kasserede_ture.csv`). Den anden retning er en ny config med egne punkter.
 3. **Stykker:** én `distances`-linje pr. stykke mellem to punkter efter hinanden, og gerne én for hele krydset. Køretiden er tiden mellem de to matchede pings, uanset rækkefølgen af `from` og `to`.
-4. **Retning og stop:** `stops` er grovfilteret (se trin 3): to stop før og efter krydset, som turene i retningen kører forbi. Rækkefølgen er ligegyldig. Find både retningsflaget og stoppene med `forbered.py stopnavne` og en lille hjælpe-config, hvor p1 er krydsets **første** og p2 dets **sidste** punkt i den retning, du måler:
-   ```yaml
-   data:
-     Periode_A: {details_csv: "C:/sti/til/Details.csv", list_csv: "C:/sti/til/List.csv"}
-   points:
-     p1: {name: "Første punkt", lat: 55.0000, lon: 8.0000}
-     p2: {name: "Sidste punkt", lat: 55.0000, lon: 8.0000}
-   ```
+4. **Retning og stop:** `stops` er grovfilteret (se trin 3): to stop før og efter krydset, som turene i retningen kører forbi. Rækkefølgen er ligegyldig. Find både retningsflaget og stoppene med `forbered.py stopnavne` (valg 1 i den nemme vej) på din config med punkterne i køreorden under `point_order` (gæt på `direction_1`):
    ```powershell
-   python "$V\skabeloner\forbered.py" stopnavne --config "$P\hjaelp.yaml" --out "$P\stopnavne.txt"     # ca. 1 min pr. GB
+   python "$V\skabeloner\forbered.py" stopnavne --config "$P\config.yaml" --out "$P\stopnavne.txt"     # ca. 1 min pr. GB
+   python "$V\skabeloner\forbered.py" kort --config "$P\config.yaml" --out "$P\kontrolkort.html"       # punkterne og stoppene på et kort
    ```
-   `stopnavne.txt` viser stoppene pr. retning i køreorden med meter før og efter punkterne og et forslag til start og slut (med ét stop ekstra som margin, fordi stop-rækkernes tid ligger efter passagen). Står der "OBS: retning 1 kører fra p2 mod p1" nederst, er din retning **retning 2**: brug `direction_2` under `point_order` og `stops` og forslaget for retning 2. Ellers er det retning 1. Retningsflaget og kolonnenavnene i rådata har en tabulator foran; værktøjet fjerner den selv.
+   `stopnavne.txt` viser stoppene pr. retning i køreorden med meter før det første og efter det sidste punkt og et forslag til start og slut (med ét stop ekstra som margin, fordi stop-rækkernes tid ligger efter passagen). Står der "OBS: din point_order (direction_1: ...) køres i data som retning 2", er din retning **retning 2**: skriv `direction_2` under `point_order` og `stops` (forslaget står klar). Retningsflaget og kolonnenavnene i rådata har en tabulator foran; værktøjet fjerner den selv.
 
 ```yaml
+analysetype: kryds
 periods:
   A: {name: "Kryds 2024", start: "2024-08-01", end: "2024-11-05"}
 data:
@@ -669,6 +677,8 @@ Nye tests skal følge samme mønster: byg en lille konstrueret tur (se `tests\sy
 
 | Symptom | Årsag og løsning |
 |---|---|
+| `FEJL [sektion > felt] ...` fra `koer_analyse.bat` før et trin | Tjekket af `config.yaml` (`skabeloner\tjek_config.py`) fandt en fejl. Linjen under (`Gør:`) siger, hvad du skal rette. Kør valg 7 for at tjekke igen uden at køre noget. `ADVARSEL` stopper ikke kørslen. |
+| `kontrolkort.html` viser kun punkterne | OpenStreetMap (Overpass) svarede ikke, eller der er intet net. Vælg 7 senere for at prøve igen; punkterne og koordinaterne kan stadig tjekkes. |
 | `FEJL: Kolonne-/filtjek fejlede ...` | En påkrævet kolonne mangler i eksporten. Se [eksportvejledning_HAFAS.md](../vejledning/eksportvejledning_HAFAS.md), afsnit 6. |
 | `FEJL: Config-fil ikke fundet` / `Sektionen 'stops' mangler` / `Punkt ... mangler lat eller lon` | Config-fejl; beskeden står på dansk og siger hvad der mangler. |
 | `ADVARSEL: ukendte nøgler i config ignoreres` | Stavefejl i en config-nøgle. |

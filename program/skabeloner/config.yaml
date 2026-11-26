@@ -1,15 +1,29 @@
 # ==============================================================================
-# config.yaml: indstillinger for én analyse (én strækning).
+# config.yaml: indstillinger for én analyse (én eller flere strækninger, eller et kryds).
 #
-# Udfyld felterne med  <-- UDFYLD.  Resten kan stå, som det er.
-# Gem filen, og kør koer_analyse.bat i samme mappe.
-# Tekst i anførselstegn må gerne indeholde æ, ø og å. Brug mellemrum, ikke tabulator.
-# Alle muligheder og deres standardværdier: program\config_eksempel.yaml i værktøjsmappen.
+# SÅDAN LÆSER DU FILEN. Hver sektion har et mærke:
+#   [UDFYLD]       skal udfyldes, før du kører.
+#   [KAN SLETTES]  kan stå, blankes ("") eller slettes, hvis du ikke bruger det.
+#   [RØR IKKE]     skal stå, som det er.
+# Felter med  <-- UDFYLD  skal rettes. Eksempler på 2 punkter, flere strækninger og kryds står nederst.
+#
+# Regler: brug mellemrum, ikke tabulator. Tekst i anførselstegn må gerne have æ, ø og å.
+# Koordinater: højreklik på vejen i Google Maps, klik på tallene øverst (de kopieres), og sæt dem ind som lat, lon.
+# koer_analyse.bat tjekker filen, før den kører, og siger, hvad der er galt, og hvor.
+# Alle muligheder og standardværdier: program\config_eksempel.yaml i værktøjsmappen.
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
-# 1. PERIODER. Datoer som ÅÅÅÅ-MM-DD. A = før ændringen, B = efter.
-#    Kun én periode? Lad B stå, og sæt PERIODER=A i koer_analyse.bat.
+# 1. ANALYSETYPE [UDFYLD]
+#    straekning = køretid, fart, komfort og rapport på en eller flere strækninger (standard).
+#    kryds      = køretid pr. stykke gennem et kryds i én retning (kun analyse, turtabel og kryds-rapport).
+#                 Ved kryds: slet sektion 6 og 7 (strækninger, komfort), og se eksempel C nederst.
+# ------------------------------------------------------------------------------
+analysetype: straekning
+
+# ------------------------------------------------------------------------------
+# 2. PERIODER [UDFYLD]. Datoer som ÅÅÅÅ-MM-DD. A = før ændringen, B = efter.
+#    Kun én periode: slet hele B-blokken her OG under data (punkt 3).
 # ------------------------------------------------------------------------------
 periods:
   A:
@@ -22,8 +36,8 @@ periods:
     end: "2025-07-31"            # <-- UDFYLD: sidste dag
 
 # ------------------------------------------------------------------------------
-# 2. DATA. Læg HAFAS-eksporten (Details.csv og List.csv) i mapperne data\A og data\B.
-#    Stierne nedenfor passer så og skal ikke rettes.
+# 3. DATA [RØR IKKE]. Læg HAFAS-eksporten (Details.csv og List.csv) i mapperne data\A og data\B.
+#    Stierne passer så. Dækker én eksport begge perioder, så lad begge pege på den (perioderne skilles på datoerne).
 # ------------------------------------------------------------------------------
 data:
   Periode_A:
@@ -35,18 +49,20 @@ data:
   output: "resultat/result.csv"
 
 # ------------------------------------------------------------------------------
-# 3. STRÆKNINGENS TO ENDER. Find koordinaterne i Google Maps: højreklik på vejen,
-#    klik på tallene øverst (de kopieres), og sæt dem ind som lat, lon.
+# 4. PUNKTER [UDFYLD]. Hvert punkt har et id (p1, p2, ...), et navn og en koordinat. Navnene skal være forskellige.
+#    To punkter = én strækning. Flere punkter: tilføj en linje pr. punkt (p3, p4 ...), fx flere strækninger
+#    efter hinanden eller punkterne gennem et kryds. Giv punkterne sigende navne (fx et vejkryds).
+#
+#    point_order: punkterne i den rækkefølge, bussen kører dem, pr. kørselsretning (retning 1 og 2 i HAFAS).
+#    Retning 2 er normalt retning 1 bagfra. Kryds: kun den retning, du måler.
+#    distances: én linje pr. køretid, du vil have (fra et punkt til et andet). Hver strækning skal have én.
+#
+#    Valg 1 i koer_analyse.bat viser alle punkter på kontrolkort.html og siger, hvis retningerne er byttet om.
 # ------------------------------------------------------------------------------
 points:
-  p1: {name: "Start", lat: 55.0000, lon: 8.0000}   # <-- UDFYLD: navn og koordinat, fx et vejkryds
+  p1: {name: "Start", lat: 55.0000, lon: 8.0000}   # <-- UDFYLD: navn og koordinat
   p2: {name: "Slut",  lat: 55.0000, lon: 8.0000}   # <-- UDFYLD
 
-# Rækkefølge pr. kørselsretning: retning 1 kører fra p1 til p2, retning 2 fra p2 til p1.
-# Valg 1 i koer_analyse.bat siger, hvis p1 og p2 skal byttes. Tjek også efter prøvekørslen (valg 2)
-# i resultat\proeve\kvalitet.md:
-#  - "flag afstand > 200 m" ved næsten alle ture: p1 og p2 er byttet om. Byt deres koordinater (og navne).
-#  - "stop_ikke_fundet" ved næsten alle ture: stopnavnene under punkt 4 er forkerte eller byttet om.
 point_order:
   direction_1: [p1, p2]
   direction_2: [p2, p1]
@@ -55,45 +71,56 @@ distances:
   d1: {name: "Strækningen", from: p1, to: p2}
 
 # ------------------------------------------------------------------------------
-# 4. STOPPESTEDER FØR OG EFTER STRÆKNINGEN, for hver retning for sig.
-#    Udfyld p1 og p2 først. Kør så koer_analyse.bat, og vælg 1: stopnavne.txt viser stoppestederne
-#    pr. retning i køreorden, foreslår start og slut og siger, hvis p1 og p2 skal byttes.
-#    Navnene kan være forskellige i de to retninger og ligge forskelligt (fx på hver side af vejen),
-#    så kopiér dem præcist fra listen for den rigtige retning.
+# 5. STOPPESTEDER FØR OG EFTER [UDFYLD], for hver retning for sig (det udsnit af turen, der læses).
+#    Udfyld punkterne først. Vælg så 1 i koer_analyse.bat: stopnavne.txt viser stoppestederne pr. retning
+#    i køreorden og foreslår start og slut ud fra de yderste punkter. Kopiér navnene præcist fra listen
+#    for den rigtige retning (de kan være forskellige i de to retninger). Kryds: kun din retning.
 # ------------------------------------------------------------------------------
 stops:
   direction_1: {start: "Stop før p1 (By)", end: "Stop efter p2 (By)"}   # <-- UDFYLD
   direction_2: {start: "Stop før p2 (By)", end: "Stop efter p1 (By)"}   # <-- UDFYLD
 
 # ------------------------------------------------------------------------------
-# 5. ELEMENTER PÅ STRÆKNINGEN: bump, indsnævring eller andet, med koordinat.
-#    Tilføj en linje pr. element. Ingen elementer: skriv  elementer: []
-#    radius_m (kun bump): hvor langt før og efter bumpet den laveste fart og største opbremsning
-#    måles. 30 m passer til et almindeligt enkelt bump. Er bumpet udført anderledes, fx som to
-#    forskudte bump (ét i hver vejbane), så sæt koordinaten midt imellem, og gør radius så stor,
-#    at den dækker begge (halvdelen af afstanden mellem dem + 30 m).
+# 6. STRÆKNINGER [UDFYLD] (slettes ved kryds). Én blok pr. strækning: id (kort, uden mellemrum), navn,
+#    fra og til (punkt-id'er fra punkt 4) og elementerne på strækningen.
+#    Flere strækninger: kopiér blokken fra  - id:  og ret den. Rapporten får så en strækningsvælger.
+#    Elementer: bump, indsnævring eller andet, med koordinat. De skal ligge på strækningen.
+#      Ingen elementer: skriv  elementer: []
+#      radius_m (kun bump): hvor langt før og efter bumpet laveste fart og største opbremsning måles.
+#      30 m passer til et almindeligt enkelt bump. To forskudte bump (ét i hver vejbane): koordinaten midt
+#      imellem og en radius, der dækker begge (halvdelen af afstanden mellem dem + 30 m).
 # ------------------------------------------------------------------------------
-elementer:
-  - {navn: "Bump 1", type: bump, lat: 55.0000, lon: 8.0000, radius_m: 30}   # <-- UDFYLD
-  - {navn: "Indsnævring 1", type: indsnævring, lat: 55.0000, lon: 8.0000}   # <-- UDFYLD eller slet linjen
+straekninger:
+  - id: s1
+    navn: "Strækningen"                                    # <-- UDFYLD: fx vejens navn
+    fra: p1
+    til: p2
+    elementer:
+      - {navn: "Bump 1", type: bump, lat: 55.0000, lon: 8.0000, radius_m: 30}   # <-- UDFYLD
+      - {navn: "Indsnævring 1", type: indsnævring, lat: 55.0000, lon: 8.0000}   # <-- UDFYLD eller slet linjen
 
-# Hvilke dage tæller med: hverdage (man-fre) eller alle. Helligdage tælles ikke som hverdage.
+# ------------------------------------------------------------------------------
+# 7. KOMFORT [RØR IKKE] (slettes ved kryds). bump_vinduer regnes ud fra bumpenes koordinat og radius_m.
+# ------------------------------------------------------------------------------
+komfort:
+  bump_vinduer: {}
+
+# ------------------------------------------------------------------------------
+# 8. DAGE [KAN SLETTES]. Hvilke dage tæller med: hverdage (man-fre) eller alle.
+#    Helligdage tælles ikke som hverdage; skriv dem her.
+# ------------------------------------------------------------------------------
 udvalg:
   dagtype: hverdage
   helligdage: []                 # fx ["2025-04-17", "2025-04-18", "2025-04-21"]
 
-komfort:
-  fra: p1
-  til: p2
-  bump_vinduer: {}               # lad stå tom: regnes ud fra bumpenes koordinat og radius_m
-
 # ------------------------------------------------------------------------------
-# 6. RAPPORTENS TEKSTER. Titlen siger, hvad og hvor der er målt. Skriv et fund i titlen først, når det er verificeret.
-#    Ret teksterne, og vælg 4 i koer_analyse.bat for at bygge rapporten igen.
+# 9. RAPPORTENS TEKSTER [KAN SLETTES]. Ret teksterne, og vælg 4 i koer_analyse.bat for at bygge rapporten igen.
+#    Titlen siger, hvad og hvor der er målt. Skriv et fund i titlen først, når det er verificeret.
 # ------------------------------------------------------------------------------
 rapport:
-  titel: "Køretid og fart på <vejnavn> før og efter <ændring>"   # <-- UDFYLD: hvad og hvor; et fund først, når det er verificeret
+  titel: "Køretid og fart på <vejnavn> før og efter <ændring>"   # <-- UDFYLD: hvad og hvor
   undertitel: "Vejnavn, linje X, By · bussernes GPS · hverdage før og efter"           # <-- UDFYLD
+  emne: ""                       # kun kryds: hvad der er undersøgt, fx "Krydset Vejnavn / Vejnavn, By"
   foer_navn: "Før"
   efter_navn: "Efter"
   periode_navn: "Perioden"       # bruges kun, når der er én periode
@@ -101,9 +128,62 @@ rapport:
   udtraekdato: ""                # <-- UDFYLD: dato for HAFAS-eksporten, fx "11-11-2026"
   forbehold: []                  # korte linjer, fx ["Omkørsel 3.-5. marts er ikke med."]
   kilde: "Kilde: realtidsdata (GPS-positioner). Der tages forbehold for fejl og mangler."
-  kort: false                    # true = vejkort over strækningen (OpenStreetMap-data hentes én gang; rapporten virker uden internet)
+  kort: false                    # true = vejkort i rapporten (OpenStreetMap-data hentes én gang; rapporten virker uden internet)
+  # Stoppesteder på strækningerne (én position pr. kørselsretning). Står der [], bruges dem, valg 1 fandt i
+  # HAFAS-eksporten (se kontrolkort.html). Vil du rette dem, så kopiér blokken fra stopnavne.txt ind her.
+  stoppesteder: []
   vej:                           # vises i "Om strækningen" øverst i rapporten
     vejtype: ""                  # <-- UDFYLD, fx "Almindelig vej i boligområde"
     hastighed: ""                # <-- UDFYLD: hastighedsgrænse, fx "50 → 40 km/t" (før → efter)
-    bumptype: ""                 # <-- UDFYLD, fx "Cirkelbump" (se vejledning\kilder\bumptyper\); "(antaget)" efter typen, hvis den ikke er opmålt
+    bumptype: ""                 # <-- UDFYLD, fx "Cirkelbump" (se vejledning\kilder\bumptyper\); "(antaget)", hvis den ikke er opmålt
     andre_foranstaltninger: ""   # <-- UDFYLD, fx "2 indsnævringer, anlagt samtidig med bumpene"
+
+# ==============================================================================
+# EKSEMPLER (kun til at kopiere fra; alt herunder er kommentarer).
+#
+# A. To punkter, én strækning: som ovenfor.
+#
+# B. Flere punkter og to strækninger efter hinanden (p1 -> p2 -> p3):
+#   points:
+#     p1: {name: "Vestvej", lat: 55.4804, lon: 8.4675}
+#     p2: {name: "Midtvej", lat: 55.4828, lon: 8.4702}
+#     p3: {name: "Østvej",  lat: 55.4851, lon: 8.4729}
+#   point_order:
+#     direction_1: [p1, p2, p3]
+#     direction_2: [p3, p2, p1]
+#   distances:
+#     d1: {name: "Vestvej-Midtvej", from: p1, to: p2}
+#     d2: {name: "Midtvej-Østvej",  from: p2, to: p3}
+#     d3: {name: "Hele vejen",      from: p1, to: p3}
+#   straekninger:
+#     - id: vest
+#       navn: "Vestlige del"
+#       fra: p1
+#       til: p2
+#       elementer:
+#         - {navn: "Bump 1", type: bump, lat: 55.4812, lon: 8.4684, radius_m: 30}
+#     - id: oest
+#       navn: "Østlige del"
+#       fra: p2
+#       til: p3
+#       elementer: []
+#   stops: før det første og efter det sidste punkt i hver retning (valg 1 foreslår dem).
+#
+# C. Kryds, én retning (her retning 2: A -> P1 -> B). Slet sektion 6 og 7.
+#   analysetype: kryds
+#   points:
+#     pA: {name: "Før krydset",  lat: 55.5148, lon: 8.3725}
+#     pS: {name: "Stoplinje",    lat: 55.5154, lon: 8.3710}
+#     pB: {name: "Efter krydset", lat: 55.5170, lon: 8.3716}
+#   point_order:
+#     direction_2: [pA, pS, pB]
+#   distances:
+#     d1: {name: "Kø",           from: pA, to: pS}
+#     d2: {name: "Gennem krydset", from: pS, to: pB}
+#     d3: {name: "Hele krydset", from: pA, to: pB}
+#   stops:
+#     direction_2: {start: "Stop før krydset (By)", end: "Stop efter krydset (By)"}
+#   rapport:
+#     emne: "Krydset Vejnavn / Vejnavn, By"
+#   Hvilken retning er din? Valg 1 siger det (OBS-linjen i stopnavne.txt).
+# ==============================================================================

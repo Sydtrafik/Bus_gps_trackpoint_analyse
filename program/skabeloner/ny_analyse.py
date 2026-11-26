@@ -26,21 +26,25 @@ SAADAN = """Sådan laver du analysen
 
 1. Læg HAFAS-eksporten i mapperne:  data\\A  (før)  og  data\\B  (efter).
    Hver mappe skal have Details.csv og List.csv. Vejledning: vejledning\\eksportvejledning_HAFAS.md i værktøjsmappen.
-2. Åbn config.yaml (fx i Notesblok), og udfyld felterne med  <-- UDFYLD:
-   perioder, strækningens to ender (p1, p2) og elementerne. Bump: radius_m = 30 passer til et almindeligt enkelt bump.
-3. Dobbeltklik på koer_analyse.bat:
+2. Åbn config.yaml (fx i Notesblok). Guiden i filen siger, hvad der skal udfyldes [UDFYLD], hvad der kan
+   slettes [KAN SLETTES], og hvad der skal stå [RØR IKKE]. Udfyld analysetype, perioder, punkterne og
+   strækningerne med elementer (eller et kryds; eksempler nederst i filen). Bump: radius_m = 30 passer til et almindeligt enkelt bump.
+3. Dobbeltklik på koer_analyse.bat. Den tjekker config.yaml før hvert trin og siger, hvad der er galt, og hvor.
      0 = første gang: installér og test
-     1 = stoppesteder pr. retning: stopnavne.txt foreslår start og slut for hver retning;
-         kopiér dem ind i config.yaml (punkt 4). Står der OBS nederst, så byt p1 og p2 først.
+     1 = stoppesteder pr. retning og kontrolkort: stopnavne.txt foreslår start og slut for hver retning;
+         kopiér dem ind i config.yaml (stops). Står der OBS, så ret point_order først.
+         kontrolkort.html viser alle punkter og de fundne stoppesteder på et kort: tjek, at de ligger rigtigt.
      2 = prøvekørsel: tjek resultat\\proeve\\kvalitet.md
-     3 = fuld analyse og rapport
-4. Se resultat\\rapport.html. Køretid pr. tur: resultat\\turtabel.csv (Excel/Power BI); pr. time: resultat\\overblik.md.
+     3 = fuld analyse og rapport (kryds: kryds-rapport)
+     7 = tjek config.yaml og tegn kontrolkortet igen
+4. Se resultat\\rapport.html (kryds: resultat\\kryds_rapport.html). Køretid pr. tur: resultat\\turtabel.csv
+   (Excel/Power BI); pr. time: resultat\\overblik.md.
    Skriv titlen (hvad og hvor; et fund først, når det er verificeret) og teksterne i config.yaml, og vælg 4 for at bygge rapporten igen.
 5. Del dine fund: vælg 6 (laver resultat\\konklusion.yaml med rapportens nøgletal), udfyld felterne med UDFYLD,
    og vælg 5 (tilføjer den til de nationale analysekonklusioner i værktøjsmappen). Del den via repoet på GitHub
    (pull request eller issue). Vejledning: analyser\\README.md i værktøjsmappen.
 
-Kun én periode: sæt PERIODER=A øverst i koer_analyse.bat.
+Kun én periode: slet periode B under periods og data i config.yaml (koer_analyse.bat finder selv perioderne).
 Forbehold og hvordan tallene er regnet: vejledning\\metode_og_rapportering.md i værktøjsmappen.
 Værktøjet: {vaerktoej}
 """

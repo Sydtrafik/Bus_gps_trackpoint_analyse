@@ -11,8 +11,8 @@ og du skriver ingen kommandoer: du udfylder en fil og dobbeltklikker.
 - **Før og efter en ændring** på vejen, fx bump, indsnævringer eller en ny hastighedsgrænse.
 - **Én periode:** hvordan der køres på en strækning i dag (fart, opbremsning, acceleration, hvor
   bussen standser).
+- **Flere strækninger** i samme analyse, fx en vej delt i to, så rapporten kan skifte mellem dem.
 - **Køretid gennem et kryds**, stykke for stykke (før køen, stoplinjen, i krydset, efter krydset).
-  Det kræver den fulde config; se [program/README.md](program/README.md), "Kryds".
 
 **Data:** værktøjet er udviklet og afprøvet med eksport fra HAFAS (`Details.csv` og `List.csv`).
 GPS-data fra andre systemer skal først have de samme kolonner
@@ -52,21 +52,26 @@ den og røres ikke.
    resultat\                        tal og rapport
    ```
 
-2. **Åbn `config.yaml`** i Notesblok, og udfyld felterne mærket `<-- UDFYLD`: perioder,
-   strækningens to ender (koordinater fra Google Maps) og bump eller indsnævringer.
-3. **Dobbeltklik på `koer_analyse.bat`**, og vælg:
+2. **Åbn `config.yaml`** i Notesblok. Hver sektion er mærket `[UDFYLD]`, `[KAN SLETTES]` eller
+   `[RØR IKKE]`, og felterne med `<-- UDFYLD` skal rettes: analysetype (strækning eller kryds),
+   perioder, punkterne (koordinater fra Google Maps), strækningerne og deres bump eller
+   indsnævringer. Nederst i filen er eksempler på to punkter, flere strækninger og et kryds.
+3. **Dobbeltklik på `koer_analyse.bat`**, og vælg. Før hvert trin tjekkes `config.yaml`, og fejl
+   meldes på dansk med sektion, felt og hvad du skal gøre.
 
    ```
    0  første gang: installér pakker og test (ca. 1 min)
-   1  stoppesteder pr. retning, med forslag til, hvad du skriver i config.yaml
+   1  stoppesteder pr. retning, med forslag til, hvad du skriver i config.yaml, og kontrolkort.html
+      med alle punkter og de fundne stoppesteder på et kort, så du kan tjekke dem før kørsel
    2  prøvekørsel på 300 ture: tjek, at næsten alle ture er beholdt
-   3  fuld analyse og rapport (10-30 min)
+   3  fuld analyse og rapport (10-30 min; kryds: kryds-rapport)
    4  byg rapporten igen, når du har rettet titel og tekster i config.yaml
    5  tilføj din konklusion til de nationale analysekonklusioner (efter 6)
    6  lav din konklusionsfil med rapportens nøgletal (resultat\konklusion.yaml)
+   7  tjek config.yaml og tegn kontrolkortet igen
    ```
 
-4. **Læs rapporten** i `resultat\rapport.html`. Køretiden pr. tur står også i
+4. **Læs rapporten** i `resultat\rapport.html` (kryds: `resultat\kryds_rapport.html`). Køretiden pr. tur står også i
    `resultat\turtabel.csv` og pr. time i `resultat\overblik.md`. Forbehold og hvordan tallene er
    regnet: [metode_og_rapportering.md](vejledning/metode_og_rapportering.md).
 5. **Del dine fund:** valg 6 laver `resultat\konklusion.yaml` med rapportens nøgletal. Udfyld
@@ -83,7 +88,7 @@ den og røres ikke.
 | Før du deler en rapport | [metode_og_rapportering.md](vejledning/metode_og_rapportering.md): hvad tallene betyder, forbehold |
 | Når du skriver rapportens tekst | [formidling_og_grafik.md](vejledning/formidling_og_grafik.md) |
 | Når analysen skal bruges i en sag om vejregler | [vejledning/kilder/README.md](vejledning/kilder/README.md) |
-| Flere strækninger, kryds, fejlfinding | [program/README.md](program/README.md) (teknisk reference) |
+| Flere strækninger, kryds, fejlfinding | [program/README.md](program/README.md), "Den nemme vej" og "Kryds" (teknisk reference) |
 
 
 ## Hvad ligger her
