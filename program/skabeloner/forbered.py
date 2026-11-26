@@ -481,6 +481,8 @@ def kort(cfg_sti, ud, hent=True):
     data = {"grund": grund, "linjer": linjer, "punkter": punkter, "omraade": omr_pk or [[56.0, 10.0]]}
     vk_js = (PROGRAM / "vejkort.js").read_text(encoding="utf-8").replace("</", "<\\/")
     vk_css = (PROGRAM / "vejkort.css").read_text(encoding="utf-8")
+    # Outside the f-string: a backslash in an f-string expression needs Python 3.12+.
+    data_js = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
     side = f"""<!doctype html>
 <html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(titel)}</title>
@@ -507,7 +509,7 @@ config.yaml før kørsel (koordinaterne står i tabellen; Google Maps-linket vis
 <p class="daempet">Lavet af forbered.py kort ud fra {html.escape(Path(cfg_sti).name)}. Stoppesteder: HAFAS' planlagte koordinater (median pr. retning og stopnavn).</p>
 <script>{vk_js}</script>
 <script>
-const D = {json.dumps(data, ensure_ascii=False).replace("</", "<\\/")};
+const D = {data_js};
 const k = Vejkort.lav(document.getElementById('kort'), D.grund, D.omraade);
 k.tegn(D.linjer, D.punkter);
 k.tilpas(D.punkter.map((p) => [p.lat, p.lon]));
