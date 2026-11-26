@@ -654,7 +654,7 @@ Sæson og andre forskelle mellem perioderne er ikke en begrænsning ved værktø
 
 ```powershell
 $env:PYTHONUTF8 = "1"
-python -m pytest "$V\tests" -q                  # 91 tests (kræver pytest)
+python -m pytest "$V\tests" -q                  # 120 tests (kræver pytest)
 # eller uden pytest, én fil ad gangen:
 python "$V\tests\test_v2.py"                   # 11 tests (mod analyse_v2.2.py)
 python "$V\tests\test_komfort.py"              # 13 tests (komfort_v1.0)

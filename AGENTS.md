@@ -85,7 +85,7 @@ python "$V\rapport\byg_rapport.py" --data "$P\ud\rapportdata.json" --out "$P\ud\
 
 ## Sådan verificerer du
 
-1. **Tests** (trin 0): 91 tests, ingen data nødvendig (bl.a. `test_v2` mod `analyse_v2.2.py`, `test_komfort`, `test_zonetid`, `test_turtabel`, `test_rapport_v12`, `test_konklusioner_html` 7, `test_lav_konklusion` 4 og `test_vejkort` 4 (uden net); `test_konklusioner_html` tjekker også, at alle filer i `analyser\` er gyldige, og at `nationale_analysekonklusioner.md`/`.html` er lavet igen; browsertestene springes over uden playwright).
+1. **Tests** (trin 0): 120 tests, ingen data nødvendig (bl.a. `test_v2` mod `analyse_v2.2.py`, `test_komfort`, `test_zonetid`, `test_turtabel`, `test_rapport_v12`, `test_konklusioner_html` 7, `test_lav_konklusion` 4, `test_vejkort` 4 (uden net) og `test_tjek_config` 21; `test_konklusioner_html` tjekker også, at alle filer i `analyser\` er gyldige, og at `nationale_analysekonklusioner.md`/`.html` er lavet igen; browsertestene springes over uden playwright).
 2. **`kvalitet.md` i hver output-mappe** efter trin 2: antal beholdte og kasserede ture pr. årsag. Næsten alle `stop_ikke_fundet` = forkerte stopnavne eller omvendt retning. Alle `ingen_retningsflag` = `Turnummer` matcher ikke `Turreference`, eller `Retningsflag` mangler.
 3. **`kvalitet_pr_dag.csv`**: dage med høj kasseret-andel i træk = omkørsel eller ændret stopnavn. Beslut sammen med brugeren, om dagene skal stå som forbehold i rapporten.
 3b. **Turtabel** (trin 2b): konsollen skal skrive "køretid = tid ved til-punkt minus tid ved fra-punkt i N af N tilfælde" og "0 uden tidspunkt". Ellers er `result.csv` og `segmenter.csv` ikke fra samme kørsel.
