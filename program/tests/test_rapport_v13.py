@@ -196,7 +196,7 @@ def test_konklusionsfil_felt_standsning():
     assert any("ukendt felt 'standsninger'" in f for f in KH.tjek_analyse({**god, "standsninger": "i alt"}))
     md = KH.byg_md([("x", {**god, "standsning": "ved stop"})], "2026-11-26")
     assert "Tallene bygger på:** ture uden standsning ved stop" in md
-    assert "Tallene bygger på" not in KH.byg_md([("x", god)], "2026-11-26")
+    assert "- **Tallene bygger på:**" not in KH.byg_md([("x", god)], "2026-11-26")   # ældre fil: ingen linje pr. analyse
 
 
 # ---------------------------------------------------------------- browser
@@ -253,8 +253,51 @@ def test_browser_standsning_total_og_drift():
                 # drift: hele ture pr. dag (1) og 4 uger = 20 dage
                 assert "1 ture ×" in pg.inner_text("#d1") and "20 hverdage" in pg.inner_text("#d2") and "250 hverdage" in pg.inner_text("#d3")
                 assert "Bump for ruten pr. driftsdøgn" in pg.inner_text("#d4")
+                om = pg.inner_text("#om-dl")                                         # én strækning: vejen står som før
+                assert "Vejtype" in om and "hele analysen" not in om
                 assert fejl == [], fejl
                 pg.close()
+            b.close()
+
+
+def test_browser_to_straekninger_vej_gaelder_analysen():
+    """rapport.vej gælder hele analysen: med to strækninger må "2 indsnævringer" ikke stå som den valgte strækningens."""
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        print("SKIP test_browser_to_straekninger_vej_gaelder_analysen: playwright er ikke installeret")
+        return
+    with tempfile.TemporaryDirectory() as tmp:
+        rap = {**_rapport(None), "vej": {"vejtype": "Boligvej", "hastighed": "50 → 40 km/t", "andre_foranstaltninger": "2 indsnævringer"}}
+        cfg = Z.laes_config(S.skriv_config(tmp, rapport=rap, to_straekninger=True))
+        per = S.perioder(S.fart_kink, cfg, laengde=S.LAENGDE_2, afstande=S.AFSTANDE_2)
+        zj, _ = Z.beregn(cfg, per, log=lambda *a: None)
+        d = R13.bygg(cfg, per, zj, T12._turtabel(per), log=lambda *a: None)
+        sti = Path(tmp) / "rapport.html"
+        sti.write_text(B.byg(d, SKABELON), encoding="utf-8")
+        with sync_playwright() as pw:
+            b = None
+            for kw in ({"channel": "msedge"}, {"channel": "chrome"}, {}):
+                try:
+                    b = pw.chromium.launch(**kw)
+                    break
+                except Exception:      # noqa
+                    continue
+            if b is None:
+                print("SKIP test_browser_to_straekninger_vej_gaelder_analysen: ingen browser")
+                return
+            fejl = []
+            pg = b.new_page(viewport={"width": 1440, "height": 900})
+            pg.on("pageerror", lambda e: fejl.append(str(e)))
+            pg.goto(sti.as_uri())
+            pg.wait_for_function("window.RAPPORT_KLAR === true")
+            pg.click(".knapper[data-f=s] button[data-v=b]")                    # strækning B: 1 bump, 0 indsnævringer
+            om = pg.inner_text("#om-dl")
+            assert "Vej, hele analysen" in om and "Boligvej · 50 → 40 km/t · 2 indsnævringer" in om, om
+            assert "Indsnævringer\ningen i config" in om.replace("\t", "\n"), om
+            andre = om.split("Andre hastighedsforanstaltninger")[1].split("\n")[1].strip()
+            assert "2 indsnævringer" not in andre, om
+            assert fejl == [], fejl
             b.close()
 
 

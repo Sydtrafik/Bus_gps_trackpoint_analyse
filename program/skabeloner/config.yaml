@@ -131,6 +131,7 @@ rapport:
   kort: false                    # true = vejkort i rapporten (OpenStreetMap-data hentes én gang; rapporten virker uden internet)
   # Stoppesteder på strækningerne (én position pr. kørselsretning). Står der [], bruges dem, valg 1 fandt i
   # HAFAS-eksporten (se kontrolkort.html). Vil du rette dem, så kopiér blokken fra stopnavne.txt ind her.
+  # Rapporten bruger dem også til "standsning ved stop" (bussen holder højst 40 m fra stoppestedet).
   stoppesteder: []
   vej:                           # vises i "Om strækningen" øverst i rapporten
     vejtype: ""                  # <-- UDFYLD, fx "Almindelig vej i boligområde"

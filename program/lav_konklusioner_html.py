@@ -360,7 +360,7 @@ def byg_md(analyser, i_dag):
     r = [raekke(n, d) for n, d in analyser]
     ud = ["# Nationale analysekonklusioner", "",
           "Afsluttede trackpoint-analyser i hele landet, så vi kan lære af hinandens fund.", "",
-          "- **Tallene** er medianer. Strækninger: hverdage, ture uden standsning ved stop, begge retninger. Kryds: retningen med flest ture.",
+          "- **Tallene** er medianer. Strækninger: hverdage, ture uden standsning (se \"Tallene bygger på\" pr. analyse; ældre analyser: uden nogen standsning), begge retninger. Kryds: retningen med flest ture.",
           "- **Ændring** er køretid efter minus før.",
           "- **Laveste fart ved fartdæmper** er medianen af den laveste fart pr. tur ved hver fartdæmper (bump o.l.), gennemsnit over fartdæmperne.",
           "- **Graf, filtre og tegninger** står i `nationale_analysekonklusioner.html` (åbn den i en browser).",
@@ -520,7 +520,7 @@ SKABELON = """<!doctype html>
 <p class="meta" id="taeller" aria-live="polite"></p>
 <div class="tabelboks"><table id="tabel"><thead></thead><tbody></tbody></table></div>
 <ul class="noter">
-<li><strong>Tallene</strong> er medianer. Strækninger: hverdage, ture uden standsning ved stop, begge retninger. Kryds: retningen med flest ture.</li>
+<li><strong>Tallene</strong> er medianer. Strækninger: hverdage, ture uden standsning (se "Tallene bygger på" pr. analyse; ældre analyser: uden nogen standsning), begge retninger. Kryds: retningen med flest ture.</li>
 <li><strong>Ændring</strong> er køretid efter minus før.</li>
 <li><strong>Laveste fart ved fartdæmper</strong> er medianen af den laveste fart pr. tur ved hver fartdæmper (bump o.l.), gennemsnit over fartdæmperne.</li>
 <li><strong>Tegningerne</strong> er vejreglernes standardprofil for typen, ikke opmålte bump.</li>
@@ -727,7 +727,7 @@ function tidHtml(r) {
     + dele.map((e) => `<span>${esc(e.element)}</span><span class="v">${fmt(e.lav, 1)} – ${fmt(e.hoej, 1)} s</span><span class="spor">${bjaelke(e)}</span>`).join('')
     + `</div><ul class="noter"><li><strong>Mørk del (mindst):</strong> ekstra tid ved elementet ud over, at bussen også kørte langsommere på resten af strækningen.</li>`
     + `<li><strong>Lys del (højst):</strong> al ekstra tid i zonen om elementet. Den sande værdi ligger et sted imellem.</li>`
-    + `<li><strong>Tallene overlapper</strong> og kan derfor ikke lægges sammen til hele strækningens tal. Gennemsnit pr. tur uden standsning ved stop.</li></ul>`;
+    + `<li><strong>Tallene overlapper</strong> og kan derfor ikke lægges sammen til hele strækningens tal. Gennemsnit pr. tur uden nogen standsning.</li></ul>`;
 }
 function stykkerHtml(r) {
   const navn = Object.fromEntries(r.punkter.map((p) => [p.navn, p.beskrivelse]));
@@ -743,7 +743,7 @@ function kortHtml(r, ri) {
   const per = Object.entries(r.perioder).map(([k, p]) => `${pn[k]} ${esc(p.fra)} til ${esc(p.til)}${p.dage ? ` (${esc(p.dage)} ${esc(r.dageNavn)})` : ''}`).join('; ');
   const vej = [r.vejtype, r.omraade].filter(Boolean).map(esc).join(', ');
   const fakta = `<ul class="fakta">${li('Vej og område', vej)}${li('Buslommer', esc(r.buslommer))}${li('Parkering på vejen', esc(r.parkering))}`
-    + `${li('Fartdæmpere', esc(r.daemperTekst))}${li('Linje', esc(r.linjer))}${li('Perioder', per)}</ul>`;
+    + `${li('Fartdæmpere', esc(r.daemperTekst))}${li('Linje', esc(r.linjer))}${li('Perioder', per)}${li('Tallene bygger på', esc(r.standsning || ''))}</ul>`;
   const tegn = r.tegning ? `<figure><img src="${D.tegn[r.tegning]}" alt="Standardprofil: ${esc(r.bumpNavn)}"><figcaption><strong>${esc(r.bumpNavn)}</strong>: vejreglernes standardprofil, ikke opmålt${r.bumpAntaget ? '. Typen er antaget' : ''}.</figcaption></figure>`
     : (r.bumpNavn ? `<p class="note">Ingen tegning af ${esc(r.bumpNavn.toLowerCase())}: typen findes ikke i vejreglernes bilag.</p>` : '');
   const kort = r.punkter.length ? `<div class="vk-plads" data-ri="${ri}"></div>` : '';

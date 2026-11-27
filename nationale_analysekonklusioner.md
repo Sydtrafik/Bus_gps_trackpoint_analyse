@@ -2,7 +2,7 @@
 
 Afsluttede trackpoint-analyser i hele landet, så vi kan lære af hinandens fund.
 
-- **Tallene** er medianer. Strækninger: hverdage, ture uden standsning ved stop, begge retninger. Kryds: retningen med flest ture.
+- **Tallene** er medianer. Strækninger: hverdage, ture uden standsning (se "Tallene bygger på" pr. analyse; ældre analyser: uden nogen standsning), begge retninger. Kryds: retningen med flest ture.
 - **Ændring** er køretid efter minus før.
 - **Laveste fart ved fartdæmper** er medianen af den laveste fart pr. tur ved hver fartdæmper (bump o.l.), gennemsnit over fartdæmperne.
 - **Graf, filtre og tegninger** står i `nationale_analysekonklusioner.html` (åbn den i en browser).
@@ -22,6 +22,7 @@ Afsluttede trackpoint-analyser i hele landet, så vi kan lære af hinandens fund
 - **Linje(r):** 3A, begge retninger (ca. 129 ture pr. hverdag)
 - **Bustype:** Elbusser (alle ture); længde ikke oplyst
 - **Perioder:** før 2025-06-30 til 2025-09-25 (44 hverdage); efter 2025-10-18 til 2026-01-04 (51 hverdage)
+- **Tallene bygger på:** ture uden nogen standsning (heller ikke i kø eller ved kryds)
 - **Gennemsnitsfart (km/t):** 42 → 34
 - **Ekstra køretid pr. element (s pr. tur, mindst–højst; tallene overlapper og kan ikke lægges sammen):** Indsnævring 2 0,1–0,8; Indsnævring 1 0,4–1,4; Bump 2 2,9–4,0; Bump 1 2,5–3,6; Øvrig strækning 1,6–5,4; Hele strækningen 11,3
 - **Punkter:** Spangsbjerg Møllevej; Indsnævring 2; Indsnævring 1; Bump 2; Bump 1; Niels Lambertsens Vej

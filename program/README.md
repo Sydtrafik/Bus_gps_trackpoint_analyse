@@ -65,7 +65,7 @@ Kører på Windows og kræver Python (testet på 3.13; 3.10 eller nyere forvente
    - `7` tjek `config.yaml` og tegn kontrolkortet igen (fx efter du har rettet en koordinat).
 5. **Læs rapporten** og forbeholdene i [metode_og_rapportering.md](../vejledning/metode_og_rapportering.md), og tilføj dine fund til de nationale analysekonklusioner med valg 6 og 5 (trin 10).
 
-**Stoppesteder i rapporten:** valg 1 finder stoppestederne i HAFAS-eksporten (de planlagte koordinater på stop-rækkerne, median pr. retning og stopnavn) og gemmer dem i `resultat\stoppesteder_hafas.yaml`. Er `rapport.stoppesteder` tom (`[]`) i `config.yaml`, bruger rapporten automatisk dem, der ligger på en strækning (højst 40 m fra linjen mellem fra og til), én pr. side af vejen. `stopnavne.txt` har dem som en færdig blok: vil du rette eller fjerne et, så kopiér blokken ind i `config.yaml` og ret den; så bruges din. Kontrolkortet viser også OpenStreetMaps stoppesteder (busikon) og afstanden til nærmeste, så du kan se, om HAFAS' position passer. Kortet hentes én gang fra OpenStreetMap (Overpass) til `resultat\vejkort_kontrol.json`; uden net, eller hvis Overpass ikke svarer, viser kortet kun punkterne.
+**Stoppesteder i rapporten:** valg 1 finder stoppestederne i HAFAS-eksporten (de planlagte koordinater på stop-rækkerne, median pr. retning og stopnavn) og gemmer dem i `resultat\stoppesteder_hafas.yaml`. Er `rapport.stoppesteder` tom (`[]`) i `config.yaml`, bruger rapporten automatisk dem, der ligger på en strækning (højst 40 m fra linjen mellem fra og til), én pr. side af vejen. `stopnavne.txt` har dem som en færdig blok: vil du rette eller fjerne et, så kopiér blokken ind i `config.yaml` og ret den; så bruges din. Rapporten bruger også stoppestederne til at skelne standsning ved stop fra anden standsning (kø, kryds). Kontrolkortet viser også OpenStreetMaps stoppesteder (busikon) og afstanden til nærmeste, så du kan se, om HAFAS' position passer. Kortet hentes én gang fra OpenStreetMap (Overpass) til `resultat\vejkort_kontrol.json`; uden net, eller hvis Overpass ikke svarer, viser kortet kun punkterne.
 
 **Perioder og værktøjets sti:** `PERIODER=auto` øverst i `koer_analyse.bat` kører de perioder, der har data i `config.yaml`; skriv `A` eller `A B` for at bestemme selv. Flyttes værktøjsmappen, så ret `VAERKTOEJ` samme sted. Programversionerne, bat'en kalder, står i én blok lige under (ret dem ikke). Alle andre muligheder (parametre, komfortindstillinger): `config_eksempel.yaml` og afsnit 4.
 
@@ -83,7 +83,7 @@ Ved en ny version af pakken erstatter du hele værktøjsmappen. Analysemapperne 
 | 3b | `turtabel.py` | `turtabel.csv` (én række pr. tur til Excel/Power BI), `overblik.md`/`.csv` (køretid pr. stykke pr. time og periode) |
 | 4 | `komfort_v1.1.py` | `komfort.csv` (komfort pr. tur; `komfort_<id>.csv` ved flere strækninger) |
 | 5 | `zonetid.py` | `zonetid.json`/`.md` (ekstra køretid pr. element, interval; uden B: tid pr. zone) |
-| 6 | `rapport\lav_rapportdata_v1.2.py` (bruger `turtabel.csv`) og `rapport\byg_rapport.py` | `rapport.html` (én fil, med valg for dage, rute og time) |
+| 6 | `rapport\lav_rapportdata_v1.3.py` (bruger `turtabel.csv` og `segmenter.csv`) og `rapport\byg_rapport.py` | `rapport.html` (én fil, med valg for dage, rute og time) |
 | 7 | `lav_konklusion.py` (udfyld UDFYLD) og `lav_konklusioner_html.py --tilfoej`; del via repoet (pull request eller issue) | din fil i `analyser\`, `nationale_analysekonklusioner.md`/`.html` (trin 10) |
 
 Trin 3-6 kan køres med kun periode A: analyse af ét område uden sammenligning (afsnit "Én periode"). Flere strækninger i samme analyse: afsnit "Flere strækninger". Trin for trin: afsnit 4. Komplet kommandoliste med variabler: [AGENTS.md](../AGENTS.md).
@@ -139,10 +139,10 @@ Værktøjsmappens rod har kun det, brugeren selv rører. Alt andet ligger i `vej
 | `program\` | `turtabel.py` | Turtabel-trin: én række pr. tur (køretid pr. stykke, tidspunkt pr. punkt, time, ugedag, rute) og et overblik pr. time og periode. Ændrer ingen beregning. |
 | `program\` | `zonetid.py` | Zonetid-trin: ekstra køretid fordelt på elementer og øvrig strækning, med interval. |
 | `program\` | `lav_konklusion.py`, `lav_konklusioner_html.py`, `lav_vejkort.py` | Konklusionsfil med rapportens nøgletal (fra `rapportdata.json` eller kryds-`overblik.csv`), vejkort pr. analyse fra OpenStreetMap (`analyser\kort\`) og oversigten over alle filer i `analyser\` (`nationale_analysekonklusioner.md`/`.html`); trin 10. |
-| `program\` | `rapport\lav_rapportdata_v1.2.py` | Samler `result.csv`, `komfort.csv`, `segmenter.csv`, `turtabel.csv`, `zonetid.json` og config til én `rapportdata.json`, også pr. dagtype, rute og time. Bruges af `koer_analyse.bat`. |
+| `program\` | `rapport\lav_rapportdata_v1.3.py` (forrige: `lav_rapportdata_v1.2.py`), `standsning_v1.0.py` | Samler `result.csv`, `komfort.csv`, `segmenter.csv`, `turtabel.csv`, `zonetid.json` og config til én `rapportdata.json`, også pr. dagtype, rute og time. Bruges af `koer_analyse.bat`. |
 | `program\` | `rapport\lav_rapportdata.py` | Forrige version (v1.1, uden valg for dage, rute og time); samme tal i standardvalget. Bliver i pakken (afsnit 11) og bruges af analysemapper med en ældre `koer_analyse.bat`. |
 | `program\` | `rapport\lav_kryds_rapport.py`, `rapport\kryds_skabelon.html` | Kryds-rapport: køretid pr. stykke over døgnet, pr. rute og pr. planlagt tur, ud fra `turtabel.csv`. Én selvstændig HTML-fil. |
-| `program\` | `rapport\byg_rapport.py`, `rapport\skabelon_v1.2.html`, `rapport\skabelon.html` | Sætter `rapportdata.json` ind i skabelonen: én selvstændig HTML-fil. Skabelonen vælges efter datafilens version (v1.2 → `skabelon_v1.2.html`, v1.1 → `skabelon.html`). |
+| `program\` | `rapport\byg_rapport.py`, `rapport\skabelon_v1.2.html`, `rapport\skabelon.html` | Sætter `rapportdata.json` ind i skabelonen: én selvstændig HTML-fil. Skabelonen vælges efter datafilens version (v1.3 → `skabelon_v1.3.html`, v1.2 → `skabelon_v1.2.html`, v1.1 → `skabelon.html`). |
 | `program\` | `rapport\vendor\` | ECharts (Apache-2.0) med licensfiler. Indlejres i rapporten. |
 | `program\` | `vejkort.js`, `vejkort.css` | Vejkort som SVG ud fra OpenStreetMap-data (zoom, træk, fast tekststørrelse); bruges af rapporten og `nationale_analysekonklusioner.html`. |
 | `program\` | `config_eksempel.yaml` | Kommenteret fuld config med alle parametre (flere strækninger, alle indstillinger). |
@@ -150,7 +150,7 @@ Værktøjsmappens rod har kun det, brugeren selv rører. Alt andet ligger i `vej
 | `program\` | `VERSION` | Pakkens version (afsnit 11). |
 | `program\` | `requirements.txt` | Python-pakker. |
 | `program\` | `CHANGELOG.md` | Hvad v2.0, v2.1, v2.2, komfort_v1.0 og pakken ændrer. |
-| `program\` | `tests\` | Syntetiske tests (`test_v2.py`, `test_komfort.py`, `test_komfort_v11.py`, `test_zonetid.py`, `test_turtabel.py`, `test_kryds_rapport.py`, `test_rapport.py`, `test_rapport_v12.py`, `test_ny_analyse.py`, `test_forbered.py`, `test_konklusioner_html.py`, `test_lav_konklusion.py`, `test_vejkort.py`). |
+| `program\` | `tests\` | Syntetiske tests (`test_v2.py`, `test_komfort.py`, `test_komfort_v11.py`, `test_zonetid.py`, `test_turtabel.py`, `test_kryds_rapport.py`, `test_rapport.py`, `test_rapport_v12.py`, `test_rapport_v13.py`, `test_ny_analyse.py`, `test_forbered.py`, `test_konklusioner_html.py`, `test_lav_konklusion.py`, `test_vejkort.py`, `test_tjek_config.py`, `test_python310.py`). |
 
 ## 4. Kom i gang, trin for trin
 
@@ -293,13 +293,15 @@ Skriver `zonetid.json` (til rapporten) og `zonetid.md` (til at læse). Stræknin
 ### Trin 9. Rapport
 
 ```powershell
-python "$V\rapport\lav_rapportdata_v1.2.py" --config "$P\min_config.yaml" --a "$P\ud_A" --b "$P\ud_B" --turtabel "$P\ud\turtabel.csv" --zonetid "$P\ud\zonetid.json" --out "$P\ud\rapportdata.json"     # uden --b: kun én periode
+python "$V\rapport\lav_rapportdata_v1.3.py" --config "$P\min_config.yaml" --a "$P\ud_A" --b "$P\ud_B" --turtabel "$P\ud\turtabel.csv" --zonetid "$P\ud\zonetid.json" --out "$P\ud\rapportdata.json"     # uden --b: kun én periode
 python "$V\rapport\byg_rapport.py" --data "$P\ud\rapportdata.json" --out "$P\ud\rapport.html"
 ```
 
 Kræver `turtabel.csv` fra trin 6b (dagtype, rute, planlagt turnummer og time pr. tur). `rapportdata.json` indeholder kun aggregerede tal (medianer, andele, antal, intervaller): ingen tur-id og ingen positioner pr. ping. `rapport.html` er én selvstændig fil, der kan sendes pr. mail og åbnes uden internet (Kvaglundvej: ca. 7 MB, fordi tallene ligger pr. dagtype og time).
 
-**Valg og datagrundlag (v1.2, ingen skjult filtrering):** øverst vælges **dage** (hverdage, weekend og helligdage, alle dage), **rute** (vises kun ved mere end én rute) og **time** (liste, eller klik på en søjle i "Datagrundlag"). Standard er `udvalg.dagtype` (hverdage), alle ruter og alle timer, og linjen under titlen siger, at konklusionen i titlen gælder det. Valgene styrer nøgletal, fartprofil, køretid med og uden standsning, komfort, datagrundlag, planlagte ture, drift og køretid pr. måned; ekstra tid pr. element (zonetid) gælder altid standardvalget og siger det. Ture med dårlige data (stoprække-match, langt fra GPS, fart og komfort kunne ikke regnes) er fravalgt med antal og andel ved valgene. Intet skjules pga. få ture: grupper under 20 ture og måneder under 5 dage vises og markeres OBS. "Datagrundlag" viser antal ture pr. time, andelen med standsning ved stop og de planlagte ture (turnummer, klokkeslæt, kørsler, median). "Hvad bygger tallene på" viser for hvert afsnit dage, rute, timer og standsning ved stop. "Om strækningen" viser længde, vejtype, hastighedsgrænse, bump (antal og type), indsnævringer og andre foranstaltninger fra `rapport.vej` og `elementer` i config.
+**Standsning (v1.3):** to definitioner. *Ved stop*: bussen kommer under 3,6 km/t højst 40 m fra et stoppested i `rapport.stoppesteder` (på sin side af vejen). *Nogen standsning*: under 3,6 km/t et sted på strækningen, også i kø og ved kryds. Standard er ture uden standsning ved stop; mangler stoppesteder, findes kun 'nogen standsning'. Hvert afsnit skriver, hvilken definition det bruger. Ekstra køretid pr. element (zonetid) er altid ture uden nogen standsning. Drift vises pr. dag, pr. 4 uger (20 hverdage) og pr. år (250 hverdage) med ture pr. dag rundet ned.
+
+**Valg og datagrundlag (v1.2 og v1.3, ingen skjult filtrering):** øverst vælges **dage** (hverdage, weekend og helligdage, alle dage), **rute** (vises kun ved mere end én rute) og **time** (liste, eller klik på en søjle i "Datagrundlag"). Standard er `udvalg.dagtype` (hverdage), alle ruter og alle timer, og linjen under titlen siger, at konklusionen i titlen gælder det. Valgene styrer nøgletal, fartprofil, køretid med og uden standsning, komfort, datagrundlag, planlagte ture, drift og køretid pr. måned; ekstra tid pr. element (zonetid) gælder altid standardvalget og siger det. Ture med dårlige data (stoprække-match, langt fra GPS, fart og komfort kunne ikke regnes) er fravalgt med antal og andel ved valgene. Intet skjules pga. få ture: grupper under 20 ture og måneder under 5 dage vises og markeres OBS. "Datagrundlag" viser antal ture pr. time, andelen med standsning ved stop og de planlagte ture (turnummer, klokkeslæt, kørsler, median). "Hvad bygger tallene på" viser for hvert afsnit dage, rute, timer og standsning ved stop. "Om strækningen" viser længde, vejtype, hastighedsgrænse, bump (antal og type), indsnævringer og andre foranstaltninger fra `rapport.vej` og `elementer` i config.
 
 Den har desuden en strækningsvælger (ved flere strækninger), retningsknapper, stop-filter (uden standsning ved stop som standard), tre nøgletal med afgrænsning og antal ture, fartprofil med p25-p75-bånd og markerede elementer, køretid med og uden standsning ved stop, komfort (opbremsning, acceleration, samlet, med en sammenligning med ture med standsning ved stop), en lille tabel over ekstra tid pr. element, drift, køretid pr. måned, forbehold og et foldet afsnit "Sådan har vi målt". Med kun én periode viser rapporten niveauer i stedet for før og efter, og sammenligningerne (ekstra tid, intervaltabel, drift) er skjult.
 
@@ -311,7 +313,7 @@ Den har desuden en strækningsvælger (ved flere strækninger), retningsknapper,
 - **Kort (valgfrit, slået fra som standard):** `rapport.kort: true` giver et vejkort med veje, bygninger, fodgængerfelter og stoppesteder fra OpenStreetMap, strækningerne, elementerne og stoppestederne fra config. `byg_rapport.py` henter kortdata én gang via Overpass API til `vejkort.json` ved siden af `rapportdata.json` (igen kun, hvis punkterne ligger uden for kortet); rapporten virker derefter uden internet, og der hentes ingen kortfliser. Fejler hentningen, viser kortet kun punkterne. `--uden-kort` springer hentningen over. Kildeangivelse står under kortet. Intet token kræves.
 - **Egen skabelon:** kopiér `skabelon.html` og brug `--skabelon`. De fem mærker i filen skal bevares (se [AGENTS.md](../AGENTS.md)).
 - Vælg først rapporttype og budskab, og skriv teksten efter [formidling_og_grafik.md](../vejledning/formidling_og_grafik.md) og afsnit 5 i [metode_og_rapportering.md](../vejledning/metode_og_rapportering.md). Komfort er **passagerkomfort i kørslen på hele strækningen** (opbremsning og acceleration langs vejen), ikke stødet over selve bumpet.
-- **Stoppesteder** har én position pr. side af vejen, altså pr. kørselsretning. Angiv hvert stop med `retning` (1 eller 2) under `rapport.stoppesteder`. Fartprofilen og kortet viser dem pr. retning, og retningsknapperne vælger de rigtige.
+- **Stoppesteder** har én position pr. side af vejen, altså pr. kørselsretning. Angiv hvert stop med `retning` (1 eller 2) under `rapport.stoppesteder`. Fartprofilen og kortet viser dem pr. retning, og retningsknapperne vælger de rigtige. De bruges også til standsning ved stop (højst 40 m fra stoppestedet).
 
 ### Trin 10. Tilføj dine konklusioner via GitHub
 
@@ -485,8 +487,8 @@ rapport:                        # alt valgfrit
   periode_navn: "Perioden"  # navn, når der kun er én periode
   afsender: "..."           # vises i fodnoten
   udtraekdato: "11-11-2026" # vises i fodnoten (ellers kun byggedato)
-  min_ture: 5               # kun skabelon.html (v1.1): færre ture i en gruppe vises som "-"; v1.2 viser alt og markerer under 20 ture
-  vej:                      # "Om strækningen" (v1.2); mangler et felt, skriver rapporten "ikke oplyst i config"
+  min_ture: 5               # kun skabelon.html (v1.1): færre ture i en gruppe vises som "-"; v1.2 og v1.3 viser alt og markerer under 20 ture
+  vej:                      # "Om strækningen" (v1.2 og v1.3); mangler et felt, skriver rapporten "ikke oplyst i config"
     vejtype: "Almindelig vej i boligområde"
     hastighed: "50 → 40 km/t"
     bumptype: "Cirkelbump"
@@ -518,7 +520,7 @@ Skrives i output-mappen (mappen for `data: output` i config, eller `--output-dir
 | `turtabel.csv` | Kun efter `turtabel.py` (trin 6b): én række pr. tur fra A og B (se nedenfor). UTF-8 med BOM, så Excel viser æ, ø og å. |
 | `overblik.csv`, `overblik.md` | Kun efter `turtabel.py`: køretid pr. stykke, `Stykke;Retning;Periode;Time;n;p25;median;p75` (`Time` = `alle` eller 0-23). |
 | `zonetid.json`, `zonetid.md` | Kun efter `zonetid.py`: gennemsnitlig tid pr. zone før og efter, ekstra tid pr. element som interval, for ture uden standsning ved stop (nøglen `uden stop`) / alle ture og retning 1 / 2 / begge. |
-| `rapportdata.json`, `rapport.html` | Kun efter `rapport\lav_rapportdata_v1.2.py` (eller v1.1 `lav_rapportdata.py`) og `byg_rapport.py`: aggregerede tal og den færdige rapport. Felterne står øverst i beregningsfilen. |
+| `rapportdata.json`, `rapport.html` | Kun efter `rapport\lav_rapportdata_v1.3.py` (eller v1.2/v1.1) og `byg_rapport.py`: aggregerede tal og den færdige rapport. Felterne står øverst i beregningsfilen. |
 | `debug_*.csv`, `inspect\` | Kun med `--debug`, `--inspect-trip <Turreference>` eller `--inspect-n <N>`: mellemresultater pr. fase. |
 
 ### `result.csv`
@@ -647,6 +649,7 @@ Sæson og andre forskelle mellem perioderne er ikke en begrænsning ved værktø
 - **Efter udvidelsen** (komfort_v1.1, flere strækninger, én periode): `komfort.csv` fra `komfort_v1.1.py` er identisk byte for byte med filen fra `komfort_v1.0.py` (begge perioder), og alle afstemte tal er uændrede (0 afvigelser). Kun periode A giver samme tal som A-delen af før/efter-kørslen (nøgletal, fartprofil, måned, omfang og tid pr. zone: 0 afvigelser).
 - **`analyse_v2.2.py` mod `analyse_v2.1.py`:** på Kvaglundvej er `result.csv`, `segmenter.csv`, `kasserede_ture.csv`, `kvalitet.csv`, `kvalitet_pr_dag.csv` og `opsummering.csv` identiske byte for byte (A og B, også `--max-trips 300`). På Søndre Tobølvej (`Details.csv` 3,4 GB, 24,4 mio. rækker) giver v2.2 på hele filen de samme filer som v2.1 på en manuelt forfiltreret fil.
 - **`turtabel.py`:** på Kvaglundvej (14.320 ture, 4 stykker, 7 punkter) er køretiden lig tidspunktet ved til-punktet minus fra-punktet i alle 57.280 tilfælde, og overblikket med `opsummering.csv`'s udvalg giver samme antal, p25, median og p75 som `opsummering.csv` (16 rækker, 0 afvigelser). Ændres køretiden for nogle ture, fanges afvigelsen.
+- **`rapport\lav_rapportdata_v1.3.py` mod v1.2:** på Kvaglundvej (segmenter.csv lavet igen fra rådata) er omfang, nøgletal og fartprofil (median, 25 % og 75 %) for 'nogen standsning', måned, drift (v1.2-felterne), zonetid, følsomhed, fravalg, planlagte ture og fordeling celle for celle som v1.2 (0 afvigelser; 'ved stop'-grupperne i stedet giver 4.854 afvigelser). Total-rækken i planlagte ture og drift pr. 4 uger og år er genberegnet uafhængigt fra `turtabel.csv` (0 afvigelser; tid forskudt én time giver 8). 96 % (før) og 95 % (efter) af standsningerne sker højst 40 m fra et stoppested; under 1 % ændring fra 20 til 50 m.
 - **`rapport\lav_rapportdata_v1.2.py` mod v1.1:** på Kvaglundvej (bat-kæden, valg 3) er standardvalget (hverdage, alle ruter, alle timer) identisk byte for byte med v1.1 for omfang, nøgletal, fartprofil, drift, zonetid, følsomhed og måned, og fordelingen summeret over dagtype, rute og time er ens; eneste forskel er 6 månedsrækker med 1 dag (juni 2025, januar 2026), som v1.1 sprang over og v1.2 viser markeret. Tallene pr. dagtype og time er genberegnet uafhængigt fra `turtabel.csv` + `komfort.csv` (3.960 tjek, 0 afvigelser); tid forskudt én time, helligdage som hverdage og komfortstatus ignoreret fanges (1.822, 912 og 216 afvigelser).
 - Kørselstid med v2.2 (afhænger af maskinen): ca. 4-8 min og højst 1,2-1,7 GB RAM pr. periode ved ca. 9 mio. rækker i `Details.csv`, ca. 9 min og højst 2,2 GB ved 24,4 mio. rækker; komfort ca. 20 s, zonetid ca. 20 s, rapportdata ca. 1 min (v1.2: ca. 4 min på Kvaglundvej).
 
@@ -654,7 +657,7 @@ Sæson og andre forskelle mellem perioderne er ikke en begrænsning ved værktø
 
 ```powershell
 $env:PYTHONUTF8 = "1"
-python -m pytest "$V\tests" -q                  # 120 tests (kræver pytest)
+python -m pytest "$V\tests" -q                  # 131 tests (kræver pytest)
 # eller uden pytest, én fil ad gangen:
 python "$V\tests\test_v2.py"                   # 11 tests (mod analyse_v2.2.py)
 python "$V\tests\test_komfort.py"              # 13 tests (komfort_v1.0)
@@ -663,6 +666,7 @@ python "$V\tests\test_zonetid.py"              # 11 tests: kendt fart -> kendt z
 python "$V\tests\test_turtabel.py"             # 6 tests: kendte tider -> turtabel, udvalg, percentiler, kontrol, én periode
 python "$V\tests\test_kryds_rapport.py"        # 3 tests: kendte køretider -> tal pr. rute, time og planlagt tur; ingen tur-id i HTML
 python "$V\tests\test_rapport.py"              # 12 tests: syntetisk datasæt -> rapportdata -> HTML uden JS-fejl, én periode, to strækninger, stop pr. retning, kontrast
+python "$V\tests\test_rapport_v13.py"          # 9 tests: standsning ved stop (kendt positiv og negativ), "i alt" = v1.2, drift rundet ned, total-række, konklusionsfeltet, browser, vej ved to strækninger
 python "$V\tests\test_rapport_v12.py"          # 6 tests: v1.2 = v1.1 i standardvalget; kendte tal pr. time, dagtype og rute; fravalg; museklik på en time
 python "$V\tests\test_konklusioner_html.py"     # 7 tests: konklusionsfilerne tjekkes (ugyldige afvises), html og md laves igen, browsertest
 python "$V\tests\test_lav_konklusion.py"        # 4 tests: rapportdata/overblik -> konklusionsfil med kendte tal; må ikke overskrive

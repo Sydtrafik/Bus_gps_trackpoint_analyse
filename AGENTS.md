@@ -21,7 +21,7 @@ Brugerens analyser ligger uden for værktøjsmappen, i `trackpoint_analyser\<nav
 
 ## Regler for dig
 
-1. **Ret ikke beregningen.** `analyse_v2.2.py` (og den forrige `analyse_v2.1.py`), `komfort_v1.0.py` og `zonetid.py` er verificerede. Behov for en ændring: lav en ny fil med nyt versionsnummer (`analyse_v2.3.py`), behold den gamle, og kør afstemningen nedenfor.
+1. **Ret ikke beregningen.** `analyse_v2.2.py` (og den forrige `analyse_v2.1.py`), `komfort_v1.0.py`, `zonetid.py`, `standsning_v1.0.py` og `rapport\lav_rapportdata_v1.3.py` (og de forrige v1.2 og v1.1) er verificerede. Behov for en ændring: lav en ny fil med nyt versionsnummer (`analyse_v2.3.py`), behold den gamle, og kør afstemningen nedenfor.
 2. **Spørg brugeren**, før du vælger perioder, strækningernes ender, elementernes koordinater, udvalget (hverdage/helligdage) **og rapporttype og budskab** ([formidling_og_grafik.md](vejledning/formidling_og_grafik.md), afsnit 1). Det er brugerens beslutninger. Hvordan koden køres, afgør du selv.
 2b. **Data forsvinder.** HAFAS gemmer kun ca. 3 måneder tilbage. Er der en ændring på vej, så sig til brugeren, at før-perioden skal eksporteres nu; den kan ikke genskabes bagefter. Mangler der en før-periode, kan du stadig køre kæden med kun periode A (niveauer, ingen sammenligning).
 3. **Rådata, tur-id'er og ping-udtræk hører ikke hjemme i rapporten eller i filer, der deles.** `rapportdata.json`, `overblik.md`/`.csv` og HTML-rapporten indeholder kun aggregerede tal. `turtabel.csv` har tur-id og er til brugerens egen udforskning.
@@ -73,7 +73,7 @@ python "$V\komfort_v1.1.py" --segments "$P\ud_B\segmenter.csv" --config "$P\min_
 python "$V\zonetid.py" --config "$P\min_config.yaml" --a "$P\ud_A" --b "$P\ud_B" --out "$P\ud"
 
 # 5. Rapport: rapportdata.json, derefter én HTML-fil
-python "$V\rapport\lav_rapportdata_v1.2.py" --config "$P\min_config.yaml" --a "$P\ud_A" --b "$P\ud_B" --turtabel "$P\ud\turtabel.csv" --zonetid "$P\ud\zonetid.json" --out "$P\ud\rapportdata.json"
+python "$V\rapport\lav_rapportdata_v1.3.py" --config "$P\min_config.yaml" --a "$P\ud_A" --b "$P\ud_B" --turtabel "$P\ud\turtabel.csv" --zonetid "$P\ud\zonetid.json" --out "$P\ud\rapportdata.json"
 python "$V\rapport\byg_rapport.py" --data "$P\ud\rapportdata.json" --out "$P\ud\rapport.html"
 ```
 
@@ -85,7 +85,7 @@ python "$V\rapport\byg_rapport.py" --data "$P\ud\rapportdata.json" --out "$P\ud\
 
 ## Sådan verificerer du
 
-1. **Tests** (trin 0): 120 tests, ingen data nødvendig (bl.a. `test_v2` mod `analyse_v2.2.py`, `test_komfort`, `test_zonetid`, `test_turtabel`, `test_rapport_v12`, `test_konklusioner_html` 7, `test_lav_konklusion` 4, `test_vejkort` 4 (uden net) og `test_tjek_config` 21; `test_konklusioner_html` tjekker også, at alle filer i `analyser\` er gyldige, og at `nationale_analysekonklusioner.md`/`.html` er lavet igen; browsertestene springes over uden playwright).
+1. **Tests** (trin 0): 131 tests, ingen data nødvendig (bl.a. `test_v2` mod `analyse_v2.2.py`, `test_komfort`, `test_zonetid`, `test_turtabel`, `test_rapport_v12`, `test_rapport_v13` 9, `test_konklusioner_html` 7, `test_lav_konklusion` 4, `test_vejkort` 4 (uden net), `test_tjek_config` 21 og `test_python310` 2 (al Python i pakken skal kunne køre på Python 3.10); `test_konklusioner_html` tjekker også, at alle filer i `analyser\` er gyldige, og at `nationale_analysekonklusioner.md`/`.html` er lavet igen; browsertestene springes over uden playwright).
 2. **`kvalitet.md` i hver output-mappe** efter trin 2: antal beholdte og kasserede ture pr. årsag. Næsten alle `stop_ikke_fundet` = forkerte stopnavne eller omvendt retning. Alle `ingen_retningsflag` = `Turnummer` matcher ikke `Turreference`, eller `Retningsflag` mangler.
 3. **`kvalitet_pr_dag.csv`**: dage med høj kasseret-andel i træk = omkørsel eller ændret stopnavn. Beslut sammen med brugeren, om dagene skal stå som forbehold i rapporten.
 3b. **Turtabel** (trin 2b): konsollen skal skrive "køretid = tid ved til-punkt minus tid ved fra-punkt i N af N tilfælde" og "0 uden tidspunkt". Ellers er `result.csv` og `segmenter.csv` ikke fra samme kørsel.
@@ -103,7 +103,7 @@ python "$V\rapport\byg_rapport.py" --data "$P\ud\rapportdata.json" --out "$P\ud\
 ## Faldgruber (målt)
 
 - **HAFAS gemmer kun ca. 3 måneder tilbage.** Før-perioden skal eksporteres, før ændringen sker; ellers er den væk.
-- **Stoppesteder har én position pr. side af vejen** (pr. kørselsretning). Angiv dem med `retning` under `rapport.stoppesteder`; fartprofil og kort viser dem pr. retning.
+- **Stoppesteder har én position pr. side af vejen** (pr. kørselsretning). Angiv dem med `retning` under `rapport.stoppesteder`; fartprofil og kort viser dem pr. retning, og rapporten bruger dem til standsning ved stop.
 
 - **Stoprækkers tidsstempel ligger efter passagen:** median ca. 8-9 s og 75-85 m efter bussens nærmeste passage. Stop-rækker bruges derfor ikke til fart/komfort/zoner; ture med et målepunkt matchet på en stoprække flagges (`stoprække_<punkt>`) og udelades fra udvalget.
 - **Omkørselsdage:** dage, hvor bussen ikke kører strækningen, kasseres som `stop_ikke_fundet`. Tjek `kvalitet_pr_dag.csv`, og skriv dagene i `rapport.forbehold`.
@@ -119,13 +119,14 @@ python "$V\rapport\byg_rapport.py" --data "$P\ud\rapportdata.json" --out "$P\ud\
 
 ## Rapporten: tilpasning
 
-- **Valg og datagrundlag (v1.2):** rapporten har synlige valg for dage, rute og time (standard: `udvalg.dagtype`, alle ruter, alle timer; titlen gælder standardvalget, og linjen under den siger det). Zonetid følger ikke valgene. Fravalgte ture står med antal og andel; få ture vises og markeres OBS. "Om strækningen" læser `rapport.vej` (vejtype, hastighed, bumptype, andre_foranstaltninger): spørg brugeren om dem (regel 2), `byg_rapport.py` advarer, hvis de mangler.
-- **Farver og skrift:** CSS-variablerne øverst i `program\rapport\skabelon_v1.2.html` (`:root`; `skabelon.html` til rapportdata v1.1). Kør `byg_rapport.py` igen. Graferne læser de samme variabler.
+- **Standsning (v1.3):** to definitioner. *Ved stop*: bussen kommer under 3,6 km/t højst 40 m fra et stoppested i `rapport.stoppesteder` (på sin side af vejen). *Nogen standsning*: under 3,6 km/t et sted på strækningen, også i kø og ved kryds. Standard er ture uden standsning ved stop; mangler stoppesteder, findes kun 'nogen standsning'. Hvert afsnit skriver, hvilken definition det bruger. Ekstra køretid pr. element (zonetid) er altid ture uden nogen standsning.
+- **Valg og datagrundlag (v1.2 og v1.3):** rapporten har synlige valg for dage, rute og time (standard: `udvalg.dagtype`, alle ruter, alle timer; titlen gælder standardvalget, og linjen under den siger det). Zonetid følger ikke valgene. Fravalgte ture står med antal og andel; få ture vises og markeres OBS. "Om strækningen" læser `rapport.vej` (vejtype, hastighed, bumptype, andre_foranstaltninger): spørg brugeren om dem (regel 2), `byg_rapport.py` advarer, hvis de mangler.
+- **Farver og skrift:** CSS-variablerne øverst i `program\rapport\skabelon_v1.3.html` (`:root`; `skabelon_v1.2.html` og `skabelon.html` til rapportdata v1.2 og v1.1). Kør `byg_rapport.py` igen. Graferne læser de samme variabler.
 - **Tekster:** sektionen `rapport:` i config (titel, undertitel, retningsnavne, stoppesteder, forbehold, kilde, målenoter). Mangler en tekst, bruges en neutral standardtekst.
 - **Kort:** `rapport.kort: true` giver et vejkort (SVG, `program\vejkort.js`, samme som i `nationale_analysekonklusioner.html`) med zoom og træk. `byg_rapport.py` henter én gang OpenStreetMap-data (Overpass) til `vejkort.json` ved siden af `rapportdata.json`; rapporten virker derefter uden internet, og der hentes ingen kortfliser. `--uden-kort` springer hentningen over (så vises kun punkterne). Slået fra som standard.
 - **Læs [formidling_og_grafik.md](vejledning/formidling_og_grafik.md), før du ændrer titler, tekst, farver eller grafer i skabelonen;** guiden er eksempler, ikke love. Titlen siger, hvad og hvor der er målt; et fund står først i titlen, når det er verificeret (Anthon 2026-11-19). Pladsholdere i titlen giver en advarsel fra `byg_rapport.py`.
-- **Egen skabelon:** kopiér `skabelon_v1.2.html`, behold de fem mærker (`{{TITEL}}`, `__RAPPORTDATA__`, `/*__ECHARTS__*/`, `/*__VEJKORT_JS__*/`, `/*__VEJKORT_CSS__*/`), og kald `byg_rapport.py --skabelon <fil>`.
-- Datafelterne i `rapportdata.json` er beskrevet øverst i `rapport\lav_rapportdata_v1.2.py` (v1.1: `rapport\lav_rapportdata.py`).
+- **Egen skabelon:** kopiér `skabelon_v1.3.html`, behold de fem mærker (`{{TITEL}}`, `__RAPPORTDATA__`, `/*__ECHARTS__*/`, `/*__VEJKORT_JS__*/`, `/*__VEJKORT_CSS__*/`), og kald `byg_rapport.py --skabelon <fil>`.
+- Datafelterne i `rapportdata.json` er beskrevet øverst i `rapport\lav_rapportdata_v1.3.py` (v1.2: `rapport\lav_rapportdata_v1.2.py`, v1.1: `rapport\lav_rapportdata.py`).
 
 ## Regler for rapporttekst
 
@@ -145,8 +146,9 @@ Reglerne står i [metode_og_rapportering.md](vejledning/metode_og_rapportering.m
 | `program\turtabel.py` | `turtabel.csv` (én række pr. tur til Excel/Power BI) og `overblik.md`/`.csv` (køretid pr. stykke pr. time og periode). Samler kun; ingen ny beregning. |
 | `program\rapport\lav_kryds_rapport.py`, `kryds_skabelon.html` | Kryds-rapport (én HTML-fil) ud fra `turtabel.csv`: køretid pr. stykke over døgnet, pr. rute og planlagt tur. Kun HAFAS-data som kilde. |
 | `program\zonetid.py` | Ekstra køretid pr. element (zoner, interval). |
-| `program\rapport\lav_rapportdata_v1.2.py`, `byg_rapport.py`, `skabelon_v1.2.html`, `vendor\` | Strækningsrapport med valg for dage, rute og time (kræver `turtabel.csv`). |
-| `program\rapport\lav_rapportdata.py`, `skabelon.html` | Forrige version (v1.1) af rapportens beregning og skabelon; rettes ikke (regel 1). |
+| `program\rapport\lav_rapportdata_v1.3.py`, `byg_rapport.py`, `skabelon_v1.3.html`, `vendor\` | Strækningsrapport med valg for dage, rute og time og to definitioner af standsning (kræver `turtabel.csv` og `segmenter.csv`). |
+| `program\standsning_v1.0.py` | Standsning ved stop og i alt pr. tur (bruges af rapportdata v1.3; kan køres alene til kontrol). |
+| `program\rapport\lav_rapportdata_v1.2.py`, `skabelon_v1.2.html`, `lav_rapportdata.py`, `skabelon.html` | Forrige versioner (v1.2 og v1.1) af rapportens beregning og skabelon; rettes ikke (regel 1). |
 | `program\config_eksempel.yaml`, `program\eksempler\config_kvaglundvej.yaml` | Kommenteret fuld config og et udfyldt eksempel. |
 | `ny_analyse.bat`, `program\skabeloner\` | Den nemme vej: opretter en analysemappe med den fulde `config.yaml` med guide (en eller flere strækninger, eller kryds) og `koer_analyse.bat` (menu eller argument 0-7); `tjek_config.py` tjekker config'en før kørsel; `forbered.py` laver stopforslag, fundne stoppesteder, kontrolkort, bump-vinduer og config-info til bat'en. |
 | `vejledning\formidling_og_grafik.md` | Guide til rapporttype, budskab, titler, tekst, grafer, farver og tjek før deling. |

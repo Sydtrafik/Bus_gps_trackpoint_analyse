@@ -213,8 +213,8 @@ rapport:
   periode_navn: "Perioden"          # navn, når der kun er én periode (ingen før/efter)
   afsender: ""                      # vises i fodnoten (valgfrit)
   udtraekdato: ""                   # fx "11-11-2026"; vises i fodnoten (ellers kun byggedato)
-  min_ture: 5                        # kun skabelon.html (v1.1): færre ture -> "-". v1.2 viser alle tal og markerer grupper under 20 ture
-  vej: {}                            # "Om strækningen" (v1.2): vejtype, hastighed, bumptype, andre_foranstaltninger (tekst),
+  min_ture: 5                        # kun skabelon.html (v1.1): færre ture -> "-". v1.2 og v1.3 viser alle tal og markerer grupper under 20 ture
+  vej: {}                            # "Om strækningen" (v1.2 og v1.3): vejtype, hastighed, bumptype, andre_foranstaltninger (tekst),
                                      # fx {vejtype: "Almindelig vej i boligområde", hastighed: "50 → 40 km/t", bumptype: "Cirkelbump",
                                      #     andre_foranstaltninger: "2 indsnævringer"}. Mangler et felt, advarer byg_rapport.py.
   foer_navn: "Før"
@@ -224,6 +224,9 @@ rapport:
     "1": "Retning 1"
     "2": "Retning 2"
   stoppesteder: []                    # valgfrit, én position pr. side af vejen (kørselsretning): [{navn: "Stopnavn", retning: 1, lat: 55.48, lon: 8.46}, ...]
+                                      # Bruges også til "standsning ved stop" (rapport v1.3): bussen under 3,6 km/t højst 40 m fra
+                                      # stoppestedet på sin side af vejen (standsning_v1.0.py). Uden stoppesteder skelner rapporten
+                                      # kun mellem ture med og uden nogen standsning.
   forbehold: []                       # korte linjer i forbeholdsboksen (fx omkørselsdage, ingen kontrolstrækning)
   kilde: "Kilde: realtidsdata (GPS-positioner)."
   kort: false                         # standard false. true = vejkort ud fra OpenStreetMap-data (hentes én gang ved byg_rapport.py; rapporten virker uden internet)

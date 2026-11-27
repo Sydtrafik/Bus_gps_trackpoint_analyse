@@ -466,10 +466,18 @@ function drawOm() {
     ['Hastighedsgrænse', v.hastighed || io],
     ['Bump', nb ? `${nb}${v.bumptype ? ' · ' + v.bumptype : ' · type ' + io}` : 'ingen i config'],
     ['Indsnævringer', ni ? String(ni) : 'ingen i config'],
-    ['Andre hastighedsforanstaltninger', [v.andre_foranstaltninger, andre.length ? andre.join(', ') : ''].filter(Boolean).join(' · ') || io],
+    ['Andre hastighedsforanstaltninger', [FLERE ? '' : v.andre_foranstaltninger, andre.length ? andre.join(', ') : ''].filter(Boolean).join(' · ') || (FLERE ? '-' : io)],
+  ];
+  // rapport.vej gælder hele analysen: ved flere strækninger står den for sig, så tal som "2 indsnævringer" ikke ser ud til
+  // at gælde den valgte strækning (antal bump og indsnævringer ovenfor er pr. strækning)
+  if (FLERE) {
+    rk.splice(1, 2);
+    rk.push(['Vej, hele analysen', [v.vejtype, v.hastighed, v.andre_foranstaltninger].filter(Boolean).join(' · ') || io]);
+  }
+  rk.push(...[
     ['Stoppesteder på strækningen', sr.stoppesteder.length ? [...new Set(sr.stoppesteder.map((s) => s.navn))].join(', ') : 'ikke angivet i config (rapport.stoppesteder)'],
     ['Ruter i data', ruter.join(', ') || '-'],
-  ];
+  ]);
   el('om-dl').innerHTML = rk.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('');
 }
 function drawDrift() {

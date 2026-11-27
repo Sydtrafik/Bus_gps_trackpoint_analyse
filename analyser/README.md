@@ -35,6 +35,7 @@ En fil med samme navn og en anden kontakt overskrives ikke: ret ikke andres anal
 | `laengde_m`, `kort` | Den målte strækning i meter og Google Maps-link | script |
 | `punkter` | Punkter til kortet: `{navn, lat, lon}` og ved kryds `beskrivelse` (hvor punktet ligger, fx "stoplinjen"). Strækning: start, fartdæmperne og slut | script (kryds: beskrivelse fra person) |
 | `dage`, `perioder` | Dagtype og datoer pr. periode (`foer`/`efter`, eller `periode` ved én periode) | script |
+| `standsning` | Valgfrit: hvilke ture tallene bygger på. `ved stop` = uden standsning ved stop (standsning i kø og ved kryds er med), `i alt` = uden nogen standsning. Mangler feltet, er det en ældre fil | script (`lav_konklusion.py`, rapportdata v1.3) |
 | `ture`, `koeretid_s`, `gnsfart_kmt` | Antal ture, median køretid, median gennemsnitsfart | script |
 | `laveste_fart_kmt` | Laveste fart ved fartdæmperne: medianen af den laveste fart pr. tur i hvert vindue, gennemsnit over vinduerne (som rapporten). Tom uden vinduer | script |
 | `maerkbar_opbremsning_pct`, `maerkbar_acceleration_pct` | Andel ture med mærkbar (inkl. kraftig) opbremsning og acceleration | script |

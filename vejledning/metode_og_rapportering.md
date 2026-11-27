@@ -10,7 +10,7 @@ Rapporten er en **præsentationsrapport med få fund og lidt interaktion**: få 
 
 **Grundlag.** Linje 3A, strækning på 626 m med to bump (110 m og 230 m fra start), to indsnævringer (395 m og 597 m) og to stoppesteder. Periode A (uden bump): 30/6-25/9 2025. Periode B (med bump): 18/10 2025-4/1 2026. 26/9-17/10 var anlægsperiode og er ikke med. Hverdage: A 44 dage og 3.995 ture, B 51 dage og 6.580 ture. Linje 3A kørte ikke strækningen 11/8-5/9 2025 (omkørsel); de 26 dage er automatisk kasseret og ikke med.
 
-**Fire nøgletal** (medianer, ture uden standsning ved stop, begge retninger):
+**Fire nøgletal** (medianer, ture uden nogen standsning, begge retninger; rapportdata v1.2):
 
 | Nøgletal | Før | Efter |
 |---|---|---|
@@ -23,9 +23,9 @@ Rapporten er en **præsentationsrapport med få fund og lidt interaktion**: få 
 
 **Køretid med og uden standsning ved stop:** 54 s til 66 s uden standsning, 77 s til 87 s med standsning. Køretiden steg i begge grupper.
 
-**Komfort** (andel ture med mindst én mærkbar hændelse, ture uden standsning ved stop, begge retninger): opbremsning 16 % til 64 %, acceleration 18 % til 47 %, opbremsning eller acceleration 24 % til 72 %. Til sammenligning havde næsten alle ture med standsning ved stop mærkbar opbremsning før bumpene, og 77 % havde kraftig. Se afsnit 2.4 for, hvad komfortmålet er, og hvad det ikke er.
+**Komfort** (andel ture med mindst én mærkbar hændelse, ture uden nogen standsning, begge retninger): opbremsning 16 % til 64 %, acceleration 18 % til 47 %, opbremsning eller acceleration 24 % til 72 %. Til sammenligning havde næsten alle ture med standsning ved stop mærkbar opbremsning før bumpene, og 77 % havde kraftig. Se afsnit 2.4 for, hvad komfortmålet er, og hvad det ikke er.
 
-**Hvor sidder den ekstra køretid** (zoner på ±60 m, gennemsnit pr. tur, ture uden standsning ved stop, begge retninger, interval):
+**Hvor sidder den ekstra køretid** (zoner på ±60 m, gennemsnit pr. tur, ture uden nogen standsning, begge retninger, interval):
 
 | Element | Ekstra tid pr. tur |
 |---|---|
@@ -49,7 +49,7 @@ Bumpene giver ca. 2,6-4,0 s hver, indsnævringerne højst ca. 1,4 s hver, og res
 - **Data:** bussernes GPS-pings fra realtidssystemet (HAFAS), ca. ét ping pr. 1-2 sekunder. Pings fra Kvaglundvej: 1,7 s mellem pings før, 2,0 s efter (65 % mod 40 % af intervallerne på 1 s).
 - **Gyldig tur:** tom `Log` i `result.csv` (nærmeste ping til hvert målepunkt ligger højst 200 m væk), ingen målepunkter matchet på en stoprække (flag `stoprække_`), og komfort-trinnet har `status = ok` (fuld passage af strækningen uden huller på over 10 s mellem pings). På Kvaglundvej: 14.022 af 14.320 ture er gyldige.
 - **Hverdage:** mandag-fredag, uden 24., 25., 26. og 31. december og 1. januar. Hverdage er hovedopgørelsen; alle dage, hverdage uden skoleferie og delperioder af A gav samme billede (køretid +9 til +14 s, fald i laveste fart ved bumpene 15,6-19 km/t).
-- **Uden standsning ved stop:** den udglattede fart kommer ikke under 3,6 km/t (1 m/s) et sted på strækningen (kolonnen `stillestand = 0` i `komfort.csv`; i data og config hedder gruppen `Uden stop`). **Med standsning ved stop:** den kommer. Betegnelsen siger, hvad bussen gør, ikke om der ligger et stoppested på strækningen. Gruppen tæller også standsning i kø, for rødt lys eller for vigepligt; på Kvaglundvej var forskellen på standsning ved stoppested og stillestand uanset årsag 0,1-0,4 % af turene. Har din strækning signal eller vigepligt, så tjek det, og skriv det under forbehold.
+- **To definitioner af standsning** (rapport v1.3, `standsning_v1.0.py`). **Standsning ved stop:** den udglattede fart kommer under 3,6 km/t (1 m/s) højst 40 m fra et stoppested i `rapport.stoppesteder` for turens retning; standsning i kø, for rødt lys eller for vigepligt tæller ikke, så de ture er med i "uden standsning ved stop" (vigtigt fx i myldretid). **Nogen standsning:** farten kommer under 3,6 km/t et sted på strækningen, uanset hvorfor (kolonnen `stillestand` i `komfort.csv`; i rapportdata v1.2 hed grupperne `Uden stop`/`Med stop`, i v1.3 `Uden i alt`/`Med i alt`). "Uden nogen standsning" giver den reneste køretid. Rapportens standard er uden standsning ved stop; uden stoppesteder i config findes kun "nogen standsning". På Kvaglundvej skete 96 % (før) og 95 % (efter) af standsningerne højst 40 m fra et stoppested; 1,3 % og 1,7 % af turene standsede kun andre steder. Andelen ændrer sig under 1 % fra 20 til 50 m. Ekstra køretid pr. element (2.5) bygger altid på ture uden nogen standsning.
 - Perioderne skal vælges, så de kan sammenlignes; værktøjet korrigerer ikke for sæson, trafik, skolestart eller køreplan.
 - **Datatilgængelighed:** realtidssystemet (HAFAS) gemmer kun ca. 3 måneder tilbage. En før-periode skal derfor eksporteres i god tid, **før ændringen sker**, ellers er den væk. Planlæg eksporten, så snart en ændring er besluttet.
 - **Én periode:** værktøjet kan også bruges til at måle kørslen i ét område uden sammenligning (periode A alene). Så vises niveauer i stedet for før og efter: køretid, fartprofil, komfort og tid pr. zone. Ekstra køretid, intervaltabel og drift findes kun med en sammenligning.
@@ -77,7 +77,7 @@ Bumpene giver ca. 2,6-4,0 s hver, indsnævringerne højst ca. 1,4 s hver, og res
 
 ### 2.5 Zonetid: hvor sidder den ekstra køretid?
 
-1. Strækningen deles i **zoner på ±60 m** om hvert element (bump, indsnævring, andet). Overlap mellem to zoner deles på midten. Det, der er tilbage, er den **øvrige strækning**.
+1. Strækningen deles i **zoner på ±60 m** (i rapporten: "område om et element", de 60 m før og efter) om hvert element (bump, indsnævring, andet). Overlap mellem to zoner deles på midten. Det, der er tilbage, er den **øvrige strækning**.
 2. Pr. tur måles tiden i hver zone som tidspunktet for passage af zonens slutgrænse minus startgrænse (position interpoleret til 1 s-gitter, gjort monoton i kørselsretningen). Kun ture med fuld passage.
 3. **Gennemsnit** pr. zone og periode. Elementets **øvre grænse** er hele den ekstra tid i zonen (efter minus før). Den **nedre grænse** er det, der er ud over, at farten også er lavere på den øvrige strækning: efter minus før × f, hvor f er forholdet efter/før på den øvrige strækning. For den øvrige strækning er nedre grænse den rå ekstra tid dér, og øvre grænse den plus den generelle del inde i element-zonerne.
 4. Intervallerne kan ikke lægges sammen. Summen af øvre grænser overstiger totalen.

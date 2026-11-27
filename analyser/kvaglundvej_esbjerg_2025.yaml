@@ -30,6 +30,7 @@ punkter:
   - {navn: "Bump 1", lat: 55.481243, lon: 8.46843}
   - {navn: "Niels Lambertsens Vej", lat: 55.480407, lon: 8.467494}
 dage: "hverdage"
+standsning: "i alt"   # rapportdata v1.2: ture uden nogen standsning (heller ikke i kø eller ved kryds)
 perioder:
   foer: {fra: "2025-06-30", til: "2025-09-25", dage: 44}
   efter: {fra: "2025-10-18", til: "2026-01-04", dage: 51}
